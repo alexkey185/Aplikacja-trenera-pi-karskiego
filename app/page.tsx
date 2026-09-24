@@ -35,20 +35,25 @@ async function ZawodnicyList() {
   key={z.id}
   className="bg-slate-800 rounded-lg p-4 flex items-center gap-4"
 >
-  <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
-    {z.numer ?? '—'}
-  </div>
-  <div className="flex-1">
-    <div className="font-semibold">
-      {z.imie} {z.nazwisko}
+  <Link
+    href={`/zawodnicy/${z.id}`}
+    className="flex items-center gap-4 flex-1 min-w-0"
+  >
+    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
+      {z.numer ?? '—'}
     </div>
-    <div className="text-sm text-slate-400">
-      {z.pozycja ?? 'Brak pozycji'} · {z.rocznik ?? '—'}
+    <div className="flex-1 min-w-0">
+      <div className="font-semibold">
+        {z.imie} {z.nazwisko}
+      </div>
+      <div className="text-sm text-slate-400 truncate">
+        {z.pozycja ?? 'Brak pozycji'} · {z.rocznik ?? '—'}
+      </div>
     </div>
-  </div>
+  </Link>
   <Link
     href={`/zawodnicy/${z.id}/edytuj`}
-    className="text-slate-400 hover:text-white text-sm px-3 py-1 border border-slate-700 rounded-lg transition-colors"
+    className="text-slate-400 hover:text-white text-sm px-3 py-1 border border-slate-700 rounded-lg transition-colors flex-shrink-0"
   >
     Edytuj
   </Link>
