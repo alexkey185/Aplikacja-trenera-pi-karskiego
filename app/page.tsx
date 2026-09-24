@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
 
@@ -65,9 +66,15 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-900 text-white p-6">
       <div className="max-w-2xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">⚽ Moja Kadra</h1>
-        </header>
+       <header className="mb-8 flex items-center justify-between">
+  <h1 className="text-3xl font-bold">⚽ Moja Kadra</h1>
+  <Link
+    href="/zawodnicy/nowy"
+    className="bg-green-600 hover:bg-green-700 transition-colors text-white font-semibold px-4 py-2 rounded-lg text-sm"
+  >
+    + Dodaj zawodnika
+  </Link>
+</header>
 
         <Suspense fallback={<Ladowanie />}>
           <ZawodnicyList />
