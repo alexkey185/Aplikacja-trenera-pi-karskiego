@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Calendar } from 'lucide-react';
+import { Users, Calendar, BarChart3 } from 'lucide-react';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -10,6 +10,7 @@ export function BottomNav() {
   const items = [
     { href: '/', label: 'Kadra', icon: Users },
     { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
+    { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
   ];
 
   return (
@@ -40,7 +41,11 @@ export function BottomNav() {
                 }`}
                 strokeWidth={aktywny ? 2.5 : 2}
               />
-              <span className={`relative font-semibold ${aktywny ? '' : 'font-medium'}`}>
+              <span
+                className={`relative font-semibold ${
+                  aktywny ? '' : 'font-medium'
+                }`}
+              >
                 {item.label}
               </span>
               {aktywny && (

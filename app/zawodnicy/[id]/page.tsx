@@ -11,6 +11,10 @@ import {
   Pencil,
   Phone,
   Calendar,
+  Trophy,
+  Target,
+  TrendingUp,
+  Activity,
 } from 'lucide-react';
 
 export default async function KartaZawodnika({
@@ -71,54 +75,63 @@ export default async function KartaZawodnika({
 
   const statusInfo = (s: string) => {
     if (s === 'obecny')
-      return { icon: CheckCircle2, color: 'text-green-400', label: 'Obecny' };
+      return { icon: CheckCircle2, color: 'text-green-400', label: 'Obecny', bg: 'from-green-500 to-green-700' };
     if (s === 'spozniony')
-      return { icon: Clock, color: 'text-yellow-400', label: 'Spóźniony' };
+      return { icon: Clock, color: 'text-yellow-400', label: 'Spóźniony', bg: 'from-yellow-500 to-yellow-700' };
     if (s === 'nieobecny')
-      return { icon: XCircle, color: 'text-red-400', label: 'Nieobecny' };
+      return { icon: XCircle, color: 'text-red-400', label: 'Nieobecny', bg: 'from-red-500 to-red-700' };
     if (s === 'usprawiedliwiony')
-      return { icon: FileText, color: 'text-blue-400', label: 'Usprawiedliwiony' };
-    return { icon: CheckCircle2, color: 'text-slate-400', label: s };
+      return { icon: FileText, color: 'text-blue-400', label: 'Usprawiedliwiony', bg: 'from-blue-500 to-blue-700' };
+    return { icon: CheckCircle2, color: 'text-slate-400', label: s, bg: 'from-slate-500 to-slate-700' };
   };
 
-  const procentKolor =
-    procent >= 80
-      ? 'from-green-500 to-green-700 shadow-green-900/30'
-      : procent >= 60
-      ? 'from-yellow-500 to-yellow-700 shadow-yellow-900/30'
-      : 'from-red-500 to-red-700 shadow-red-900/30';
-
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-4 md:p-6 pb-24">
+    <main className="min-h-screen text-white p-4 md:p-6 pb-28">
       <div className="max-w-2xl mx-auto">
         <header className="mb-6 flex items-center gap-3 animate-fadeIn">
           <Link
             href="/"
-            className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-xl glass flex items-center justify-center transition-colors hover:bg-slate-800/70"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-xl font-semibold text-slate-400">Karta zawodnika</h1>
+          <h1 className="text-xl font-semibold text-slate-400">
+            Karta zawodnika
+          </h1>
         </header>
 
-        {/* Nagłówek z danymi */}
-        <div className="bg-slate-800/70 border border-slate-700/50 rounded-2xl p-5 mb-4 animate-fadeIn">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center font-bold text-2xl shadow-lg shadow-green-900/40 flex-shrink-0">
-              {zawodnik.numer ?? '—'}
+        {/* Hero karta z zawodnikiem */}
+        <div className="glass rounded-3xl p-6 mb-4 animate-fadeIn relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="relative flex items-start gap-4">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
+              <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-3xl shadow-2xl">
+                {zawodnik.numer ?? '—'}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold truncate">
+              <h2 className="text-2xl font-bold truncate bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 {zawodnik.imie} {zawodnik.nazwisko}
               </h2>
-              <p className="text-sm text-slate-400">
-                {zawodnik.pozycja ?? 'Brak pozycji'}
-                {zawodnik.rocznik && ` · rocznik ${zawodnik.rocznik}`}
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                {zawodnik.pozycja && (
+                  <span className="inline-flex items-center gap-1 bg-slate-900/60 border border-slate-700/50 rounded-full px-2.5 py-1 text-xs font-medium text-slate-300">
+                    <Target className="w-3 h-3 text-green-400" />
+                    {zawodnik.pozycja}
+                  </span>
+                )}
+                {zawodnik.rocznik && (
+                  <span className="inline-flex items-center gap-1 bg-slate-900/60 border border-slate-700/50 rounded-full px-2.5 py-1 text-xs font-medium text-slate-300">
+                    <Trophy className="w-3 h-3 text-yellow-400" />
+                    {zawodnik.rocznik}
+                  </span>
+                )}
+              </div>
             </div>
             <Link
               href={`/zawodnicy/${idNum}/edytuj`}
-              className="w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600 flex items-center justify-center transition-colors flex-shrink-0"
+              className="w-10 h-10 rounded-xl glass hover:bg-slate-700/50 flex items-center justify-center transition-colors flex-shrink-0"
               title="Edytuj"
             >
               <Pencil className="w-4 h-4" />
@@ -126,56 +139,71 @@ export default async function KartaZawodnika({
           </div>
 
           {zawodnik.kontakt_rodzica && (
-            <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-900/50 rounded-lg px-3 py-2">
-              <Phone className="w-4 h-4 text-slate-500" />
-              <span>{zawodnik.kontakt_rodzica}</span>
+            <div className="relative mt-4 flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 rounded-xl px-3 py-2.5">
+              <Phone className="w-4 h-4 text-green-400" />
+              <span className="font-medium">{zawodnik.kontakt_rodzica}</span>
+              <span className="text-xs text-slate-500 ml-auto">Rodzic</span>
             </div>
           )}
         </div>
 
-        {/* Frekwencja */}
-        <div className="bg-slate-800/70 border border-slate-700/50 rounded-2xl p-5 mb-4 animate-fadeIn">
-          <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">
-            Frekwencja
+        {/* Frekwencja z ringiem */}
+        <div className="glass rounded-3xl p-6 mb-4 animate-fadeIn">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-3.5 h-3.5 text-green-400" />
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Frekwencja
+            </h3>
           </div>
 
-          <div className="flex items-baseline gap-2 mb-4">
-            <span className="text-5xl font-bold">{procent}</span>
-            <span className="text-2xl text-slate-500">%</span>
-            <span className="text-sm text-slate-400 ml-auto">
-              {obecnosci} / {stats.total} treningów
-            </span>
+          <div className="flex items-center gap-5">
+            {/* Ring SVG */}
+            <ProgressRing procent={procent} />
+
+            <div className="flex-1 min-w-0">
+              <div className="text-4xl font-bold bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
+                {procent}%
+              </div>
+              <div className="text-sm text-slate-400 mt-1">
+                {obecnosci} z {stats.total} treningów
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                {procent >= 80
+                  ? '🌟 Świetna frekwencja'
+                  : procent >= 60
+                  ? '👍 Dobra frekwencja'
+                  : '⚠️ Warto poprawić'}
+              </div>
+            </div>
           </div>
 
-          <div className="w-full bg-slate-900 rounded-full h-3 mb-5 overflow-hidden">
-            <div
-              className={`h-full bg-gradient-to-r ${procentKolor} transition-all duration-700`}
-              style={{ width: `${procent}%` }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+          {/* Statystyki szczegółowe */}
+          <div className="grid grid-cols-2 gap-2 mt-5">
             <StatBox
               icon={CheckCircle2}
               color="text-green-400"
+              bg="bg-green-500/10 border-green-500/20"
               label="Obecny"
               value={stats.obecny}
             />
             <StatBox
               icon={Clock}
               color="text-yellow-400"
+              bg="bg-yellow-500/10 border-yellow-500/20"
               label="Spóźniony"
               value={stats.spozniony}
             />
             <StatBox
               icon={XCircle}
               color="text-red-400"
+              bg="bg-red-500/10 border-red-500/20"
               label="Nieobecny"
               value={stats.nieobecny}
             />
             <StatBox
               icon={FileText}
               color="text-blue-400"
+              bg="bg-blue-500/10 border-blue-500/20"
               label="Usprawiedliwiony"
               value={stats.usprawiedliwiony}
             />
@@ -184,35 +212,49 @@ export default async function KartaZawodnika({
 
         {/* Ostatnie treningi */}
         {ostatnie.length > 0 && (
-          <div className="bg-slate-800/70 border border-slate-700/50 rounded-2xl p-5 animate-fadeIn">
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">
-              Ostatnie treningi
+          <div className="glass rounded-3xl p-6 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Ostatnie treningi
+              </h3>
             </div>
             <ul className="space-y-1">
-              {ostatnie.map((w) => {
+              {ostatnie.map((w, i) => {
                 const info = statusInfo(w.status);
                 const Icon = info.icon;
                 return (
                   <li
                     key={`${w.trening_id}-${w.status}`}
-                    className="flex items-center gap-3 text-sm py-2 px-2 rounded-lg hover:bg-slate-900/50 transition-colors"
+                    className={`flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-slate-900/50 transition-colors animate-fadeIn stagger-${Math.min(i + 1, 8)}`}
                   >
-                    <Icon className={`w-4 h-4 ${info.color} flex-shrink-0`} />
-                    <Calendar className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                    <span className="flex-1 text-slate-300">
-                      {new Date(w.trening.data).toLocaleDateString('pl-PL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                      })}{' '}
-                      · <span className="capitalize">{w.trening.typ}</span>
-                      {w.trening.przeciwnik && (
-                        <span className="text-slate-500">
-                          {' '}
-                          vs {w.trening.przeciwnik}
-                        </span>
-                      )}
+                    <div
+                      className={`relative w-9 h-9 rounded-xl bg-gradient-to-br ${info.bg} flex items-center justify-center flex-shrink-0 shadow-lg`}
+                    >
+                      <Icon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-200 truncate">
+                        <span className="capitalize">{w.trening.typ}</span>
+                        {w.trening.przeciwnik && (
+                          <span className="text-slate-400">
+                            {' '}
+                            vs {w.trening.przeciwnik}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(w.trening.data).toLocaleDateString('pl-PL', {
+                          weekday: 'short',
+                          day: '2-digit',
+                          month: '2-digit',
+                        })}
+                      </div>
+                    </div>
+                    <span className={`text-xs font-semibold ${info.color}`}>
+                      {info.label}
                     </span>
-                    <span className={`text-xs ${info.color}`}>{info.label}</span>
                   </li>
                 );
               })}
@@ -222,11 +264,14 @@ export default async function KartaZawodnika({
 
         {/* Notatki */}
         {zawodnik.notatki && (
-          <div className="bg-slate-800/70 border border-slate-700/50 rounded-2xl p-5 mt-4 animate-fadeIn">
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-2">
-              Notatki
+          <div className="glass rounded-3xl p-6 mt-4 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="w-3.5 h-3.5 text-green-400" />
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Notatki trenera
+              </h3>
             </div>
-            <div className="text-sm whitespace-pre-wrap text-slate-300">
+            <div className="text-sm whitespace-pre-wrap text-slate-300 leading-relaxed">
               {zawodnik.notatki}
             </div>
           </div>
@@ -236,23 +281,77 @@ export default async function KartaZawodnika({
   );
 }
 
+function ProgressRing({ procent }: { procent: number }) {
+  const size = 96;
+  const stroke = 8;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (procent / 100) * circumference;
+
+  const color =
+    procent >= 80 ? '#22c55e' : procent >= 60 ? '#eab308' : '#ef4444';
+  const glowColor =
+    procent >= 80
+      ? 'rgba(34, 197, 94, 0.5)'
+      : procent >= 60
+      ? 'rgba(234, 179, 8, 0.5)'
+      : 'rgba(239, 68, 68, 0.5)';
+
+  return (
+    <div
+      className="relative flex-shrink-0"
+      style={{ width: size, height: size, filter: `drop-shadow(0 0 12px ${glowColor})` }}
+    >
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="rgba(30, 41, 59, 0.8)"
+          strokeWidth={stroke}
+          fill="none"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={stroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+          <Trophy className="w-5 h-5 text-slate-400" strokeWidth={2} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatBox({
   icon: Icon,
   color,
+  bg,
   label,
   value,
 }: {
   icon: any;
   color: string;
+  bg: string;
   label: string;
   value: number;
 }) {
   return (
-    <div className="flex items-center gap-3 bg-slate-900/50 rounded-xl px-3 py-2.5">
-      <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
+    <div className={`flex items-center gap-3 ${bg} border rounded-xl px-3 py-2.5`}>
+      <Icon className={`w-4 h-4 ${color} flex-shrink-0`} strokeWidth={2.5} />
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-slate-500 truncate">{label}</div>
-        <div className="font-semibold text-white">{value}</div>
+        <div className="text-xs text-slate-400 truncate">{label}</div>
+        <div className="font-bold text-white text-lg leading-tight">{value}</div>
       </div>
     </div>
   );

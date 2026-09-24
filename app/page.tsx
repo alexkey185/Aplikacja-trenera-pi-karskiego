@@ -2,7 +2,14 @@ import Link from 'next/link';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { LogoutButton } from '@/components/LogoutButton';
-import { Users, Calendar, Plus, ChevronRight, Sparkles } from 'lucide-react';
+import {
+  Users,
+  Calendar,
+  Plus,
+  ChevronRight,
+  Sparkles,
+  BarChart3,
+} from 'lucide-react';
 
 export default async function Home() {
   noStore();
@@ -48,6 +55,13 @@ export default async function Home() {
               Kalendarz
             </Link>
             <Link
+              href="/statystyki"
+              className="group flex items-center gap-2 glass hover:glass-strong text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-purple-900/30 hover:-translate-y-0.5"
+            >
+              <BarChart3 className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+              Statystyki
+            </Link>
+            <Link
               href="/zawodnicy/nowy"
               className="group flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-green-900/50 hover:-translate-y-0.5"
             >
@@ -77,7 +91,10 @@ export default async function Home() {
               {zawodnicy!.map((z: any, i: number) => (
                 <li
                   key={z.id}
-                  className={`group glass rounded-2xl overflow-hidden hover:bg-slate-800/70 transition-all hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-0.5 animate-fadeIn stagger-${Math.min(i + 1, 8)}`}
+                  className={`group glass rounded-2xl overflow-hidden hover:bg-slate-800/70 transition-all hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-0.5 animate-fadeIn stagger-${Math.min(
+                    i + 1,
+                    8
+                  )}`}
                 >
                   <Link
                     href={`/zawodnicy/${z.id}`}
@@ -125,7 +142,8 @@ function EmptyState() {
         </div>
         <h3 className="font-bold text-xl mb-2">Zacznijmy od składu</h3>
         <p className="text-sm text-slate-400 mb-6 max-w-xs mx-auto">
-          Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i frekwencją.
+          Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i
+          frekwencją.
         </p>
         <Link
           href="/zawodnicy/nowy"
