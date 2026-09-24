@@ -32,21 +32,27 @@ async function ZawodnicyList() {
     <ul className="space-y-3">
       {zawodnicy.map((z: any) => (
         <li
-          key={z.id}
-          className="bg-slate-800 rounded-lg p-4 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
-            {z.numer ?? '—'}
-          </div>
-          <div className="flex-1">
-            <div className="font-semibold">
-              {z.imie} {z.nazwisko}
-            </div>
-            <div className="text-sm text-slate-400">
-              {z.pozycja ?? 'Brak pozycji'} · {z.rocznik ?? '—'}
-            </div>
-          </div>
-        </li>
+  key={z.id}
+  className="bg-slate-800 rounded-lg p-4 flex items-center gap-4"
+>
+  <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
+    {z.numer ?? '—'}
+  </div>
+  <div className="flex-1">
+    <div className="font-semibold">
+      {z.imie} {z.nazwisko}
+    </div>
+    <div className="text-sm text-slate-400">
+      {z.pozycja ?? 'Brak pozycji'} · {z.rocznik ?? '—'}
+    </div>
+  </div>
+  <Link
+    href={`/zawodnicy/${z.id}/edytuj`}
+    className="text-slate-400 hover:text-white text-sm px-3 py-1 border border-slate-700 rounded-lg transition-colors"
+  >
+    Edytuj
+  </Link>
+</li>
       ))}
     </ul>
   );
