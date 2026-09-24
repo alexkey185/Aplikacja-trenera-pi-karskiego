@@ -85,7 +85,7 @@ export default async function Kalendarz() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-6">
+    <main className="min-h-screen bg-slate-900 text-white p-6 pb-24">
       <div className="max-w-2xl mx-auto">
         <header className="mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">

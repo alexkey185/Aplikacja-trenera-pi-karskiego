@@ -1,3 +1,4 @@
+import { LogoutButton } from '@/components/LogoutButton';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
@@ -75,10 +76,13 @@ function Ladowanie() {
 // Główna strona
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-6">
+    <main className="min-h-screen bg-slate-900 text-white p-6 pb-24">
       <div className="max-w-2xl mx-auto">
        <header className="mb-8">
-  <h1 className="text-3xl font-bold mb-4">⚽ Moja Kadra</h1>
+  <div className="flex items-center justify-between mb-4">
+    <h1 className="text-3xl font-bold">⚽ Moja Kadra</h1>
+    <LogoutButton />
+  </div>
   <div className="flex gap-3 flex-wrap">
     <Link
       href="/kalendarz"
