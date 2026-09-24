@@ -22,9 +22,13 @@ export default async function Kalendarz() {
   };
 
   const Karta = ({ t }: { t: any }) => (
-    <li className="bg-slate-800 rounded-lg p-4 flex items-center gap-4">
+  <li className="bg-slate-800 rounded-lg p-4 flex items-center gap-4">
+    <Link
+      href={`/kalendarz/${t.id}/obecnosc`}
+      className="flex items-center gap-4 flex-1 min-w-0"
+    >
       <div className="text-2xl">{typIkona(t.typ)}</div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="font-semibold">
           {new Date(t.data).toLocaleDateString('pl-PL', {
             weekday: 'short',
@@ -33,20 +37,21 @@ export default async function Kalendarz() {
           })}{' '}
           · {t.godzina}
         </div>
-        <div className="text-sm text-slate-400 capitalize">
+        <div className="text-sm text-slate-400 capitalize truncate">
           {t.typ}
           {t.przeciwnik ? ` · vs ${t.przeciwnik}` : ''}
           {t.miejsce ? ` · ${t.miejsce}` : ''}
         </div>
       </div>
-      <Link
-        href={`/kalendarz/${t.id}/edytuj`}
-        className="text-slate-400 hover:text-white text-sm px-3 py-1 border border-slate-700 rounded-lg transition-colors"
-      >
-        Edytuj
-      </Link>
-    </li>
-  );
+    </Link>
+    <Link
+      href={`/kalendarz/${t.id}/edytuj`}
+      className="text-slate-400 hover:text-white text-sm px-3 py-1 border border-slate-700 rounded-lg transition-colors flex-shrink-0"
+    >
+      Edytuj
+    </Link>
+  </li>
+);
 
   return (
     <main className="min-h-screen bg-slate-900 text-white p-6">
