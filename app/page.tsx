@@ -1,57 +1,61 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
-import { Suspense } from "react";
+import { createClient } from '@/lib/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+
+  const supabase = await createClient();
+  const { data: zawodnicy, error } = await supabase
+    .from('zawodnicy')
+    .select('*')
+    .order('nazwisko', { ascending: true });
+
+  if (error) {
+    console.error('Błąd pobierania zawodników:', error);
+  }
+
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
-
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
+    <main className="min-h-screen bg-slate-900 text-white p-6">
+      <div className="max-w-2xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold">⚽ Moja Kadra</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            {zawodnicy?.length ?? 0} zawodników w bazie
           </p>
-          <ThemeSwitcher />
-        </footer>
+        </header>
+
+        {error && (
+          <div className="bg-red-900/40 border border-red-700 rounded-lg p-4 mb-4 text-sm">
+            Błąd: {error.message}
+          </div>
+        )}
+
+        {!zawodnicy || zawodnicy.length === 0 ? (
+          <div className="bg-slate-800 rounded-lg p-6 text-center text-slate-400">
+            Brak zawodników w bazie.
+            <br />
+            Dodaj pierwszego w panelu Supabase → Table Editor → zawodnicy → Insert.
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {zawodnicy.map((z: any) => (
+              <li
+                key={z.id}
+                className="bg-slate-800 rounded-lg p-4 flex items-center gap-4"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">
+                  {z.numer ?? '—'}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold">
+                    {z.imie} {z.nazwisko}
+                  </div>
+                  <div className="text-sm text-slate-400">
+                    {z.pozycja ?? 'Brak pozycji'} · {z.rocznik ?? '—'}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </main>
   );
