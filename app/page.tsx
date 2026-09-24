@@ -14,14 +14,25 @@ export default async function StartScreen() {
   const href = user ? '/kadra' : '/auth/login';
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
-      {/* TŁO — pełnoekranowa grafika, wyostrzona */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
-        }}
-      >
+    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+      {/* MOBILE — tylko na telefonach (< 768px) */}
+      <div className="absolute inset-0 z-0 md:hidden">
+        <Image
+          src="/talent-hero-mobile.png"
+          alt="Talent"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-center"
+          style={{
+            filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
+          }}
+        />
+      </div>
+
+      {/* DESKTOP — tylko na dużych ekranach (≥ 768px) */}
+      <div className="absolute inset-0 z-0 hidden md:block">
         <Image
           src="/talent-hero.png"
           alt="Talent"
@@ -30,6 +41,9 @@ export default async function StartScreen() {
           quality={100}
           sizes="100vw"
           className="object-cover object-center"
+          style={{
+            filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
+          }}
         />
       </div>
 
