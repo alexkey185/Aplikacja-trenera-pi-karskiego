@@ -1,6 +1,7 @@
 'use client';
 
 import { usunTrening } from './actions';
+import { Trash2 } from 'lucide-react';
 
 export function DeleteButton({ id }: { id: number }) {
   return (
@@ -9,12 +10,13 @@ export function DeleteButton({ id }: { id: number }) {
       <button
         type="submit"
         onClick={(e) => {
-          if (!confirm('Na pewno usunąć to wydarzenie?')) {
+          if (!confirm('Na pewno usunąć to wydarzenie? Tego nie można cofnąć.')) {
             e.preventDefault();
           }
         }}
-        className="bg-red-700 hover:bg-red-800 transition-colors text-white font-semibold px-6 py-3 rounded-lg"
+        className="group flex items-center justify-center gap-2 bg-gradient-to-br from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-bold px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-red-900/50 hover:-translate-y-0.5"
       >
+        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
         Usuń
       </button>
     </form>
