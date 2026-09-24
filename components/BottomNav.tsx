@@ -7,8 +7,13 @@ import { Users, Calendar, BarChart3 } from 'lucide-react';
 export function BottomNav() {
   const pathname = usePathname();
 
+  // Nie pokazuj na ekranie startowym ani stronach logowania
+  if (pathname === '/' || pathname.startsWith('/auth')) {
+    return null;
+  }
+
   const items = [
-    { href: '/', label: 'Kadra', icon: Users },
+    { href: '/kadra', label: 'Kadra', icon: Users },
     { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
     { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
   ];
@@ -17,10 +22,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
       <div className="glass-strong border-t border-slate-700/50 px-4 pb-2 pt-2 flex justify-around shadow-2xl shadow-black/50">
         {items.map((item) => {
-          const aktywny =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(item.href);
+          const aktywny = pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link

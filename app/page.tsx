@@ -15,14 +15,23 @@ export default async function StartScreen() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      {/* TŁO — pełnoekranowa grafika */}
-      <Image
-        src="/talent-hero.png"
-        alt="Talent"
-        fill
-        priority
-        className="object-cover object-center z-0"
-      />
+      {/* TŁO — pełnoekranowa grafika, wyostrzona */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
+        }}
+      >
+        <Image
+          src="/talent-hero.png"
+          alt="Talent"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
       {/* TREŚĆ — tylko przycisk na samym dole */}
       <div className="relative z-20 min-h-screen flex flex-col items-center justify-end px-6 pb-6">
