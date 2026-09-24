@@ -72,14 +72,22 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-900 text-white p-6">
       <div className="max-w-2xl mx-auto">
-       <header className="mb-8 flex items-center justify-between">
-  <h1 className="text-3xl font-bold">⚽ Moja Kadra</h1>
-  <Link
-    href="/zawodnicy/nowy"
-    className="bg-green-600 hover:bg-green-700 transition-colors text-white font-semibold px-4 py-2 rounded-lg text-sm"
-  >
-    + Dodaj zawodnika
-  </Link>
+       <header className="mb-8">
+  <h1 className="text-3xl font-bold mb-4">⚽ Moja Kadra</h1>
+  <div className="flex gap-3 flex-wrap">
+    <Link
+      href="/kalendarz"
+      className="bg-slate-700 hover:bg-slate-600 transition-colors text-white font-semibold px-4 py-2 rounded-lg text-sm"
+    >
+      📅 Kalendarz
+    </Link>
+    <Link
+      href="/zawodnicy/nowy"
+      className="bg-green-600 hover:bg-green-700 transition-colors text-white font-semibold px-4 py-2 rounded-lg text-sm"
+    >
+      + Dodaj zawodnika
+    </Link>
+  </div>
 </header>
 
         <Suspense fallback={<Ladowanie />}>
