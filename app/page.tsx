@@ -14,29 +14,27 @@ export default async function StartScreen() {
   const href = user ? '/kadra' : '/auth/login';
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#4a5570] via-[#3d4759] to-[#1e2530]">
-      {/* GRAFIKA — cała, bez przycinania */}
+    <main className="relative min-h-screen w-full overflow-hidden">
+      {/* TŁO — pełnoekranowa grafika, wyostrzona */}
       <div
-        className="absolute inset-0 z-0 flex items-center justify-center p-4"
+        className="absolute inset-0 z-0"
         style={{
           filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
         }}
       >
-        <div className="relative w-full aspect-[16/9] max-h-[80vh]">
-          <Image
-            src="/talent-hero.png"
-            alt="Talent"
-            fill
-            priority
-            quality={100}
-            sizes="100vw"
-            className="object-contain"
-          />
-        </div>
+        <Image
+          src="/talent-hero.png"
+          alt="Talent"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
       </div>
 
       {/* TREŚĆ — przycisk na dole */}
-      <div className="relative z-20 min-h-screen flex flex-col items-center justify-end px-6 pb-8">
+      <div className="relative z-20 min-h-screen flex flex-col items-center justify-end px-6 pb-6">
         <Link
           href={href}
           className="group w-full max-w-xs flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-4 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-1 border-2 border-white/30 shadow-lg shadow-black/40"
@@ -45,7 +43,7 @@ export default async function StartScreen() {
           Zaloguj się
         </Link>
 
-        <p className="text-center text-xs text-white/60 pt-3">
+        <p className="text-center text-xs text-white/70 pt-3 drop-shadow">
           Wersja 1.0 · Twój zespół, Twoje zasady
         </p>
       </div>
