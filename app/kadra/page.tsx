@@ -33,15 +33,6 @@ export default async function Kadra() {
     frekwencjaMap.set(o.zawodnik_id, s);
   });
 
-  const statusKolor = (zawodnikId: number) => {
-    const s = frekwencjaMap.get(zawodnikId);
-    if (!s || s.total === 0) return 'bg-slate-500';
-    const procent = (s.obecni / s.total) * 100;
-    if (procent >= 80) return 'bg-green-500';
-    if (procent >= 50) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
   const inicjaly = (imie: string, nazwisko: string) => {
     return `${imie.charAt(0)}${nazwisko.charAt(0)}`.toUpperCase();
   };
@@ -150,22 +141,8 @@ export default async function Kadra() {
                     <div className="flex items-center">
                       <Link
                         href={`/zawodnicy/${z.id}`}
-                        className="flex items-center gap-3 p-3 flex-1 min-w-0 relative"
+                        className="flex items-center gap-3 p-3 flex-1 min-w-0"
                       >
-                        <div className="absolute top-3 right-3">
-                          <div
-                            className={`w-2.5 h-2.5 rounded-full ${statusKolor(z.id)} shadow-lg ${
-                              statusKolor(z.id) === 'bg-green-500'
-                                ? 'shadow-green-500/50'
-                                : statusKolor(z.id) === 'bg-yellow-500'
-                                ? 'shadow-yellow-500/50'
-                                : statusKolor(z.id) === 'bg-red-500'
-                                ? 'shadow-red-500/50'
-                                : ''
-                            }`}
-                          />
-                        </div>
-
                         <div className="relative flex-shrink-0">
                           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-base shadow-inner">
                             {inicjaly(z.imie, z.nazwisko)}
@@ -177,12 +154,12 @@ export default async function Kadra() {
                           )}
                         </div>
 
-                        <div className="flex-1 min-w-0 pr-8">
+                        <div className="flex-1 min-w-0">
                           <div className="font-bold text-white text-sm truncate uppercase tracking-wide drop-shadow">
                             {z.imie} {z.nazwisko}
                           </div>
                           <div className="text-[10px] text-white/50 uppercase tracking-widest font-medium truncate mt-0.5">
-                            {z.pozycja ?? 'Brak pozycji'}
+                            Rocznik {z.rocznik ?? '—'}
                           </div>
                           {procent !== null && (
                             <div className="text-[10px] text-white/40 mt-0.5">
