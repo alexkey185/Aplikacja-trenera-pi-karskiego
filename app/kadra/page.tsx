@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { LogoutButton } from '@/components/LogoutButton';
@@ -22,111 +23,144 @@ export default async function Kadra() {
   const liczba = zawodnicy?.length ?? 0;
 
   return (
-    <main className="min-h-screen text-white p-4 md:p-6 pb-28">
-      <div className="max-w-2xl mx-auto">
-        {/* HERO */}
-        <header className="mb-8 animate-fadeIn">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-2xl">
-                  <Users className="w-6 h-6 text-white" strokeWidth={2.5} />
+    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+      {/* TŁO MOBILE — samo tło bez chłopca */}
+      <div className="fixed inset-0 z-0 md:hidden">
+        <Image
+          src="/talent-bg-mobile.png"
+          alt=""
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-center"
+          aria-hidden
+        />
+      </div>
+
+      {/* TŁO DESKTOP — samo tło bez chłopca */}
+      <div className="fixed inset-0 z-0 hidden md:block">
+        <Image
+          src="/talent-bg.png"
+          alt=""
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-center"
+          aria-hidden
+        />
+      </div>
+
+      {/* Przygaszenie */}
+      <div className="fixed inset-0 z-10 bg-slate-950/40 backdrop-blur-sm" />
+
+      {/* TREŚĆ */}
+      <div className="relative z-20 p-4 md:p-6 pb-28">
+        <div className="max-w-2xl mx-auto">
+          <header className="mb-8 animate-fadeIn">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
+                  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-2xl">
+                    <Users className="w-6 h-6 text-white" strokeWidth={2.5} />
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
+                    Talent
+                  </h1>
+                  <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
+                    {liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'}
+                  </p>
                 </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold leading-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                  Talent
-                </h1>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  {liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'}
-                </p>
+              <LogoutButton />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Link
+                href="/kalendarz"
+                className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+              >
+                <Calendar className="w-4 h-4 text-blue-300 group-hover:scale-110 transition-transform" />
+                Kalendarz
+              </Link>
+              <Link
+                href="/statystyki"
+                className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+              >
+                <BarChart3 className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform" />
+                Statystyki
+              </Link>
+              <Link
+                href="/zawodnicy/nowy"
+                className="group flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+              >
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                Dodaj zawodnika
+              </Link>
+            </div>
+          </header>
+
+          {error && (
+            <div className="bg-red-500/20 border border-red-400/40 rounded-2xl p-4 mb-4 text-sm animate-fadeIn text-red-200">
+              Błąd: {error.message}
+            </div>
+          )}
+
+          {liczba === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-3 animate-fadeIn">
+                <Sparkles className="w-3.5 h-3.5 text-green-400" />
+                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest drop-shadow">
+                  Skład drużyny
+                </h2>
               </div>
-            </div>
-            <LogoutButton />
-          </div>
-
-          <div className="flex gap-2 flex-wrap">
-            <Link
-              href="/kalendarz"
-              className="group flex items-center gap-2 glass hover:glass-strong text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-blue-900/30 hover:-translate-y-0.5"
-            >
-              <Calendar className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
-              Kalendarz
-            </Link>
-            <Link
-              href="/statystyki"
-              className="group flex items-center gap-2 glass hover:glass-strong text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-purple-900/30 hover:-translate-y-0.5"
-            >
-              <BarChart3 className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
-              Statystyki
-            </Link>
-            <Link
-              href="/zawodnicy/nowy"
-              className="group flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-green-900/50 hover:-translate-y-0.5"
-            >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              Dodaj zawodnika
-            </Link>
-          </div>
-        </header>
-
-        {error && (
-          <div className="glass border-red-500/30 rounded-2xl p-4 mb-4 text-sm animate-fadeIn text-red-300">
-            Błąd: {error.message}
-          </div>
-        )}
-
-        {liczba === 0 ? (
-          <EmptyState />
-        ) : (
-          <>
-            <div className="flex items-center gap-2 mb-3 animate-fadeIn">
-              <Sparkles className="w-3.5 h-3.5 text-green-400" />
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Skład drużyny
-              </h2>
-            </div>
-            <ul className="space-y-2">
-              {zawodnicy!.map((z: any, i: number) => (
-                <li
-                  key={z.id}
-                  className={`group glass rounded-2xl overflow-hidden hover:bg-slate-800/70 transition-all hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-0.5 animate-fadeIn stagger-${Math.min(
-                    i + 1,
-                    8
-                  )}`}
-                >
-                  <Link
-                    href={`/zawodnicy/${z.id}`}
-                    className="flex items-center gap-4 p-4"
+              <ul className="space-y-2">
+                {zawodnicy!.map((z: any, i: number) => (
+                  <li
+                    key={z.id}
+                    className={`group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all hover:-translate-y-0.5 animate-fadeIn stagger-${Math.min(
+                      i + 1,
+                      8
+                    )}`}
                   >
-                    <div className="relative flex-shrink-0">
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-md opacity-40 group-hover:opacity-70 transition-opacity" />
-                      <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-white text-lg shadow-lg">
-                        {z.numer ?? '—'}
+                    <Link
+                      href={`/zawodnicy/${z.id}`}
+                      className="flex items-center gap-4 p-4"
+                    >
+                      <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
+                        <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+                          {z.numer ?? '—'}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold truncate text-white">
-                        {z.imie} {z.nazwisko}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate text-white drop-shadow">
+                          {z.imie} {z.nazwisko}
+                        </div>
+                        <div className="text-sm text-white/70 truncate flex items-center gap-2">
+                          <span>{z.pozycja ?? 'Brak pozycji'}</span>
+                          {z.rocznik && (
+                            <>
+                              <span className="text-white/30">•</span>
+                              <span>{z.rocznik}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-sm text-slate-400 truncate flex items-center gap-2">
-                        <span>{z.pozycja ?? 'Brak pozycji'}</span>
-                        {z.rocznik && (
-                          <>
-                            <span className="text-slate-600">•</span>
-                            <span>{z.rocznik}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+                      <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
       </div>
     </main>
   );
@@ -134,20 +168,21 @@ export default async function Kadra() {
 
 function EmptyState() {
   return (
-    <div className="glass rounded-3xl p-12 text-center animate-fadeIn relative overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center animate-fadeIn relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-green-500/20 rounded-full blur-3xl" />
       <div className="relative">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center mx-auto mb-5 shadow-2xl animate-glow">
+        <div className="w-20 h-20 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 shadow-2xl">
           <Users className="w-10 h-10 text-green-400" strokeWidth={1.5} />
         </div>
-        <h3 className="font-bold text-xl mb-2">Zacznijmy od składu</h3>
-        <p className="text-sm text-slate-400 mb-6 max-w-xs mx-auto">
-          Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i
-          frekwencją.
+        <h3 className="font-bold text-xl mb-2 text-white drop-shadow">
+          Zacznijmy od składu
+        </h3>
+        <p className="text-sm text-white/70 mb-6 max-w-xs mx-auto">
+          Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i frekwencją.
         </p>
         <Link
           href="/zawodnicy/nowy"
-          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 text-white font-semibold px-5 py-3 rounded-2xl text-sm transition-all hover:shadow-xl hover:shadow-green-900/50 hover:-translate-y-0.5"
+          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-5 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
         >
           <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
           Dodaj pierwszego zawodnika
