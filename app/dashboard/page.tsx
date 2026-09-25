@@ -79,7 +79,6 @@ export default async function Dashboard({
     return 'bg-blue-500';
   };
 
-  // Zbierz wszystkie unikalne dni z wydarzeniami dla wybranego miesiąca
   const poczatek = `${rok}-${String(miesiac + 1).padStart(2, '0')}-01`;
   const koniec = `${rok}-${String(miesiac + 1).padStart(2, '0')}-${String(dniWMiesiacu).padStart(2, '0')}`;
 
@@ -113,7 +112,7 @@ export default async function Dashboard({
           aria-hidden
         />
       </div>
-      <div className="fixed inset-0 z-10 bg-slate-950/40 backdrop-blur-[3px]" />
+      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
@@ -138,10 +137,10 @@ export default async function Dashboard({
               <LogoutButton />
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3 flex items-center justify-between shadow-xl shadow-black/30">
+            <div className="bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center justify-between shadow-xl shadow-black/50">
               <Link
                 href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-colors"
+                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </Link>
@@ -156,20 +155,20 @@ export default async function Dashboard({
               </div>
               <Link
                 href={`/dashboard?m=${nextR}-${String(nextM).padStart(2, '0')}`}
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-colors"
+                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </Link>
             </div>
           </header>
 
-          {/* KALENDARZ MIESIĄCA */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/40">
+          {/* KALENDARZ — dni klikalne */}
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="grid grid-cols-7 gap-1 mb-2">
               {dniTygodnia.map((d) => (
                 <div
                   key={d}
-                  className="text-center text-xs font-bold text-white/50 uppercase py-1"
+                  className="text-center text-xs font-bold text-white/40 uppercase py-1"
                 >
                   {d}
                 </div>
@@ -188,19 +187,24 @@ export default async function Dashboard({
                 const maEventy = eventy.length > 0;
 
                 return (
-                  <div
+                  <Link
                     key={i}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center relative ${
+                    href={`/dashboard/${dateStr}`}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                       czyDzis
-                        ? 'bg-gradient-to-br from-green-500 to-green-700 shadow-lg shadow-green-500/40 border-2 border-green-400'
+                        ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/50 border-2 border-green-300'
                         : maEventy
-                        ? 'bg-white/15 border border-white/30'
-                        : 'bg-white/5 border border-white/10'
+                        ? 'bg-slate-800 border border-white/20 shadow-md hover:border-white/40'
+                        : 'bg-slate-800/40 border border-white/5 hover:border-white/20'
                     }`}
                   >
                     <span
                       className={`text-sm font-semibold ${
-                        czyDzis || maEventy ? 'text-white' : 'text-white/70'
+                        czyDzis
+                          ? 'text-white drop-shadow'
+                          : maEventy
+                          ? 'text-white'
+                          : 'text-white/50'
                       }`}
                     >
                       {d}
@@ -210,37 +214,36 @@ export default async function Dashboard({
                         {eventy.slice(0, 3).map((e, idx) => (
                           <div
                             key={idx}
-                            className={`w-1 h-1 rounded-full ${typKolor(e.typ)}`}
+                            className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)} shadow-sm`}
                           />
                         ))}
                       </div>
                     )}
-                  </div>
+                  </Link>
                 );
               })}
             </div>
 
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-white/60">Trening</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
+                <span className="text-white/70">Trening</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-white/60">Mecz</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm" />
+                <span className="text-white/70">Mecz</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                <span className="text-white/60">Sparing</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
+                <span className="text-white/70">Sparing</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-purple-500" />
-                <span className="text-white/60">Turniej</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm" />
+                <span className="text-white/70">Turniej</span>
               </div>
             </div>
           </div>
 
-          {/* SZYBKIE AKCJE */}
           <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
             <Link
               href="/kalendarz/nowy"
@@ -251,14 +254,14 @@ export default async function Dashboard({
             </Link>
             <Link
               href="/kadra"
-              className="group flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+              className="group flex items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
             >
               <Users className="w-4 h-4 text-blue-300" />
               Kadra
             </Link>
             <Link
               href="/statystyki"
-              className="group flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+              className="group flex items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
             >
               <BarChart3 className="w-4 h-4 text-purple-300" />
               Statystyki
