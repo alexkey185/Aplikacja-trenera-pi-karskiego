@@ -41,7 +41,7 @@ export default async function StartScreen() {
         />
       </div>
 
-      <div className="relative z-20 h-full flex flex-col items-center justify-end px-6 pb-6">
+      <div className="relative z-20 h-full flex flex-col items-center justify-end px-6 pb-24">
         <Link
           href={href}
           className="group w-full max-w-xs flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-4 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-1 border-2 border-white/30 shadow-lg shadow-black/40"
