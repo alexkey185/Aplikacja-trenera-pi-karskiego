@@ -13,9 +13,10 @@ import {
   Clock,
   MapPin,
   ChevronRight,
-  Users,
   Sparkles,
   Pencil,
+  Check,
+  X,
 } from 'lucide-react';
 
 export default async function Kalendarz() {
@@ -31,11 +32,12 @@ export default async function Kalendarz() {
     .from('obecnosc')
     .select('trening_id, status');
 
-  const stats = new Map<number, { obecni: number; total: number }>();
+  const stats = new Map<number, { obecni: number; nieobecni: number; total: number }>();
   (obecnosci ?? []).forEach((o) => {
-    const s = stats.get(o.trening_id) ?? { obecni: 0, total: 0 };
+    const s = stats.get(o.trening_id) ?? { obecni: 0, nieobecni: 0, total: 0 };
     s.total += 1;
     if (o.status === 'obecny' || o.status === 'spozniony') s.obecni += 1;
+    else s.nieobecni += 1;
     stats.set(o.trening_id, s);
   });
 
@@ -54,15 +56,6 @@ export default async function Kalendarz() {
     const info = typInfo(t.typ);
     const Icon = info.icon;
     const s = stats.get(t.id);
-
-    const frekwencjaKolor =
-      s && s.total > 0
-        ? s.obecni === s.total
-          ? 'text-green-400'
-          : s.obecni / s.total >= 0.7
-          ? 'text-yellow-400'
-          : 'text-red-400'
-        : 'text-white/50';
 
     return (
       <li
@@ -114,11 +107,25 @@ export default async function Kalendarz() {
               </div>
 
               {s && s.total > 0 && (
-                <div className="text-xs mt-1 flex items-center gap-1.5">
-                  <Users className={`w-3 h-3 ${frekwencjaKolor}`} />
-                  <span className={`font-medium ${frekwencjaKolor}`}>
-                    {s.obecni}/{s.total} obecnych
-                  </span>
+                <div className="flex items-center gap-3 mt-1.5">
+                  <div className="flex items-center gap-1">
+                    <Check
+                      className="w-3.5 h-3.5 text-green-400"
+                      strokeWidth={3}
+                    />
+                    <span className="text-xs font-semibold text-green-400">
+                      {s.obecni}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <X
+                      className="w-3.5 h-3.5 text-red-400"
+                      strokeWidth={3}
+                    />
+                    <span className="text-xs font-semibold text-red-400">
+                      {s.nieobecni}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -126,7 +133,6 @@ export default async function Kalendarz() {
             <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
           </Link>
 
-          {/* Przyciski akcji — poza Linkiem */}
           <div className="flex gap-2 flex-shrink-0 mr-3">
             <Link
               href={`/kalendarz/${t.id}/edytuj`}
