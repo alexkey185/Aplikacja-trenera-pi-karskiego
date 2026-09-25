@@ -56,6 +56,6 @@ export async function usunZawodnika(formData: FormData) {
   }
 
     revalidatePath('/');
-  revalidatePath(`/zawodnicy/${id}/edytuj`);
-  redirect('/');
+revalidatePath('/kadra');
+redirect('/kadra');
 }
