@@ -31,12 +31,17 @@ export default async function Statystyki() {
   const totalTreningi = treningi?.length ?? 0;
   const totalZawodnikow = zawodnicy?.length ?? 0;
 
+  // Ranking per zawodnik
   const ranking = (zawodnicy ?? []).map((z) => {
     const wpisy = (obecnosci ?? []).filter((o) => o.zawodnik_id === z.id);
+    // Tylko 2 statusy: obecny / nieobecny
+    // Mapujemy stare: spozniony → obecny, usprawiedliwiony → nieobecny
     const obecnosci_count = wpisy.filter(
       (w) => w.status === 'obecny' || w.status === 'spozniony'
     ).length;
-    const nieobecnosci = wpisy.filter((w) => w.status === 'nieobecny').length;
+    const nieobecnosci = wpisy.filter(
+      (w) => w.status === 'nieobecny' || w.status === 'usprawiedliwiony'
+    ).length;
     const procent =
       wpisy.length > 0 ? Math.round((obecnosci_count / wpisy.length) * 100) : 0;
     return {
@@ -71,7 +76,7 @@ export default async function Statystyki() {
   ).length;
 
   const totalNieobecnosci = (obecnosci ?? []).filter(
-    (w) => w.status === 'nieobecny'
+    (w) => w.status === 'nieobecny' || w.status === 'usprawiedliwiony'
   ).length;
 
   return (
@@ -105,7 +110,7 @@ export default async function Statystyki() {
       </div>
 
       {/* Przygaszenie */}
-      <div className="fixed inset-0 z-10 bg-slate-950/15 backdrop-blur-[2px]" />
+      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
       {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
@@ -113,7 +118,7 @@ export default async function Statystyki() {
           <header className="mb-6 flex items-center gap-3 animate-fadeIn">
             <Link
               href="/kadra"
-              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors"
+              className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
@@ -172,8 +177,8 @@ export default async function Statystyki() {
           </div>
 
           {/* Info o treningach */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 mb-4 animate-fadeIn flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-4 animate-fadeIn flex items-center gap-3 shadow-xl shadow-black/40">
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
               <Activity className="w-5 h-5 text-white/60" strokeWidth={2} />
             </div>
             <div className="flex-1">
@@ -184,7 +189,7 @@ export default async function Statystyki() {
 
           {/* TOP 5 */}
           {top5.length > 0 && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 mb-4 animate-fadeIn">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="w-3.5 h-3.5 text-yellow-400" />
                 <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
@@ -201,7 +206,7 @@ export default async function Statystyki() {
 
           {/* Do poprawy */}
           {najgorsi.length > 0 && najgorsi[0].procent < 70 && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 mb-4 animate-fadeIn">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
                 <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
@@ -218,7 +223,7 @@ export default async function Statystyki() {
 
           {/* Pełny ranking */}
           {rankingSort.length > 0 && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 animate-fadeIn">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <Award className="w-3.5 h-3.5 text-purple-400" />
                 <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
@@ -227,8 +232,11 @@ export default async function Statystyki() {
               </div>
               <ul className="space-y-1">
                 {rankingSort.map((r, i) => (
-                  <li key={r.id} className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
-                    <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-xs font-bold text-white/70 flex-shrink-0">
+                  <li
+                    key={r.id}
+                    className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-white/70 flex-shrink-0">
                       {i + 1}
                     </div>
                     <Link href={`/zawodnicy/${r.id}`} className="flex-1 min-w-0">
@@ -271,8 +279,8 @@ export default async function Statystyki() {
           )}
 
           {rankingSort.length === 0 && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center animate-fadeIn">
-              <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center animate-fadeIn shadow-xl shadow-black/40">
+              <div className="w-16 h-16 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
                 <BarChart3 className="w-8 h-8 text-white/50" strokeWidth={1.5} />
               </div>
               <h3 className="font-bold text-lg mb-2 text-white drop-shadow">
@@ -305,7 +313,9 @@ function BigStat({
   value: string;
 }) {
   return (
-    <div className={`bg-white/10 backdrop-blur-md rounded-2xl p-4 bg-gradient-to-br ${bg} border ${border} animate-fadeIn`}>
+    <div
+      className={`bg-slate-900/80 backdrop-blur-md rounded-2xl p-4 bg-gradient-to-br ${bg} border ${border} animate-fadeIn shadow-lg shadow-black/30`}
+    >
       <Icon className={`w-5 h-5 ${color} mb-2`} strokeWidth={2.5} />
       <div className="text-2xl font-bold text-white drop-shadow">{value}</div>
       <div className="text-xs text-white/70 mt-0.5">{label}</div>

@@ -64,7 +64,7 @@ export default async function Kalendarz() {
 
     return (
       <li
-        className={`group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all hover:-translate-y-0.5 animate-fadeIn stagger-${Math.min(
+        className={`group bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:bg-slate-900 hover:border-white/30 transition-all hover:-translate-y-0.5 shadow-xl shadow-black/40 animate-fadeIn stagger-${Math.min(
           index + 1,
           8
         )}`}
@@ -153,8 +153,8 @@ export default async function Kalendarz() {
         />
       </div>
 
-      {/* Przygaszenie */}
-      <div className="fixed inset-0 z-10 bg-slate-950/15 backdrop-blur-[2px]" />
+      {/* Przygaszenie - jak w dashboard */}
+      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
       {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
@@ -163,15 +163,15 @@ export default async function Kalendarz() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <Link
-                  href="/kadra"
-                  className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors"
+                  href="/dashboard"
+                  className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>
                   <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
-                    Kalendarz
-                  </h1>
+  Plan
+</h1>
                   <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
                     {nadchodzace.length} nadchodzących · {minione.length} minionych
                   </p>
@@ -235,10 +235,10 @@ export default async function Kalendarz() {
 
 function EmptyState() {
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center animate-fadeIn relative overflow-hidden">
+    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center animate-fadeIn relative overflow-hidden shadow-xl shadow-black/40">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
       <div className="relative">
-        <div className="w-20 h-20 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 shadow-2xl">
+        <div className="w-20 h-20 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-5">
           <CalendarIcon className="w-10 h-10 text-blue-400" strokeWidth={1.5} />
         </div>
         <h3 className="font-bold text-xl mb-2 text-white drop-shadow">Pusty kalendarz</h3>

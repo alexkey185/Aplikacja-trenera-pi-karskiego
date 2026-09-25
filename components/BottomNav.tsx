@@ -11,12 +11,12 @@ export function BottomNav() {
     return null;
   }
 
-  const items = [
-    { href: '/dashboard', label: 'Plan', icon: LayoutDashboard },
-    { href: '/kadra', label: 'Kadra', icon: Users },
-    { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
-    { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
-  ];
+ const items = [
+  { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
+  { href: '/kadra', label: 'Kadra', icon: Users },
+  { href: '/kalendarz', label: 'Plan', icon: Calendar },
+  { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
+];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">

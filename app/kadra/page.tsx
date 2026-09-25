@@ -111,36 +111,36 @@ export default async function Kadra() {
             </div>
 
             {/* Pasek akcji */}
-            <div className="flex gap-2 flex-wrap">
-              <Link
-                href="/dashboard"
-                className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
-              >
-                <LayoutDashboard className="w-4 h-4 text-green-300" />
-                Plan
-              </Link>
-              <Link
-                href="/kalendarz"
-                className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
-              >
-                <Calendar className="w-4 h-4 text-blue-300" />
-                Kalendarz
-              </Link>
-              <Link
-                href="/statystyki"
-                className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
-              >
-                <BarChart3 className="w-4 h-4 text-purple-300" />
-                Statystyki
-              </Link>
-              <Link
-                href="/zawodnicy/nowy"
-                className="group ml-auto flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2.5 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
-              >
-                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                Dodaj
-              </Link>
-            </div>
+<div className="flex gap-2 flex-wrap">
+  <Link
+    href="/dashboard"
+    className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+  >
+    <LayoutDashboard className="w-4 h-4 text-green-300" />
+    Kalendarz
+  </Link>
+  <Link
+    href="/kalendarz"
+    className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+  >
+    <Calendar className="w-4 h-4 text-blue-300" />
+    Plan
+  </Link>
+  <Link
+    href="/statystyki"
+    className="group flex items-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-3 md:px-4 py-2.5 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+  >
+    <BarChart3 className="w-4 h-4 text-purple-300" />
+    Statystyki
+  </Link>
+  <Link
+    href="/zawodnicy/nowy"
+    className="group ml-auto flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2.5 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+  >
+    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+    Dodaj
+  </Link>
+</div>
           </header>
 
           {error && (

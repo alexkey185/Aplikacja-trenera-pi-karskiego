@@ -4,93 +4,40 @@ import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { ObecnoscForm } from './ObecnoscForm';
-import {
-  ArrowLeft,
-  Users,
-  Calendar as CalendarIcon,
-  Clock,
-  MapPin,
-} from 'lucide-react';
+import { ArrowLeft, Users, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 
-export default async function Obecnosc({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function Obecnosc({ params }: { params: Promise<{ id: string }> }) {
   noStore();
   const { id } = await params;
   const idNum = parseInt(id, 10);
-
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
-
-  const { data: trening, error: errT } = await supabase
-    .from('treningi')
-    .select('*')
-    .eq('id', idNum)
-    .single();
-
+  const { data: trening, error: errT } = await supabase.from('treningi').select('*').eq('id', idNum).single();
   if (errT || !trening) notFound();
 
-  const { data: zawodnicy } = await supabase
-    .from('zawodnicy')
-    .select('*')
-    .order('nazwisko', { ascending: true });
-
-  const { data: obecnosc } = await supabase
-    .from('obecnosc')
-    .select('*')
-    .eq('trening_id', idNum);
+  const { data: zawodnicy } = await supabase.from('zawodnicy').select('*').order('nazwisko', { ascending: true });
+  const { data: obecnosc } = await supabase.from('obecnosc').select('*').eq('trening_id', idNum);
 
   const initialStatus: Record<number, string> = {};
-  (obecnosc ?? []).forEach((o) => {
-    initialStatus[o.zawodnik_id] = o.status;
-  });
+  (obecnosc ?? []).forEach((o) => { initialStatus[o.zawodnik_id] = o.status; });
 
   const typIkona = trening.typ === 'mecz' ? '🏆' : '🟦';
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* TŁO MOBILE */}
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.png"
-          alt=""
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg-mobile.png" alt="" fill priority quality={100} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
-
-      {/* TŁO DESKTOP */}
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.png"
-          alt=""
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg.png" alt="" fill priority quality={100} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
+      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      {/* Przygaszenie */}
-      <div className="fixed inset-0 z-10 bg-slate-950/40 backdrop-blur-sm" />
-
-      {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
           <header className="mb-6 flex items-center gap-3 animate-fadeIn">
-            <Link
-              href="/kalendarz"
-              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors flex-shrink-0"
-            >
+            <Link href="/kalendarz" className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -101,28 +48,20 @@ export default async function Obecnosc({
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">
-                  Obecność
-                </h1>
+                <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">Obecność</h1>
                 <p className="text-xs text-white/70 font-medium mt-0.5 truncate capitalize drop-shadow">
-                  {typIkona} {trening.typ}
-                  {trening.przeciwnik && ` vs ${trening.przeciwnik}`}
+                  {typIkona} {trening.typ}{trening.przeciwnik && ` vs ${trening.przeciwnik}`}
                 </p>
               </div>
             </div>
           </header>
 
-          {/* Karta treningu */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 mb-5 animate-fadeIn">
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-5 animate-fadeIn shadow-xl shadow-black/40">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <div className="flex items-center gap-2 text-white/90">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
                 <span className="font-medium capitalize">
-                  {new Date(trening.data).toLocaleDateString('pl-PL', {
-                    weekday: 'long',
-                    day: '2-digit',
-                    month: 'long',
-                  })}
+                  {new Date(trening.data).toLocaleDateString('pl-PL', { weekday: 'long', day: '2-digit', month: 'long' })}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-white/90">
@@ -139,23 +78,15 @@ export default async function Obecnosc({
           </div>
 
           {!zawodnicy || zawodnicy.length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-12 text-center animate-fadeIn">
-              <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center animate-fadeIn shadow-xl shadow-black/40">
+              <div className="w-16 h-16 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-white/50" strokeWidth={1.5} />
               </div>
-              <h3 className="font-bold text-lg mb-2 text-white drop-shadow">
-                Brak zawodników
-              </h3>
-              <p className="text-sm text-white/70">
-                Dodaj najpierw zawodników w zakładce Kadra.
-              </p>
+              <h3 className="font-bold text-lg mb-2 text-white drop-shadow">Brak zawodników</h3>
+              <p className="text-sm text-white/70">Dodaj najpierw zawodników w zakładce Kadra.</p>
             </div>
           ) : (
-            <ObecnoscForm
-              treningId={idNum}
-              zawodnicy={zawodnicy}
-              initialStatus={initialStatus}
-            />
+            <ObecnoscForm treningId={idNum} zawodnicy={zawodnicy} initialStatus={initialStatus} />
           )}
         </div>
       </div>
