@@ -21,6 +21,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
 }
@@ -54,10 +55,27 @@ body::after {
   z-index: 0;
 }
 
+/* MAIN — responsywny padding-top */
 main {
   position: relative;
   z-index: 1;
-  padding-top: max(1rem, env(safe-area-inset-top));
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* Desktop — mały padding */
+@media (min-width: 768px) {
+  main {
+    padding-top: 0;
+  }
+}
+
+/* Mobile — stały odstęp od góry dla Safari URL bar + safe area dla notcha */
+@media (max-width: 767px) {
+  main {
+    padding-top: max(4rem, env(safe-area-inset-top));
+  }
 }
 
 /* Animacje */
