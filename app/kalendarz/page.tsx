@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { UsunButton } from './UsunButton';
 import {
   ArrowLeft,
   Plus,
@@ -14,6 +15,7 @@ import {
   ChevronRight,
   Users,
   Sparkles,
+  Pencil,
 } from 'lucide-react';
 
 export default async function Kalendarz() {
@@ -69,63 +71,79 @@ export default async function Kalendarz() {
           8
         )}`}
       >
-        <Link href={`/kalendarz/${t.id}/obecnosc`} className="flex items-center gap-4 p-4">
-          <div className="relative flex-shrink-0">
-            <div className={`absolute inset-0 bg-gradient-to-br ${info.bg} rounded-2xl blur-md opacity-50 group-hover:opacity-80 transition-opacity`} />
-            <div className={`relative w-12 h-12 rounded-2xl bg-gradient-to-br ${info.bg} flex items-center justify-center shadow-lg`}>
-              <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold text-white flex items-center gap-2 drop-shadow">
-              <span>
-                {new Date(t.data).toLocaleDateString('pl-PL', {
-                  weekday: 'short',
-                  day: '2-digit',
-                  month: '2-digit',
-                })}
-              </span>
-              <span className="text-white/30">·</span>
-              <span className="text-white/70 font-medium">{t.godzina}</span>
-            </div>
-
-            <div className="text-sm text-white/70 flex items-center gap-1.5 mt-0.5">
-              <span className="capitalize">{t.typ}</span>
-              {t.przeciwnik && (
-                <>
-                  <span className="text-white/30">•</span>
-                  <span>vs {t.przeciwnik}</span>
-                </>
-              )}
-              {t.miejsce && (
-                <>
-                  <span className="text-white/30">•</span>
-                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{t.miejsce}</span>
-                </>
-              )}
-            </div>
-
-            {s && s.total > 0 && (
-              <div className="text-xs mt-1 flex items-center gap-1.5">
-                <Users className={`w-3 h-3 ${frekwencjaKolor}`} />
-                <span className={`font-medium ${frekwencjaKolor}`}>
-                  {s.obecni}/{s.total} obecnych
-                </span>
+        <div className="flex items-center">
+          <Link
+            href={`/kalendarz/${t.id}/obecnosc`}
+            className="flex items-center gap-4 p-4 flex-1 min-w-0"
+          >
+            <div className="relative flex-shrink-0">
+              <div className={`absolute inset-0 bg-gradient-to-br ${info.bg} rounded-2xl blur-md opacity-50 group-hover:opacity-80 transition-opacity`} />
+              <div className={`relative w-12 h-12 rounded-2xl bg-gradient-to-br ${info.bg} flex items-center justify-center shadow-lg`}>
+                <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
               </div>
-            )}
-          </div>
+            </div>
 
-          <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
-        </Link>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-white flex items-center gap-2 drop-shadow">
+                <span>
+                  {new Date(t.data).toLocaleDateString('pl-PL', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: '2-digit',
+                  })}
+                </span>
+                <span className="text-white/30">·</span>
+                <span className="text-white/70 font-medium">{t.godzina}</span>
+              </div>
+
+              <div className="text-sm text-white/70 flex items-center gap-1.5 mt-0.5">
+                <span className="capitalize">{t.typ}</span>
+                {t.przeciwnik && (
+                  <>
+                    <span className="text-white/30">•</span>
+                    <span>vs {t.przeciwnik}</span>
+                  </>
+                )}
+                {t.miejsce && (
+                  <>
+                    <span className="text-white/30">•</span>
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{t.miejsce}</span>
+                  </>
+                )}
+              </div>
+
+              {s && s.total > 0 && (
+                <div className="text-xs mt-1 flex items-center gap-1.5">
+                  <Users className={`w-3 h-3 ${frekwencjaKolor}`} />
+                  <span className={`font-medium ${frekwencjaKolor}`}>
+                    {s.obecni}/{s.total} obecnych
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+          </Link>
+
+          {/* Przyciski akcji — poza Linkiem */}
+          <div className="flex gap-2 flex-shrink-0 mr-3">
+            <Link
+              href={`/kalendarz/${t.id}/edytuj`}
+              className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/60 hover:text-white transition-all"
+              title="Edytuj"
+            >
+              <Pencil className="w-4 h-4" />
+            </Link>
+            <UsunButton id={t.id} />
+          </div>
+        </div>
       </li>
     );
   };
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* TŁO MOBILE */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.png"
@@ -138,8 +156,6 @@ export default async function Kalendarz() {
           aria-hidden
         />
       </div>
-
-      {/* TŁO DESKTOP */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.png"
@@ -152,11 +168,8 @@ export default async function Kalendarz() {
           aria-hidden
         />
       </div>
-
-      {/* Przygaszenie - jak w dashboard */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
           <header className="mb-8 animate-fadeIn">
@@ -170,8 +183,8 @@ export default async function Kalendarz() {
                 </Link>
                 <div>
                   <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
-  Plan
-</h1>
+                    Plan
+                  </h1>
                   <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
                     {nadchodzace.length} nadchodzących · {minione.length} minionych
                   </p>
@@ -241,7 +254,7 @@ function EmptyState() {
         <div className="w-20 h-20 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-5">
           <CalendarIcon className="w-10 h-10 text-blue-400" strokeWidth={1.5} />
         </div>
-        <h3 className="font-bold text-xl mb-2 text-white drop-shadow">Pusty kalendarz</h3>
+        <h3 className="font-bold text-xl mb-2 text-white drop-shadow">Pusty plan</h3>
         <p className="text-sm text-white/70 mb-6 max-w-xs mx-auto">
           Dodaj pierwszy trening albo mecz, żeby planować tydzień drużyny.
         </p>
