@@ -25,15 +25,13 @@ export const metadata: Metadata = {
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-    ],
+    apple: [{ url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#22c55e',
+  themeColor: '#0a0e1a',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -54,7 +52,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl" suppressHydrationWarning>
-      <body className={`${geistSans.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} antialiased`}
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
         {children}
         <BottomNav />
       </body>

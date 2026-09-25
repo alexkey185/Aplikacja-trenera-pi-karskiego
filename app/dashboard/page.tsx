@@ -88,6 +88,7 @@ export default async function Dashboard({
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+      {/* TŁO MOBILE */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.png"
@@ -100,6 +101,8 @@ export default async function Dashboard({
           aria-hidden
         />
       </div>
+
+      {/* TŁO DESKTOP */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.png"
@@ -112,8 +115,11 @@ export default async function Dashboard({
           aria-hidden
         />
       </div>
+
+      {/* Przygaszenie */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
+      {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
           <header className="mb-6 animate-fadeIn">
@@ -127,7 +133,7 @@ export default async function Dashboard({
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
-                    Talent
+                    Kalendarz
                   </h1>
                   <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
                     Plan miesiąca
@@ -137,6 +143,7 @@ export default async function Dashboard({
               <LogoutButton />
             </div>
 
+            {/* Pasek miesiąca */}
             <div className="bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center justify-between shadow-xl shadow-black/50">
               <Link
                 href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
@@ -186,10 +193,18 @@ export default async function Dashboard({
                 const czyDzis = dateStr === dzisStr;
                 const maEventy = eventy.length > 0;
 
+                // Jeśli dokładnie 1 wydarzenie — klik prowadzi do obecności
+                // Jeśli 2+ — klik prowadzi do listy dnia
+                // Jeśli 0 — klik prowadzi do pustego dnia
+                const href =
+                  eventy.length === 1
+                    ? `/kalendarz/${eventy[0].id}/obecnosc`
+                    : `/dashboard/${dateStr}`;
+
                 return (
                   <Link
                     key={i}
-                    href={`/dashboard/${dateStr}`}
+                    href={href}
                     className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                       czyDzis
                         ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/50 border-2 border-green-300'
@@ -224,6 +239,7 @@ export default async function Dashboard({
               })}
             </div>
 
+            {/* Legenda */}
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
@@ -244,6 +260,7 @@ export default async function Dashboard({
             </div>
           </div>
 
+          {/* SZYBKIE AKCJE */}
           <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
             <Link
               href="/kalendarz/nowy"
