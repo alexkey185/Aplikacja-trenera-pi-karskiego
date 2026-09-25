@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { LogoutButton } from '@/components/LogoutButton';
+import { UserAvatar } from '@/components/UserAvatar';
 import {
   Users,
   Calendar as CalendarIcon,
@@ -140,7 +140,7 @@ export default async function Dashboard({
                   </p>
                 </div>
               </div>
-              <LogoutButton />
+              <UserAvatar />
             </div>
 
             {/* Pasek miesiąca */}
@@ -261,29 +261,30 @@ export default async function Dashboard({
           </div>
 
           {/* SZYBKIE AKCJE */}
-          <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
-            <Link
-              href="/kalendarz/nowy"
-              className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
-            >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              Dodaj wydarzenie
-            </Link>
-            <Link
-              href="/kadra"
-              className="group flex items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-            >
-              <Users className="w-4 h-4 text-blue-300" />
-              Kadra
-            </Link>
-            <Link
-              href="/statystyki"
-              className="group flex items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-            >
-              <BarChart3 className="w-4 h-4 text-purple-300" />
-              Statystyki
-            </Link>
-          </div>
+   <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
+  <Link
+    href="/kalendarz/nowy"
+    className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+  >
+    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+    Dodaj wydarzenie
+  </Link>
+  {/* Poniższe przyciski tylko na desktopie (na mobile są w dolnej nawigacji) */}
+  <Link
+    href="/kadra"
+    className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+  >
+    <Users className="w-4 h-4 text-blue-300" />
+    Kadra
+  </Link>
+  <Link
+    href="/statystyki"
+    className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+  >
+    <BarChart3 className="w-4 h-4 text-purple-300" />
+    Statystyki
+  </Link>
+</div>
         </div>
       </div>
     </main>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Calendar, BarChart3, LayoutDashboard } from 'lucide-react';
+import { Users, Calendar, BarChart3, LayoutDashboard, User } from 'lucide-react';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -11,12 +11,13 @@ export function BottomNav() {
     return null;
   }
 
- const items = [
-  { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
-  { href: '/kadra', label: 'Kadra', icon: Users },
-  { href: '/kalendarz', label: 'Plan', icon: Calendar },
-  { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
-];
+  const items = [
+    { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
+    { href: '/kadra', label: 'Kadra', icon: Users },
+    { href: '/kalendarz', label: 'Plan', icon: Calendar },
+    { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
+    { href: '/profil', label: 'Profil', icon: User },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">

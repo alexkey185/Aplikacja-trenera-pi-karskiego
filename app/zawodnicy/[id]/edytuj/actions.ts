@@ -36,8 +36,9 @@ export async function aktualizujZawodnika(id: number, formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidatePath('/');
-  redirect('/');
+  revalidatePath('/kadra');
+  revalidatePath(`/zawodnicy/${id}`);
+  redirect(`/zawodnicy/${id}`);
 }
 
 export async function usunZawodnika(formData: FormData) {
@@ -49,13 +50,17 @@ export async function usunZawodnika(formData: FormData) {
   }
 
   const supabase = await createClient();
+
+  // Najpierw usuń powiązane obecności
+  await supabase.from('obecnosc').delete().eq('zawodnik_id', id);
+
+  // Potem usuń samego zawodnika
   const { error } = await supabase.from('zawodnicy').delete().eq('id', id);
 
   if (error) {
     throw new Error(error.message);
   }
 
-    revalidatePath('/');
-revalidatePath('/kadra');
-redirect('/kadra');
+  revalidatePath('/kadra');
+  redirect('/kadra');
 }

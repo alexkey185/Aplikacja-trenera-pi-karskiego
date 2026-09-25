@@ -2,7 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { LogoutButton } from '@/components/LogoutButton';
+import { UserAvatar } from '@/components/UserAvatar';
+import { UsunButton } from './UsunButton';
 import {
   Users,
   Calendar,
@@ -95,7 +96,7 @@ export default async function Kadra() {
                   </p>
                 </div>
               </div>
-              <LogoutButton />
+              <UserAvatar />
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -132,81 +133,88 @@ export default async function Kadra() {
           {liczba === 0 ? (
             <EmptyState />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 list-none p-0 m-0">
               {zawodnicy!.map((z: any, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
                   s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : null;
 
                 return (
-                  <Link
+                  <li
                     key={z.id}
-                    href={`/zawodnicy/${z.id}`}
-                    className={`group relative bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl p-3 transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 animate-fadeIn stagger-${Math.min(
+                    className={`group relative bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 animate-fadeIn stagger-${Math.min(
                       i + 1,
                       8
                     )}`}
                   >
-                    <div className="absolute top-3 right-3">
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full ${statusKolor(z.id)} shadow-lg ${
-                          statusKolor(z.id) === 'bg-green-500'
-                            ? 'shadow-green-500/50'
-                            : statusKolor(z.id) === 'bg-yellow-500'
-                            ? 'shadow-yellow-500/50'
-                            : statusKolor(z.id) === 'bg-red-500'
-                            ? 'shadow-red-500/50'
-                            : ''
-                        }`}
-                      />
-                    </div>
+                    <div className="flex items-center">
+                      <Link
+                        href={`/zawodnicy/${z.id}`}
+                        className="flex items-center gap-3 p-3 flex-1 min-w-0 relative"
+                      >
+                        <div className="absolute top-3 right-3">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${statusKolor(z.id)} shadow-lg ${
+                              statusKolor(z.id) === 'bg-green-500'
+                                ? 'shadow-green-500/50'
+                                : statusKolor(z.id) === 'bg-yellow-500'
+                                ? 'shadow-yellow-500/50'
+                                : statusKolor(z.id) === 'bg-red-500'
+                                ? 'shadow-red-500/50'
+                                : ''
+                            }`}
+                          />
+                        </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex-shrink-0">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-base shadow-inner">
-                          {inicjaly(z.imie, z.nazwisko)}
-                        </div>
-                        {z.numer != null && (
-                          <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-slate-950 border border-amber-400/40 text-amber-400 text-[10px] font-bold leading-none shadow-lg">
-                            #{z.numer}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-base shadow-inner">
+                            {inicjaly(z.imie, z.nazwisko)}
                           </div>
-                        )}
-                      </div>
+                          {z.numer != null && (
+                            <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-slate-950 border border-amber-400/40 text-amber-400 text-[10px] font-bold leading-none shadow-lg">
+                              #{z.numer}
+                            </div>
+                          )}
+                        </div>
 
-                      <div className="flex-1 min-w-0 pr-4">
-                        <div className="font-bold text-white text-sm truncate uppercase tracking-wide drop-shadow">
-                          {z.imie} {z.nazwisko}
-                        </div>
-                        <div className="text-[10px] text-white/50 uppercase tracking-widest font-medium truncate mt-0.5">
-                          {z.pozycja ?? 'Brak pozycji'}
-                        </div>
-                        {procent !== null && (
-                          <div className="text-[10px] text-white/40 mt-0.5">
-                            Frekwencja:{' '}
-                            <span
-                              className={
-                                procent >= 80
-                                  ? 'text-green-400 font-semibold'
-                                  : procent >= 50
-                                  ? 'text-yellow-400 font-semibold'
-                                  : 'text-red-400 font-semibold'
-                              }
-                            >
-                              {procent}%
-                            </span>
+                        <div className="flex-1 min-w-0 pr-8">
+                          <div className="font-bold text-white text-sm truncate uppercase tracking-wide drop-shadow">
+                            {z.imie} {z.nazwisko}
                           </div>
-                        )}
+                          <div className="text-[10px] text-white/50 uppercase tracking-widest font-medium truncate mt-0.5">
+                            {z.pozycja ?? 'Brak pozycji'}
+                          </div>
+                          {procent !== null && (
+                            <div className="text-[10px] text-white/40 mt-0.5">
+                              Frekwencja:{' '}
+                              <span
+                                className={
+                                  procent >= 80
+                                    ? 'text-green-400 font-semibold'
+                                    : procent >= 50
+                                    ? 'text-yellow-400 font-semibold'
+                                    : 'text-red-400 font-semibold'
+                                }
+                              >
+                                {procent}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+
+                      <div className="flex-shrink-0 mr-3">
+                        <UsunButton id={z.id} />
                       </div>
                     </div>
-                  </Link>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </div>
       </div>
 
-      {/* FAB — pływający przycisk Dodaj w prawym dolnym rogu */}
       <Link
         href="/zawodnicy/nowy"
         className="group fixed bottom-24 right-5 md:bottom-8 md:right-8 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 flex items-center justify-center text-white shadow-2xl shadow-green-500/50 hover:shadow-green-400/70 transition-all hover:scale-110 active:scale-95 animate-glow"

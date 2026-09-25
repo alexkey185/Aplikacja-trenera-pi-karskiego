@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { UserAvatar } from '@/components/UserAvatar';
 import {
   ArrowLeft,
   BarChart3,
@@ -31,11 +32,8 @@ export default async function Statystyki() {
   const totalTreningi = treningi?.length ?? 0;
   const totalZawodnikow = zawodnicy?.length ?? 0;
 
-  // Ranking per zawodnik
   const ranking = (zawodnicy ?? []).map((z) => {
     const wpisy = (obecnosci ?? []).filter((o) => o.zawodnik_id === z.id);
-    // Tylko 2 statusy: obecny / nieobecny
-    // Mapujemy stare: spozniony → obecny, usprawiedliwiony → nieobecny
     const obecnosci_count = wpisy.filter(
       (w) => w.status === 'obecny' || w.status === 'spozniony'
     ).length;
@@ -81,7 +79,6 @@ export default async function Statystyki() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* TŁO MOBILE */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.png"
@@ -94,8 +91,6 @@ export default async function Statystyki() {
           aria-hidden
         />
       </div>
-
-      {/* TŁO DESKTOP */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.png"
@@ -108,28 +103,25 @@ export default async function Statystyki() {
           aria-hidden
         />
       </div>
-
-      {/* Przygaszenie */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
           <header className="mb-6 flex items-center gap-3 animate-fadeIn">
             <Link
-              href="/kadra"
-              className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="relative">
+  href="/dashboard"
+  className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
+>
+  <ArrowLeft className="w-5 h-5" />
+</Link>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-700 rounded-2xl blur-lg opacity-60" />
                 <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-400 via-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
                   <BarChart3 className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">
                   Statystyki
                 </h1>
@@ -138,9 +130,9 @@ export default async function Statystyki() {
                 </p>
               </div>
             </div>
+            <UserAvatar />
           </header>
 
-          {/* Główne wskaźniki */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <BigStat
               icon={Activity}
@@ -176,7 +168,6 @@ export default async function Statystyki() {
             />
           </div>
 
-          {/* Info o treningach */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-4 animate-fadeIn flex items-center gap-3 shadow-xl shadow-black/40">
             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
               <Activity className="w-5 h-5 text-white/60" strokeWidth={2} />
@@ -187,7 +178,6 @@ export default async function Statystyki() {
             </div>
           </div>
 
-          {/* TOP 5 */}
           {top5.length > 0 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
@@ -204,7 +194,6 @@ export default async function Statystyki() {
             </div>
           )}
 
-          {/* Do poprawy */}
           {najgorsi.length > 0 && najgorsi[0].procent < 70 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
@@ -221,7 +210,6 @@ export default async function Statystyki() {
             </div>
           )}
 
-          {/* Pełny ranking */}
           {rankingSort.length > 0 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
