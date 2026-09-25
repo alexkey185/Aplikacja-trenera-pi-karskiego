@@ -14,7 +14,7 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect('/kadra');
+    redirect('/dashboard');
   }
 
   return (

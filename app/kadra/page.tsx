@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Sparkles,
   BarChart3,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export default async function Kadra() {
@@ -81,12 +82,12 @@ export default async function Kadra() {
 
             <div className="flex gap-2 flex-wrap">
               <Link
-                href="/kalendarz"
-                className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
-              >
-                <Calendar className="w-4 h-4 text-blue-300 group-hover:scale-110 transition-transform" />
-                Kalendarz
-              </Link>
+    href="/dashboard"
+    className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
+  >
+    <LayoutDashboard className="w-4 h-4 text-green-300 group-hover:scale-110 transition-transform" />
+    Plan
+  </Link>
               <Link
                 href="/statystyki"
                 className="group flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all hover:-translate-y-0.5"
