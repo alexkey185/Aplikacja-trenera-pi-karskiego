@@ -187,3 +187,8 @@ button:active:not(:disabled), a:active {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+/* Dynamiczna wysokość viewportu — uwzględnia pasek URL Safari */
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
