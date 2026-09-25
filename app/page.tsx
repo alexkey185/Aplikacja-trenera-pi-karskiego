@@ -12,12 +12,11 @@ export default async function StartScreen() {
   } = await supabase.auth.getUser();
 
   const zalogowany = !!user;
-  const href = zalogowany ? '/kadra' : '/auth/login';
+  const href = zalogowany ? '/dashboard' : '/auth/login';
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* TŁO MOBILE */}
-      <div className="absolute inset-0 z-0 md:hidden">
+    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950 pt-0">
+      <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-hero-mobile.png"
           alt="Talent"
@@ -26,14 +25,10 @@ export default async function StartScreen() {
           quality={100}
           sizes="100vw"
           className="object-cover object-center"
-          style={{
-            filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
-          }}
+          style={{ filter: 'contrast(1.08) saturate(1.12) brightness(1.02)' }}
         />
       </div>
-
-      {/* TŁO DESKTOP */}
-      <div className="absolute inset-0 z-0 hidden md:block">
+      <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-hero.png"
           alt="Talent"
@@ -42,13 +37,10 @@ export default async function StartScreen() {
           quality={100}
           sizes="100vw"
           className="object-cover object-center"
-          style={{
-            filter: 'contrast(1.08) saturate(1.12) brightness(1.02)',
-          }}
+          style={{ filter: 'contrast(1.08) saturate(1.12) brightness(1.02)' }}
         />
       </div>
 
-      {/* TREŚĆ — przycisk na dole */}
       <div className="relative z-20 min-h-screen flex flex-col items-center justify-end px-6 pb-8">
         <Link
           href={href}
