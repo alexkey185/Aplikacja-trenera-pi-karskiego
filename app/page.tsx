@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { LogIn, ArrowRight } from 'lucide-react';
 
 export default async function StartScreen() {
-  noStore();
+  
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,8 +21,8 @@ export default async function StartScreen() {
           src="/talent-hero-mobile.png"
           alt="Talent"
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           style={{ filter: 'contrast(1.08) saturate(1.12) brightness(1.02)' }}
@@ -33,8 +33,8 @@ export default async function StartScreen() {
           src="/talent-hero.png"
           alt="Talent"
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           style={{ filter: 'contrast(1.08) saturate(1.12) brightness(1.02)' }}

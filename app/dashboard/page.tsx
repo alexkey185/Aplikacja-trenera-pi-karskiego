@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
@@ -17,7 +16,6 @@ export default async function Dashboard({
 }: {
   searchParams: Promise<{ m?: string }>;
 }) {
-  noStore();
   const params = await searchParams;
 
   const dzis = new Date();
@@ -37,7 +35,7 @@ export default async function Dashboard({
   const supabase = await createClient();
   const { data: treningi } = await supabase
     .from('treningi')
-    .select('*')
+    .select('id, data, godzina, typ, przeciwnik, miejsce')
     .order('data', { ascending: true });
 
   const eventMap = new Map<string, any[]>();
@@ -88,38 +86,30 @@ export default async function Dashboard({
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* TŁO MOBILE */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
         />
       </div>
-
-      {/* TŁO DESKTOP */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
         />
       </div>
-
-      {/* Przygaszenie */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      {/* TREŚĆ */}
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
           <header className="mb-6 animate-fadeIn">
@@ -143,7 +133,6 @@ export default async function Dashboard({
               <UserAvatar />
             </div>
 
-            {/* Pasek miesiąca */}
             <div className="bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center justify-between shadow-xl shadow-black/50">
               <Link
                 href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
@@ -169,7 +158,6 @@ export default async function Dashboard({
             </div>
           </header>
 
-          {/* KALENDARZ — dni klikalne */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="grid grid-cols-7 gap-1 mb-2">
               {dniTygodnia.map((d) => (
@@ -193,9 +181,6 @@ export default async function Dashboard({
                 const czyDzis = dateStr === dzisStr;
                 const maEventy = eventy.length > 0;
 
-                // Jeśli dokładnie 1 wydarzenie — klik prowadzi do obecności
-                // Jeśli 2+ — klik prowadzi do listy dnia
-                // Jeśli 0 — klik prowadzi do pustego dnia
                 const href =
                   eventy.length === 1
                     ? `/kalendarz/${eventy[0].id}/obecnosc`
@@ -239,7 +224,6 @@ export default async function Dashboard({
               })}
             </div>
 
-            {/* Legenda */}
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
@@ -260,31 +244,29 @@ export default async function Dashboard({
             </div>
           </div>
 
-          {/* SZYBKIE AKCJE */}
-   <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
-  <Link
-    href="/kalendarz/nowy"
-    className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
-  >
-    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-    Dodaj wydarzenie
-  </Link>
-  {/* Poniższe przyciski tylko na desktopie (na mobile są w dolnej nawigacji) */}
-  <Link
-    href="/kadra"
-    className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-  >
-    <Users className="w-4 h-4 text-blue-300" />
-    Kadra
-  </Link>
-  <Link
-    href="/statystyki"
-    className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-  >
-    <BarChart3 className="w-4 h-4 text-purple-300" />
-    Statystyki
-  </Link>
-</div>
+          <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
+            <Link
+              href="/kalendarz/nowy"
+              className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+              Dodaj wydarzenie
+            </Link>
+            <Link
+              href="/kadra"
+              className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+            >
+              <Users className="w-4 h-4 text-blue-300" />
+              Kadra
+            </Link>
+            <Link
+              href="/statystyki"
+              className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
+            >
+              <BarChart3 className="w-4 h-4 text-purple-300" />
+              Statystyki
+            </Link>
+          </div>
         </div>
       </div>
     </main>

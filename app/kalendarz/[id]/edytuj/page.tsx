@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { aktualizujTrening } from './actions';
 import {
@@ -20,7 +20,7 @@ export default async function EdytujTrening({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  noStore();
+  
   const { id } = await params;
   const idNum = parseInt(id, 10);
   if (isNaN(idNum)) notFound();
@@ -40,8 +40,8 @@ export default async function EdytujTrening({
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -52,8 +52,8 @@ export default async function EdytujTrening({
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

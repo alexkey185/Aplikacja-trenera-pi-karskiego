@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { LogoutButton } from '@/components/LogoutButton';
 import {
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default async function Profil() {
-  noStore();
+  
   const supabase = await createClient();
   const {
     data: { user },
@@ -49,8 +49,8 @@ export default async function Profil() {
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -61,8 +61,8 @@ export default async function Profil() {
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

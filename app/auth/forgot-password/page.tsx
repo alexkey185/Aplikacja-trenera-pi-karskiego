@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { ForgotPasswordForm } from '@/components/forgot-password-form';
 import { ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  noStore();
+  
 
   return (
     <main className="relative w-full h-dvh overflow-hidden bg-slate-950 pt-0">
@@ -14,8 +14,8 @@ export default function ForgotPasswordPage() {
           src="/talent-hero-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -26,8 +26,8 @@ export default function ForgotPasswordPage() {
           src="/talent-hero.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

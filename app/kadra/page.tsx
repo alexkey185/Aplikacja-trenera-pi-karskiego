@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import { UsunButton } from './UsunButton';
@@ -13,13 +13,13 @@ import {
 } from 'lucide-react';
 
 export default async function Kadra() {
-  noStore();
+  ;
   const supabase = await createClient();
 
-  const { data: zawodnicy, error } = await supabase
-    .from('zawodnicy')
-    .select('*')
-    .order('nazwisko', { ascending: true });
+const { data: zawodnicy, error } = await supabase
+  .from('zawodnicy')
+  .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+  .order('nazwisko', { ascending: true });
 
   const { data: obecnosci } = await supabase
     .from('obecnosc')
@@ -46,8 +46,8 @@ export default async function Kadra() {
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -58,8 +58,8 @@ export default async function Kadra() {
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

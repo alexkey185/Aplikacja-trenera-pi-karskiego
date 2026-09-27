@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import {
   ArrowLeft,
@@ -21,7 +21,7 @@ export default async function DzienSzczegoly({
 }: {
   params: Promise<{ data: string }>;
 }) {
-  noStore();
+  
   const { data } = await params;
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) {
@@ -83,8 +83,8 @@ export default async function DzienSzczegoly({
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -95,8 +95,8 @@ export default async function DzienSzczegoly({
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

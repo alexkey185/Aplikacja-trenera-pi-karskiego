@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { ObecnoscForm } from './ObecnoscForm';
 import {
@@ -12,12 +11,13 @@ import {
   MapPin,
 } from 'lucide-react';
 
+
+
 export default async function Obecnosc({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  noStore();
   const { id } = await params;
   const idNum = parseInt(id, 10);
   if (isNaN(idNum)) notFound();
@@ -32,7 +32,7 @@ export default async function Obecnosc({
 
   const { data: zawodnicy } = await supabase
     .from('zawodnicy')
-    .select('*')
+    .select('id, imie, nazwisko, numer, pozycja')
     .order('nazwisko', { ascending: true });
 
   const { data: obecnosc } = await supabase
@@ -54,8 +54,7 @@ export default async function Obecnosc({
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -66,8 +65,7 @@ export default async function Obecnosc({
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

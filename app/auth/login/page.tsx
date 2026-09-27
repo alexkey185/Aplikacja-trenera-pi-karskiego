@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { LoginForm } from '@/components/login-form';
 import { ArrowLeft } from 'lucide-react';
 
 export default async function LoginPage() {
-  noStore();
+  
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,8 +24,8 @@ export default async function LoginPage() {
           src="/talent-hero-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -36,8 +36,8 @@ export default async function LoginPage() {
           src="/talent-hero.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

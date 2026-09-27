@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
@@ -15,19 +15,21 @@ import {
 } from 'lucide-react';
 
 export default async function Statystyki() {
-  noStore();
+  
   const supabase = await createClient();
 
   const { data: zawodnicy } = await supabase
-    .from('zawodnicy')
-    .select('*')
-    .order('nazwisko', { ascending: true });
+  .from('zawodnicy')
+  .select('id, imie, nazwisko, numer, pozycja')
+  .order('nazwisko', { ascending: true });
 
-  const { data: treningi } = await supabase.from('treningi').select('*');
+const { data: treningi } = await supabase
+  .from('treningi')
+  .select('id, data, typ');
 
-  const { data: obecnosci } = await supabase
-    .from('obecnosc')
-    .select('trening_id, zawodnik_id, status');
+const { data: obecnosci } = await supabase
+  .from('obecnosc')
+  .select('trening_id, zawodnik_id, status');
 
   const totalTreningi = treningi?.length ?? 0;
   const totalZawodnikow = zawodnicy?.length ?? 0;
@@ -84,8 +86,8 @@ export default async function Statystyki() {
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -96,8 +98,8 @@ export default async function Statystyki() {
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden

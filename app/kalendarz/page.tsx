@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { UsunButton } from './UsunButton';
 import {
@@ -19,18 +18,19 @@ import {
   X,
 } from 'lucide-react';
 
+
+
 export default async function Kalendarz({
   searchParams,
 }: {
   searchParams: Promise<{ m?: string }>;
 }) {
-  noStore();
   const params = await searchParams;
   const supabase = await createClient();
 
   const { data: treningi, error } = await supabase
     .from('treningi')
-    .select('*')
+    .select('id, data, godzina, typ, przeciwnik, miejsce')
     .order('data', { ascending: true });
 
   const { data: obecnosci } = await supabase
@@ -49,9 +49,8 @@ export default async function Kalendarz({
   const dzis = teraz.toISOString().split('T')[0];
   const jutro = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-  // Wybrany miesiąc (z URL albo bieżący)
   let rok = teraz.getFullYear();
-  let miesiac = teraz.getMonth() + 1; // 1-12
+  let miesiac = teraz.getMonth() + 1;
 
   if (params.m) {
     const parts = params.m.split('-');
@@ -65,7 +64,6 @@ export default async function Kalendarz({
 
   const rokMiesiac = `${rok}-${String(miesiac).padStart(2, '0')}`;
 
-  // Nawigacja prev/next
   const prevM = miesiac === 1 ? 12 : miesiac - 1;
   const prevR = miesiac === 1 ? rok - 1 : rok;
   const nextM = miesiac === 12 ? 1 : miesiac + 1;
@@ -104,7 +102,6 @@ export default async function Kalendarz({
     .filter((t) => czyMinelo(t))
     .sort((a, b) => b.data.localeCompare(a.data));
 
-  // Statystyki wybranego miesiąca
   const wTymMiesiacu = (treningi ?? []).filter((t) =>
     t.data.startsWith(rokMiesiac)
   );
@@ -312,8 +309,7 @@ export default async function Kalendarz({
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -324,8 +320,7 @@ export default async function Kalendarz({
           src="/talent-bg.png"
           alt=""
           fill
-          priority
-          quality={100}
+          quality={75}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -362,9 +357,7 @@ export default async function Kalendarz({
             </Link>
           </header>
 
-          {/* STATYSTYKI MIESIĄCA + NAWIGACJA */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-6 animate-fadeIn shadow-xl shadow-black/40">
-            {/* Nawigacja miesięcy */}
             <div className="flex items-center justify-between mb-4">
               <Link
                 href={`/kalendarz?m=${prevR}-${String(prevM).padStart(2, '0')}`}
@@ -392,7 +385,6 @@ export default async function Kalendarz({
               </Link>
             </div>
 
-            {/* Kafelki */}
             {statsMiesiac.total > 0 ? (
               <div className="grid grid-cols-4 gap-2">
                 <StatBox
