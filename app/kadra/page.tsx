@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import { UsunButton } from './UsunButton';
@@ -13,13 +12,12 @@ import {
 } from 'lucide-react';
 
 export default async function Kadra() {
-  ;
   const supabase = await createClient();
 
-const { data: zawodnicy, error } = await supabase
-  .from('zawodnicy')
-  .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
-  .order('nazwisko', { ascending: true });
+  const { data: zawodnicy, error } = await supabase
+    .from('zawodnicy')
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+    .order('nazwisko', { ascending: true });
 
   const { data: obecnosci } = await supabase
     .from('obecnosc')
@@ -46,7 +44,6 @@ const { data: zawodnicy, error } = await supabase
           src="/talent-bg-mobile.png"
           alt=""
           fill
-          
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -58,7 +55,6 @@ const { data: zawodnicy, error } = await supabase
           src="/talent-bg.png"
           alt=""
           fill
-          
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -67,8 +63,8 @@ const { data: zawodnicy, error } = await supabase
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      <div className="relative z-20 p-4 md:p-6 pb-28">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">
+        <div className="max-w-5xl mx-auto">
           <header className="mb-6 animate-fadeIn">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -124,7 +120,7 @@ const { data: zawodnicy, error } = await supabase
           {liczba === 0 ? (
             <EmptyState />
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 list-none p-0 m-0">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 list-none p-0 m-0">
               {zawodnicy!.map((z: any, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
@@ -180,7 +176,22 @@ const { data: zawodnicy, error } = await supabase
                         </div>
                       </Link>
 
-                      <div className="flex-shrink-0 mr-3">
+                      {/* Akcje — widoczne tylko na desktopie przy hover */}
+                      <div className="hidden md:flex flex-col gap-1 flex-shrink-0 mr-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Link
+                          href={`/zawodnicy/${z.id}/edytuj`}
+                          className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
+                          title="Edytuj"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                          </svg>
+                        </Link>
+                        <UsunButton id={z.id} compact />
+                      </div>
+
+                      {/* Na mobile — tylko usuń, zawsze widoczny */}
+                      <div className="md:hidden flex-shrink-0 mr-3">
                         <UsunButton id={z.id} />
                       </div>
                     </div>
