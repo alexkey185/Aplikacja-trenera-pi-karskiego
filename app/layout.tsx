@@ -12,8 +12,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Talent — Aplikacja Trenera',
-  description: 'Zarządzaj drużyną, treningami i frekwencją',
+  title: 'Talent',
+  description: 'Aplikacja trenera',
   applicationName: 'Talent',
   appleWebApp: {
     capable: true,
@@ -22,13 +22,6 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
-  },
-  icons: {
-    icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
 };
@@ -62,10 +55,9 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={supabaseUrl} />
           </>
         )}
-        <link rel="preload" as="image" href="/icon-192.png" />
       </head>
       <body className={`${geistSans.variable} antialiased`}>
-        {children}
+        <div className="md:pl-60">{children}</div>
         <BottomNav />
         <ServiceWorkerRegister />
       </body>
