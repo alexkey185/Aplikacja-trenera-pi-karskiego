@@ -44,7 +44,6 @@ export function ObecnoscForm({
     const init: Record<number, string> = {};
     zawodnicy.forEach((z) => {
       const stary = initialStatus[z.id];
-      // Domyślnie: obecny. Stare "usprawiedliwiony" → nieobecny.
       let nowy: string = 'obecny';
       if (stary === 'nieobecny' || stary === 'usprawiedliwiony') {
         nowy = 'nieobecny';
@@ -112,8 +111,8 @@ export function ObecnoscForm({
         </div>
       </div>
 
-      {/* Lista zawodników */}
-      <ul className="space-y-2">
+      {/* Lista zawodników — pb-32 dodaje odstęp na dole, żeby przycisk nie przykrywał ostatniej karty */}
+      <ul className="space-y-2 pb-32">
         {zawodnicy.map((z, i) => {
           const aktualny = statuses[z.id];
           const opcjaAktywna = opcje.find((o) => o.value === aktualny);
@@ -190,7 +189,7 @@ export function ObecnoscForm({
         />
       ))}
 
-      {/* Przycisk zapisu */}
+      {/* Przycisk zapisu — sticky na dole */}
       <div className="sticky bottom-24 z-10 pt-2">
         <button
           type="submit"
