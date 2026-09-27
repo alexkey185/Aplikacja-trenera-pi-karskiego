@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import { BottomNav } from '@/components/BottomNav';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
 
 const defaultUrl = process.env.VERCEL_URL
@@ -55,20 +56,18 @@ export default function RootLayout({
   return (
     <html lang="pl" suppressHydrationWarning>
       <head>
-        {/* Preconnect do Supabase — szybsze pierwsze zapytanie */}
         {supabaseUrl && (
           <>
             <link rel="preconnect" href={supabaseUrl} />
             <link rel="dns-prefetch" href={supabaseUrl} />
           </>
         )}
-
-        {/* Preload favicon + ikony */}
         <link rel="preload" as="image" href="/icon-192.png" />
       </head>
       <body className={`${geistSans.variable} antialiased`}>
         {children}
         <BottomNav />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
