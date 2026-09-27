@@ -9,6 +9,8 @@ import {
   ChevronRight,
   BarChart3,
   Plus,
+  Clock,
+  MapPin,
 } from 'lucide-react';
 
 export default async function Dashboard({
@@ -37,6 +39,14 @@ export default async function Dashboard({
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce')
     .order('data', { ascending: true });
+
+  const { data: zawodnicy } = await supabase
+    .from('zawodnicy')
+    .select('id');
+
+  const { data: obecnosci } = await supabase
+    .from('obecnosc')
+    .select('trening_id, status');
 
   const eventMap = new Map<string, any[]>();
   (treningi ?? []).forEach((t) => {
@@ -70,11 +80,36 @@ export default async function Dashboard({
 
   const dzisStr = `${dzis.getFullYear()}-${String(dzis.getMonth() + 1).padStart(2, '0')}-${String(dzis.getDate()).padStart(2, '0')}`;
 
+  const teraz = new Date();
+  const czyMinelo = (t: any) => {
+    const [g] = (t.godzina || '00:00').split(':');
+    const dt = new Date(`${t.data}T${String(g).padStart(2, '0')}:00:00`);
+    return dt < teraz;
+  };
+
+  const nadchodzace = (treningi ?? [])
+    .filter((t) => !czyMinelo(t))
+    .sort((a, b) => {
+      const cmp = a.data.localeCompare(b.data);
+      if (cmp !== 0) return cmp;
+      return (a.godzina || '').localeCompare(b.godzina || '');
+    });
+
+  const dzisiejsze = (treningi ?? []).filter((t) => t.data === dzisStr);
+  const najblizsze = nadchodzace.filter((t) => t.data !== dzisStr).slice(0, 3);
+
   const typKolor = (typ: string) => {
     if (typ === 'mecz') return 'bg-red-500';
     if (typ === 'sparing') return 'bg-orange-500';
     if (typ === 'turniej') return 'bg-purple-500';
     return 'bg-blue-500';
+  };
+
+  const typBorder = (typ: string) => {
+    if (typ === 'mecz') return 'border-l-red-500';
+    if (typ === 'sparing') return 'border-l-orange-500';
+    if (typ === 'turniej') return 'border-l-purple-500';
+    return 'border-l-blue-500';
   };
 
   const poczatek = `${rok}-${String(miesiac + 1).padStart(2, '0')}-01`;
@@ -83,6 +118,14 @@ export default async function Dashboard({
   const wydarzeniaWMiesiacu = (treningi ?? []).filter(
     (t) => t.data >= poczatek && t.data <= koniec
   );
+
+  const totalObecnosci = (obecnosci ?? []).filter(
+    (o) => o.status === 'obecny' || o.status === 'spozniony'
+  ).length;
+  const totalWpisow = (obecnosci ?? []).length;
+  const srednia = totalWpisow > 0 ? Math.round((totalObecnosci / totalWpisow) * 100) : 0;
+
+  const liczbaZawodnikow = zawodnicy?.length ?? 0;
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
@@ -110,8 +153,8 @@ export default async function Dashboard({
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      <div className="relative z-20 p-4 md:p-6 pb-28">
-        <div className="max-w-2xl mx-auto">
+      <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">
+        <div className="max-w-6xl mx-auto">
           <header className="mb-6 animate-fadeIn">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -132,140 +175,276 @@ export default async function Dashboard({
               </div>
               <UserAvatar />
             </div>
-
-            <div className="bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center justify-between shadow-xl shadow-black/50">
-              <Link
-                href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
-                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Link>
-              <div className="text-center">
-                <div className="font-bold text-white text-lg">
-                  {nazwyMiesiecy[miesiac]} {rok}
-                </div>
-                <div className="text-xs text-white/60">
-                  {wydarzeniaWMiesiacu.length}{' '}
-                  {wydarzeniaWMiesiacu.length === 1 ? 'wydarzenie' : 'wydarzeń'}
-                </div>
-              </div>
-              <Link
-                href={`/dashboard?m=${nextR}-${String(nextM).padStart(2, '0')}`}
-                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Link>
-            </div>
           </header>
 
-          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {dniTygodnia.map((d) => (
-                <div
-                  key={d}
-                  className="text-center text-xs font-bold text-white/40 uppercase py-1"
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-1">
-              {dni.map((d, i) => {
-                if (d === null) {
-                  return <div key={i} className="aspect-square" />;
-                }
-
-                const dateStr = `${rok}-${String(miesiac + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const eventy = eventMap.get(dateStr) ?? [];
-                const czyDzis = dateStr === dzisStr;
-                const maEventy = eventy.length > 0;
-
-                const href =
-                  eventy.length === 1
-                    ? `/kalendarz/${eventy[0].id}/obecnosc`
-                    : `/dashboard/${dateStr}`;
-
-                return (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* KALENDARZ */}
+            <div className="lg:col-span-2 lg:order-1 order-2">
+              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 animate-fadeIn shadow-2xl shadow-black/60">
+                <div className="flex items-center justify-between mb-4">
                   <Link
-                    key={i}
-                    href={href}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                      czyDzis
-                        ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/50 border-2 border-green-300'
-                        : maEventy
-                        ? 'bg-slate-800 border border-white/20 shadow-md hover:border-white/40'
-                        : 'bg-slate-800/40 border border-white/5 hover:border-white/20'
-                    }`}
+                    href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
+                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
                   >
-                    <span
-                      className={`text-sm font-semibold ${
-                        czyDzis
-                          ? 'text-white drop-shadow'
-                          : maEventy
-                          ? 'text-white'
-                          : 'text-white/50'
-                      }`}
+                    <ChevronLeft className="w-5 h-5" />
+                  </Link>
+                  <div className="text-center">
+                    <div className="font-bold text-white text-lg">
+                      {nazwyMiesiecy[miesiac]} {rok}
+                    </div>
+                    <div className="text-xs text-white/60">
+                      {wydarzeniaWMiesiacu.length}{' '}
+                      {wydarzeniaWMiesiacu.length === 1 ? 'wydarzenie' : 'wydarzeń'}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/dashboard?m=${nextR}-${String(nextM).padStart(2, '0')}`}
+                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {dniTygodnia.map((d) => (
+                    <div
+                      key={d}
+                      className="text-center text-xs font-bold text-white/40 uppercase py-1"
                     >
                       {d}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                  {dni.map((d, i) => {
+                    if (d === null) {
+                      return <div key={i} className="aspect-square" />;
+                    }
+
+                    const dateStr = `${rok}-${String(miesiac + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const eventy = eventMap.get(dateStr) ?? [];
+                    const czyDzis = dateStr === dzisStr;
+                    const maEventy = eventy.length > 0;
+
+                    const href =
+                      eventy.length === 1
+                        ? `/kalendarz/${eventy[0].id}/obecnosc`
+                        : `/dashboard/${dateStr}`;
+
+                    return (
+                      <Link
+                        key={i}
+                        href={href}
+                        className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                          czyDzis
+                            ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/50 border-2 border-green-300'
+                            : maEventy
+                            ? 'bg-slate-800 border border-white/20 shadow-md hover:border-white/40'
+                            : 'bg-slate-800/40 border border-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`text-sm font-semibold ${
+                            czyDzis
+                              ? 'text-white drop-shadow'
+                              : maEventy
+                              ? 'text-white'
+                              : 'text-white/50'
+                          }`}
+                        >
+                          {d}
+                        </span>
+                        {maEventy && (
+                          <div className="flex gap-0.5 mt-0.5">
+                            {eventy.slice(0, 3).map((e, idx) => (
+                              <div
+                                key={idx}
+                                className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)} shadow-sm`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
+                    <span className="text-white/70">Trening</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm" />
+                    <span className="text-white/70">Mecz</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
+                    <span className="text-white/70">Sparing</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm" />
+                    <span className="text-white/70">Turniej</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Szybkie akcje — na desktopie pod kalendarzem */}
+              <div className="hidden lg:flex gap-2 flex-wrap mt-5">
+                <Link
+                  href="/kalendarz/nowy"
+                  className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+                >
+                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                  Dodaj wydarzenie
+                </Link>
+              </div>
+            </div>
+
+            {/* PANEL BOCZNY */}
+            <div className="lg:col-span-1 lg:order-2 order-1 space-y-4">
+              {/* Dzisiaj */}
+              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
+                <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  Dzisiaj · {new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+                </div>
+                {dzisiejsze.length === 0 ? (
+                  <div className="text-sm text-white/50 text-center py-3">
+                    Brak wydarzeń na dziś
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {dzisiejsze.map((t: any) => (
+                      <Link
+                        key={t.id}
+                        href={`/kalendarz/${t.id}/obecnosc`}
+                        className={`block bg-white/5 hover:bg-white/10 border-l-4 ${typBorder(t.typ)} rounded-r-xl px-3 py-2.5 transition-all`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-base font-bold text-white leading-none min-w-[42px]">
+                            {t.godzina}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold text-white truncate capitalize">
+                              {t.typ}
+                              {t.przeciwnik && (
+                                <span className="text-white/60 font-normal">
+                                  {' '}
+                                  vs {t.przeciwnik}
+                                </span>
+                              )}
+                            </div>
+                            {t.miejsce && (
+                              <div className="text-[10px] text-white/50 truncate mt-0.5">
+                                {t.miejsce}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Najbliższe */}
+              {najblizsze.length > 0 && (
+                <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    Najbliższe
+                  </div>
+                  <div className="space-y-2">
+                    {najblizsze.map((t: any) => (
+                      <Link
+                        key={t.id}
+                        href={`/kalendarz/${t.id}/obecnosc`}
+                        className={`block bg-white/5 hover:bg-white/10 border-l-4 ${typBorder(t.typ)} rounded-r-xl px-3 py-2.5 transition-all`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-base font-bold text-white leading-none min-w-[42px]">
+                            {t.godzina}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold text-white truncate capitalize">
+                              {t.typ}
+                              {t.przeciwnik && (
+                                <span className="text-white/60 font-normal">
+                                  {' '}
+                                  vs {t.przeciwnik}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-white/50 truncate mt-0.5">
+                              {new Date(t.data).toLocaleDateString('pl-PL', {
+                                weekday: 'short',
+                                day: '2-digit',
+                                month: '2-digit',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Frekwencja */}
+              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
+                <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3">
+                  Frekwencja
+                </div>
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/60">Średnia</span>
+                    <span
+                      className={`text-lg font-bold ${
+                        srednia >= 80
+                          ? 'text-green-400'
+                          : srednia >= 60
+                          ? 'text-yellow-400'
+                          : 'text-red-400'
+                      }`}
+                    >
+                      {srednia}%
                     </span>
-                    {maEventy && (
-                      <div className="flex gap-0.5 mt-0.5">
-                        {eventy.slice(0, 3).map((e, idx) => (
-                          <div
-                            key={idx}
-                            className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)} shadow-sm`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/60">Zawodnicy</span>
+                    <span className="text-lg font-bold text-white">
+                      {liczbaZawodnikow}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/60">W tym miesiącu</span>
+                    <span className="text-lg font-bold text-white">
+                      {wydarzeniaWMiesiacu.length}
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  href="/statystyki"
+                  className="mt-3 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Zobacz pełne statystyki
+                </Link>
+              </div>
 
-            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
-                <span className="text-white/70">Trening</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm" />
-                <span className="text-white/70">Mecz</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
-                <span className="text-white/70">Sparing</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm" />
-                <span className="text-white/70">Turniej</span>
+              {/* Szybkie akcje — na mobile pod panelem */}
+              <div className="lg:hidden flex gap-2 flex-wrap">
+                <Link
+                  href="/kalendarz/nowy"
+                  className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40"
+                >
+                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                  Dodaj wydarzenie
+                </Link>
               </div>
             </div>
-          </div>
-
-          <div className="flex gap-2 flex-wrap mb-5 animate-fadeIn">
-            <Link
-              href="/kalendarz/nowy"
-              className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
-            >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              Dodaj wydarzenie
-            </Link>
-            <Link
-              href="/kadra"
-              className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-            >
-              <Users className="w-4 h-4 text-blue-300" />
-              Kadra
-            </Link>
-            <Link
-              href="/statystyki"
-              className="hidden md:flex group items-center justify-center gap-2 bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white font-medium px-4 py-3 rounded-2xl text-sm transition-all"
-            >
-              <BarChart3 className="w-4 h-4 text-purple-300" />
-              Statystyki
-            </Link>
           </div>
         </div>
       </div>
