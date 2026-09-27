@@ -1,37 +1,99 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import {
   Users,
   Calendar,
   BarChart3,
   LayoutDashboard,
   User,
+  LogOut,
+  type LucideIcon,
 } from 'lucide-react';
 
-const items = [
-  { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
-  { href: '/kadra', label: 'Kadra', icon: Users },
-  { href: '/kalendarz', label: 'Plan', icon: Calendar },
-  { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
-  { href: '/profil', label: 'Profil', icon: User },
+type Item = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const sekcje = [
+  {
+    nazwa: 'Główne',
+    items: [
+      { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
+      { href: '/kadra', label: 'Kadra', icon: Users },
+    ] as Item[],
+  },
+  {
+    nazwa: 'Trening',
+    items: [
+      { href: '/kalendarz', label: 'Plan', icon: Calendar },
+      { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
+    ] as Item[],
+  },
+  {
+    nazwa: 'Konto',
+    items: [
+      { href: '/profil', label: 'Profil', icon: User },
+    ] as Item[],
+  },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
+  const [dzisiajCount, setDzisiajCount] = useState<number>(0);
+
+  // Email użytkownika
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+    });
+  }, []);
+
+  // Liczba wydarzeń dzisiaj (dla badge)
+  useEffect(() => {
+    const supabase = createClient();
+    const dzis = new Date().toISOString().split('T')[0];
+    supabase
+      .from('treningi')
+      .select('id')
+      .eq('data', dzis)
+      .then(({ data }) => {
+        setDzisiajCount(data?.length ?? 0);
+      });
+  }, [pathname]);
+
+  async function handleLogout() {
+    if (!confirm('Wylogować się?')) return;
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+    router.refresh();
+  }
 
   if (pathname === '/' || pathname.startsWith('/auth')) {
     return null;
   }
 
+  const inicjal = email ? email.charAt(0).toUpperCase() : '?';
+
+  const wszystkieItems = sekcje.flatMap((s) => s.items);
+
   return (
     <>
       {/* SIDEBAR — tylko na desktopie */}
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col z-50 bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
+        {/* Logo */}
         <div className="p-5 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
               <span className="text-white font-black text-lg leading-none">
                 T
               </span>
@@ -47,35 +109,73 @@ export function BottomNav() {
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {items.map((item) => {
-            const aktywny = pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  aktywny
-                    ? 'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm bg-green-500/15 text-green-300 font-semibold'
-                    : 'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5'
-                }
-              >
-                {aktywny && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-400 rounded-r-full" />
-                )}
-                <Icon className="w-5 h-5" />
-                {item.label}
-              </Link>
-            );
-          })}
+        {/* Menu z sekcjami */}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          {sekcje.map((sekcja, sIdx) => (
+            <div key={sekcja.nazwa} className={sIdx > 0 ? 'mt-4' : ''}>
+              <div className="text-[10px] text-white/35 uppercase tracking-widest font-bold px-3 py-2">
+                {sekcja.nazwa}
+              </div>
+              <div className="space-y-1">
+                {sekcja.items.map((item) => {
+                  const aktywny = pathname.startsWith(item.href);
+                  const Icon = item.icon;
+                  const showBadge = item.href === '/dashboard' && dzisiajCount > 0;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={
+                        aktywny
+                          ? 'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm bg-green-500/15 text-green-300 font-semibold'
+                          : 'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5'
+                      }
+                    >
+                      {aktywny && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-400 rounded-r-full" />
+                      )}
+                      <Icon className="w-5 h-5 flex-shrink-0" strokeWidth={aktywny ? 2.5 : 2} />
+                      <span className="flex-1">{item.label}</span>
+                      {showBadge && (
+                        <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md min-w-[20px] text-center">
+                          {dzisiajCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
+
+        {/* User + Logout */}
+        <div className="p-3 border-t border-white/10">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 mb-2">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">
+              {inicjal}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
+                Zalogowany
+              </div>
+              <div className="text-xs text-white truncate">{email ?? '...'}</div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 hover:border-red-400/60 px-3 py-2 rounded-xl text-sm font-medium transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            Wyloguj
+          </button>
+        </div>
       </aside>
 
       {/* DOLNA NAWIGACJA — tylko na mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <div className="bg-slate-900/90 backdrop-blur-xl border-t border-white/10 px-2 pb-2 pt-2 flex justify-around shadow-2xl shadow-black/50">
-          {items.map((item) => {
+          {wszystkieItems.map((item) => {
             const aktywny = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
