@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info, LogOut } from 'lucide-react';
+
+type Variant = 'default' | 'danger' | 'warning' | 'info';
 
 type Props = {
   open: boolean;
@@ -10,9 +12,49 @@ type Props = {
   message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'default' | 'danger';
+  variant?: Variant;
   onConfirm: () => void;
   onCancel: () => void;
+};
+
+const VARIANT_STYLES: Record<
+  Variant,
+  {
+    icon: typeof AlertTriangle;
+    iconBg: string;
+    iconColor: string;
+    button: string;
+    buttonShadow: string;
+  }
+> = {
+  default: {
+    icon: Info,
+    iconBg: 'bg-green-500/15 border border-green-400/40',
+    iconColor: 'text-green-400',
+    button: 'from-green-500 to-green-600 hover:from-green-400 hover:to-green-500',
+    buttonShadow: 'shadow-green-500/30',
+  },
+  danger: {
+    icon: AlertTriangle,
+    iconBg: 'bg-red-500/15 border border-red-400/40',
+    iconColor: 'text-red-400',
+    button: 'from-red-500 to-red-700 hover:from-red-400 hover:to-red-600',
+    buttonShadow: 'shadow-red-500/30',
+  },
+  warning: {
+    icon: AlertTriangle,
+    iconBg: 'bg-orange-500/15 border border-orange-400/40',
+    iconColor: 'text-orange-400',
+    button: 'from-orange-500 to-orange-700 hover:from-orange-400 hover:to-orange-600',
+    buttonShadow: 'shadow-orange-500/30',
+  },
+  info: {
+    icon: LogOut,
+    iconBg: 'bg-blue-500/15 border border-blue-400/40',
+    iconColor: 'text-blue-400',
+    button: 'from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600',
+    buttonShadow: 'shadow-blue-500/30',
+  },
 };
 
 export function ConfirmDialog({
@@ -27,12 +69,10 @@ export function ConfirmDialog({
 }: Props) {
   const [mounted, setMounted] = useState(false);
 
-  // Portal można tworzyć dopiero po montażu klienta
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // ESC zamyka + blokada scrolla tła
   useEffect(() => {
     if (!open) return;
 
@@ -52,7 +92,8 @@ export function ConfirmDialog({
 
   if (!open || !mounted) return null;
 
-  const isDanger = variant === 'danger';
+  const style = VARIANT_STYLES[variant];
+  const Icon = style.icon;
 
   return createPortal(
     <div
@@ -71,16 +112,9 @@ export function ConfirmDialog({
       >
         {/* Ikona */}
         <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
-            isDanger
-              ? 'bg-red-500/15 border border-red-400/40'
-              : 'bg-green-500/15 border border-green-400/40'
-          }`}
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${style.iconBg}`}
         >
-          <AlertTriangle
-            className={`w-6 h-6 ${isDanger ? 'text-red-400' : 'text-green-400'}`}
-            strokeWidth={2.5}
-          />
+          <Icon className={`w-6 h-6 ${style.iconColor}`} strokeWidth={2.5} />
         </div>
 
         {/* Tytuł */}
@@ -104,11 +138,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             autoFocus
-            className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all text-white active:scale-95 ${
-              isDanger
-                ? 'bg-gradient-to-br from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg shadow-red-500/30'
-                : 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 shadow-lg shadow-green-500/30'
-            }`}
+            className={`flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-br ${style.button} text-white font-semibold text-sm transition-all active:scale-95 shadow-lg ${style.buttonShadow}`}
           >
             {confirmLabel}
           </button>
