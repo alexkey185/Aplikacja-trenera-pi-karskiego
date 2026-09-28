@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import { BottomNav } from '@/components/BottomNav';
+import { ContentWrapper } from '@/components/ContentWrapper';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
 
@@ -68,7 +69,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0a0e1a" />
       </head>
       <body className={`${geistSans.variable} antialiased`}>
-        <div className="md:pl-60">{children}</div>
+        <ContentWrapper>{children}</ContentWrapper>
         <BottomNav />
         <ServiceWorkerRegister />
       </body>
