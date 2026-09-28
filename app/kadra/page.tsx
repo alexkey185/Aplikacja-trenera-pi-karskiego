@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
-import { Users, Plus, Search } from 'lucide-react';
+import { Users, Plus, Search, ArrowUpDown } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -15,20 +15,32 @@ type Zawodnik = {
   notatki: string | null;
 };
 
+type SortKey = 'alpha' | 'rocznik' | 'frekwencja' | 'numer';
+
+const SORT_LABELS: Record<SortKey, string> = {
+  alpha: 'Alfabetycznie',
+  rocznik: 'Rocznik',
+  frekwencja: 'Frekwencja',
+  numer: 'Numer',
+};
+
 export default async function Kadra({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   const params = await searchParams;
   const q = params.q?.trim() || '';
+  const sortParam = params.sort as SortKey | undefined;
+  const sort: SortKey = ['alpha', 'rocznik', 'frekwencja', 'numer'].includes(sortParam ?? '')
+    ? (sortParam as SortKey)
+    : 'alpha';
 
   const supabase = await createClient();
 
   let query = supabase
     .from('zawodnicy')
-    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
-    .order('nazwisko', { ascending: true });
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki');
 
   if (q) {
     query = query.or(`imie.ilike.%${q}%,nazwisko.ilike.%${q}%`);
@@ -52,7 +64,47 @@ export default async function Kadra({
     return `${imie.charAt(0)}${nazwisko.charAt(0)}`.toUpperCase();
   };
 
-  const liczba = zawodnicy?.length ?? 0;
+  // ══════════════════════════════════════════════
+  // SORTOWANIE
+  // ══════════════════════════════════════════════
+  const posortowani = [...(zawodnicy ?? [])].sort((a, b) => {
+    if (sort === 'alpha') {
+      const cmp = a.nazwisko.localeCompare(b.nazwisko, 'pl');
+      if (cmp !== 0) return cmp;
+      return a.imie.localeCompare(b.imie, 'pl');
+    }
+
+    if (sort === 'rocznik') {
+      const ra = a.rocznik ?? 0;
+      const rb = b.rocznik ?? 0;
+      if (rb !== ra) return rb - ra;
+      return a.nazwisko.localeCompare(b.nazwisko, 'pl');
+    }
+
+    if (sort === 'frekwencja') {
+      const sa = frekwencjaMap.get(a.id) ?? { obecni: 0, total: 0 };
+      const sb = frekwencjaMap.get(b.id) ?? { obecni: 0, total: 0 };
+      const pa = sa.total > 0 ? sa.obecni / sa.total : 0;
+      const pb = sb.total > 0 ? sb.obecni / sb.total : 0;
+      if (pb !== pa) return pb - pa;
+      return a.nazwisko.localeCompare(b.nazwisko, 'pl');
+    }
+
+    const na = a.numer ?? 9999;
+    const nb = b.numer ?? 9999;
+    if (na !== nb) return na - nb;
+    return a.nazwisko.localeCompare(b.nazwisko, 'pl');
+  });
+
+  const liczba = posortowani.length;
+
+  const buildSortUrl = (key: SortKey) => {
+    const p = new URLSearchParams();
+    if (q) p.set('q', q);
+    if (key !== 'alpha') p.set('sort', key);
+    const qs = p.toString();
+    return qs ? `/kadra?${qs}` : '/kadra';
+  };
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
@@ -80,7 +132,6 @@ export default async function Kadra({
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      {/* Padding główny: mobile p-3, desktop p-8 */}
       <div className="relative z-20 p-3 md:p-6 lg:p-8 pb-24 md:pb-28">
         <div className="max-w-3xl md:max-w-5xl mx-auto">
 
@@ -108,6 +159,7 @@ export default async function Kadra({
 
             {/* Pasek wyszukiwania */}
             <form action="/kadra" method="GET" className="relative">
+              {sort !== 'alpha' && <input type="hidden" name="sort" value={sort} />}
               <Search className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
               <input
                 name="q"
@@ -119,6 +171,34 @@ export default async function Kadra({
             </form>
           </header>
 
+          {/* SORTOWANIE */}
+          <div className="mb-3 md:mb-5 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-1.5 md:mb-2">
+              <ArrowUpDown className="w-3 h-3 md:w-3.5 md:h-3.5 text-white/40" />
+              <span className="text-[10px] md:text-xs font-bold text-white/50 uppercase tracking-widest">
+                Sortuj
+              </span>
+            </div>
+            <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0">
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => {
+                const active = sort === key;
+                return (
+                  <Link
+                    key={key}
+                    href={buildSortUrl(key)}
+                    className={`flex-shrink-0 px-3 md:px-4 py-1.5 md:py-2 rounded-full border text-[11px] md:text-xs font-semibold transition-all ${
+                      active
+                        ? 'bg-green-500/15 border-green-400/50 text-green-400'
+                        : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    {SORT_LABELS[key]}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
           {error && (
             <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3 mb-3 text-xs animate-fadeIn text-red-200">
               Błąd: {error.message}
@@ -129,7 +209,7 @@ export default async function Kadra({
             <EmptyState />
           ) : (
             <ul className="space-y-1 md:space-y-2 list-none p-0 m-0">
-              {zawodnicy!.map((z: Zawodnik, i: number) => {
+              {posortowani.map((z: Zawodnik, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
                   s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
@@ -157,19 +237,41 @@ export default async function Kadra({
                       href={`/zawodnicy/${z.id}`}
                       className="flex items-center gap-2.5 md:gap-4 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg md:rounded-2xl px-2.5 md:px-4 py-2 md:py-3 hover:bg-slate-900 transition-all active:scale-[0.99]"
                     >
-                      {/* Avatar: mobile 32px, desktop 48px */}
+                      {/* Numer porządkowy */}
+                      <div className="w-6 md:w-8 text-center flex-shrink-0">
+                        <span className="text-[11px] md:text-sm font-bold text-white/40 tabular-nums">
+                          {i + 1}.
+                        </span>
+                      </div>
+
+                      {/* Avatar z ZŁOTYM badge z #numerem */}
                       <div className="relative flex-shrink-0">
                         <div className="w-8 h-8 md:w-12 md:h-12 rounded-md md:rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[11px] md:text-base">
                           {inicjaly(z.imie, z.nazwisko)}
                         </div>
+
                         {z.numer != null && (
-                          <div className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 px-1 md:px-1.5 py-0 md:py-0.5 rounded bg-slate-950 border border-amber-400/40 text-amber-400 text-[8px] md:text-[10px] font-bold leading-tight">
-                            {z.numer}
+                          <div
+                            className="
+                              absolute -bottom-1 -right-1.5 md:-bottom-1.5 md:-right-2
+                              px-1 md:px-1.5 py-[1px] md:py-0.5
+                              rounded-md
+                              bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600
+                              border border-amber-200/60
+                              text-slate-900
+                              text-[8px] md:text-[10px]
+                              font-black
+                              leading-none
+                              shadow-lg shadow-amber-500/40
+                              tabular-nums
+                            "
+                          >
+                            #{z.numer}
                           </div>
                         )}
                       </div>
 
-                      {/* Dane: nazwisko + rocznik/pozycja */}
+                      {/* Dane */}
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white text-sm md:text-base truncate leading-tight">
                           {z.imie} {z.nazwisko}
@@ -180,7 +282,7 @@ export default async function Kadra({
                         </div>
                       </div>
 
-                      {/* Frekwencja: mobile % + pasek 32px, desktop większe */}
+                      {/* Frekwencja */}
                       <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
                         <span className={`text-[11px] md:text-sm font-bold ${procentKolor}`}>
                           {procent}%

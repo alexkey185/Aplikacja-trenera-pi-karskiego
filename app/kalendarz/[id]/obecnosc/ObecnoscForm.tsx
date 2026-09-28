@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { zapiszObecnosc } from './actions';
-import { Check, X, Save, TrendingUp, Info, RotateCw } from 'lucide-react';
+import { Check, X, Save, TrendingUp, RotateCw } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -144,21 +144,7 @@ export function ObecnoscForm({
 
   return (
     <form action={zapiszObecnosc.bind(null, treningId)} className="space-y-3">
-      {/* Info o dziedziczeniu */}
-      {usesPrevious && odziedziczoneNieobecnosci > 0 && (
-        <div className="bg-blue-500/10 border border-blue-400/30 rounded-2xl px-3 py-2.5 flex items-start gap-2 text-[11px] text-blue-200 animate-fadeIn">
-          <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          <span>
-            Skopiowano statusy z poprzedniego{' '}
-            <span className="font-semibold">{typTreningu || 'treningu'}</span>.{' '}
-            {odziedziczoneNieobecnosci}{' '}
-            {odziedziczoneNieobecnosci === 1 ? 'osoba była' : 'osoby były'}{' '}
-            nieobecne — zweryfikuj i zapisz.
-          </span>
-        </div>
-      )}
-
-      {/* Licznik — tylko zielony pasek (bez czerwonego segmentu) */}
+      {/* Licznik na żywo */}
       <div className="bg-slate-900/80 backdrop-blur-lg border border-white/20 rounded-2xl p-3 animate-fadeIn sticky top-4 z-10 shadow-2xl shadow-black/40">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
@@ -205,7 +191,7 @@ export function ObecnoscForm({
       </div>
 
       {/* Lista zawodników */}
-      <ul className="space-y-1 md:space-y-1.5 pb-32">
+      <ul className="space-y-1 md:space-y-1.5">
         {zawodnicy.map((z, i) => {
           const aktualny = statuses[z.id];
           const opcjaAktywna = opcje.find((o) => o.value === aktualny);
@@ -225,7 +211,7 @@ export function ObecnoscForm({
               )}`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
-                {/* Avatar — inicjały + numer jako badge (jak w Kadrze) */}
+                {/* Avatar z inicjałami */}
                 <div className="relative flex-shrink-0">
                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[10px] md:text-xs">
                     {inicjaly(z.imie, z.nazwisko)}
@@ -291,7 +277,7 @@ export function ObecnoscForm({
         })}
       </ul>
 
-      {/* Ukryte pola */}
+      {/* Ukryte pola dla formularza */}
       {Object.entries(statuses).map(([zawodnikId, status]) => (
         <input
           key={zawodnikId}
@@ -301,16 +287,14 @@ export function ObecnoscForm({
         />
       ))}
 
-      {/* Przycisk zapisu */}
-      <div className="sticky bottom-24 z-10 pt-2">
-        <button
-          type="submit"
-          className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-0.5 animate-glow text-sm md:text-base"
-        >
-          <Save className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
-          Zapisz obecność
-        </button>
-      </div>
+      {/* Przycisk zapisu — od razu pod ostatnim zawodnikiem */}
+      <button
+        type="submit"
+        className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-0.5 animate-glow text-sm md:text-base mt-2"
+      >
+        <Save className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+        Zapisz obecność
+      </button>
     </form>
   );
 }
