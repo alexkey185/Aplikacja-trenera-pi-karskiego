@@ -80,22 +80,22 @@ export default async function Kadra({
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">
-        <div className="max-w-5xl mx-auto">
-          <header className="mb-6 animate-fadeIn">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+      <div className="relative z-20 p-3 md:p-6 lg:p-8 pb-24">
+        <div className="max-w-3xl mx-auto">
+          <header className="mb-3 animate-fadeIn">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-                  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-2xl">
-                    <Users className="w-6 h-6 text-white" strokeWidth={2.5} />
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-lg blur-md opacity-60" />
+                  <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
+                    <Users className="w-4 h-4 text-white" strokeWidth={2.5} />
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold leading-tight text-white drop-shadow-lg tracking-wide">
+                  <h1 className="text-sm md:text-lg font-bold leading-tight text-white drop-shadow-lg tracking-wide">
                     LISTA ZAWODNIKÓW
                   </h1>
-                  <p className="text-xs text-white/60 font-medium mt-0.5">
+                  <p className="text-[10px] text-white/60 font-medium">
                     {liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'} na liście
                   </p>
                 </div>
@@ -105,19 +105,19 @@ export default async function Kadra({
 
             {/* Pasek wyszukiwania */}
             <form action="/kadra" method="GET" className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
               <input
                 name="q"
                 type="text"
                 defaultValue={q}
-                placeholder="Szukaj zawodnika..."
-                className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
+                placeholder="Szukaj..."
+                className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg pl-8 pr-3 py-2 text-xs text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
               />
             </form>
           </header>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-400/40 rounded-2xl p-4 mb-4 text-sm animate-fadeIn text-red-200">
+            <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3 mb-3 text-xs animate-fadeIn text-red-200">
               Błąd: {error.message}
             </div>
           )}
@@ -125,8 +125,7 @@ export default async function Kadra({
           {liczba === 0 ? (
             <EmptyState />
           ) : (
-            // ZMIANA: 2 kolumny na mobile, 3 na większych ekranach
-            <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 list-none p-0 m-0 pb-28">
+            <ul className="space-y-1 list-none p-0 m-0">
               {zawodnicy!.map((z: Zawodnik, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
@@ -153,51 +152,48 @@ export default async function Kadra({
                   >
                     <Link
                       href={`/zawodnicy/${z.id}`}
-                      className="flex flex-col items-center bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl p-3 h-full transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/50"
+                      className="flex items-center gap-2.5 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg px-2.5 py-1.5 hover:bg-slate-900 transition-all active:scale-[0.99]"
                     >
-                      {/* Avatar z numerem */}
-                      <div className="relative flex-shrink-0 mb-2">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/80 text-sm shadow-inner">
+                      {/* Avatar */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-7 h-7 rounded-md bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[10px]">
                           {inicjaly(z.imie, z.nazwisko)}
                         </div>
                         {z.numer != null && (
-                          <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-slate-950 border border-amber-400/40 text-amber-400 text-[9px] font-bold leading-none shadow-lg">
-                            #{z.numer}
+                          <div className="absolute -bottom-0.5 -right-0.5 px-1 py-0 rounded bg-slate-950 border border-amber-400/40 text-amber-400 text-[8px] font-bold leading-tight">
+                            {z.numer}
                           </div>
                         )}
                       </div>
 
-                      {/* Imię i nazwisko — pionowo, wyśrodkowane */}
-                      <div className="w-full text-center mb-2">
-                        <div className="font-bold text-white text-[11px] leading-tight truncate uppercase tracking-wide">
-                          {z.imie}
+                      {/* Dane */}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white text-xs truncate leading-tight">
+                          {z.imie} {z.nazwisko}
                         </div>
-                        <div className="font-bold text-white text-[11px] leading-tight truncate uppercase tracking-wide">
-                          {z.nazwisko}
-                        </div>
-                        <div className="text-[9px] text-white/50 uppercase tracking-widest font-medium mt-0.5">
+                        <div className="text-[9px] text-white/40 leading-tight truncate">
                           {z.rocznik ?? '—'}
                           {z.pozycja ? ` · ${z.pozycja}` : ''}
                         </div>
                       </div>
 
-                      {/* Frekwencja — pasek postępu */}
-                      <div className="w-full mt-auto">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[9px] text-white/40 uppercase tracking-wider">
-                            Frekw.
-                          </span>
-                          <span className={`text-[10px] font-bold ${procentKolor}`}>
-                            {procent}%
-                          </span>
-                        </div>
-                        <div className="w-full h-1 bg-slate-950/60 rounded-full overflow-hidden">
+                      {/* Frekwencja */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className={`text-[10px] font-bold ${procentKolor}`}>
+                          {procent}%
+                        </span>
+                        <div className="w-8 h-0.5 bg-slate-950/60 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${pasekKolor} transition-all`}
+                            className={`h-full rounded-full ${pasekKolor}`}
                             style={{ width: `${procent}%` }}
                           />
                         </div>
                       </div>
+
+                      {/* Chevron */}
+                      <span className="text-white/30 text-base flex-shrink-0 leading-none">
+                        ›
+                      </span>
                     </Link>
                   </li>
                 );
@@ -220,23 +216,23 @@ export default async function Kadra({
 
 function EmptyState() {
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-12 text-center animate-fadeIn relative overflow-hidden">
+    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-center animate-fadeIn relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-green-500/20 rounded-full blur-3xl" />
       <div className="relative">
-        <div className="w-20 h-20 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-5">
-          <Users className="w-10 h-10 text-green-400" strokeWidth={1.5} />
+        <div className="w-16 h-16 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
+          <Users className="w-8 h-8 text-green-400" strokeWidth={1.5} />
         </div>
-        <h3 className="font-bold text-xl mb-2 text-white drop-shadow">
+        <h3 className="font-bold text-base mb-1 text-white drop-shadow">
           Zacznijmy od składu
         </h3>
-        <p className="text-sm text-white/60 mb-6 max-w-xs mx-auto">
+        <p className="text-xs text-white/60 mb-5 max-w-xs mx-auto">
           Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i frekwencją.
         </p>
         <Link
           href="/zawodnicy/nowy"
-          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-5 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
+          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-green-500/40"
         >
-          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+          <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
           Dodaj pierwszego zawodnika
         </Link>
       </div>
