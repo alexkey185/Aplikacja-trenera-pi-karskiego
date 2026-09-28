@@ -8,8 +8,11 @@ import {
   ChevronRight,
   Plus,
   MapPin,
+  Trash2,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
+import { usunTrening } from './[id]/edytuj/actions';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 // ══════════════════════════════════════════════
 // TYPY
@@ -137,7 +140,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
   const eventsAnchorRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
 
-  // Grupowanie treningów po dacie
   const eventsByDate = useMemo(() => {
     const map: Record<string, Trening[]> = {};
     treningi.forEach((t) => {
@@ -150,7 +152,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
     return map;
   }, [treningi]);
 
-  // Statystyki bieżącego miesiąca
   const monthPrefix = `${viewYear}-${pad2(viewMonth + 1)}`;
   const monthStats = useMemo(() => {
     const inMonth = treningi.filter((t) => t.data.startsWith(monthPrefix));
@@ -164,14 +165,10 @@ export function KalendarzClient({ treningi, stats }: Props) {
     };
   }, [treningi, monthPrefix]);
 
-  // Wydarzenia wybranego dnia
   const selectedEvents = eventsByDate[selectedDate] ?? [];
-
-  // Dziś — wydarzenia
   const todayEvents = eventsByDate[todayISO] ?? [];
   const isTodaySelected = selectedDate === todayISO;
 
-  // Najbliższe 3 wydarzenia (od dziś włącznie)
   const upcoming = useMemo(() => {
     return treningi
       .filter((t) => t.data >= todayISO)
@@ -183,9 +180,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
       .slice(0, 3);
   }, [treningi, todayISO]);
 
-  // ══════════════════════════════════════════════
-  // AKCJE
-  // ══════════════════════════════════════════════
   const changeMonth = (delta: number) => {
     let m = viewMonth + delta;
     let y = viewYear;
@@ -217,7 +211,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
     router.push(`/kalendarz/nowy?data=${selectedDate}`);
   };
 
-  // Swipe na mobile
   useEffect(() => {
     const el = calendarRef.current;
     if (!el) return;
@@ -241,9 +234,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMonth, viewYear]);
 
-  // ══════════════════════════════════════════════
-  // DRAG & DROP
-  // ══════════════════════════════════════════════
   const handleDragStart = (e: React.DragEvent, id: number) => {
     setDraggedId(id);
     e.dataTransfer.effectAllowed = 'move';
@@ -305,8 +295,8 @@ export function KalendarzClient({ treningi, stats }: Props) {
       isSelected && !isToday ? 'day-selected' : '',
       isWeekend && !isToday && !isSelected ? 'day-weekend' : '',
       isHoliday && !isToday && !isSelected ? 'day-holiday' : '',
-      isDragOver ? 'bg-green-500/20 border-green-400/60' : 'border-transparent',
-      'hover:bg-white/5 hover:scale-105',
+      isDragOver ? 'bg-green-500/20 border-green-400/60' : '',
+      !isToday && !isSelected ? 'border-transparent day-hoverable' : '',
     ].filter(Boolean).join(' ');
 
     return (
@@ -320,9 +310,16 @@ export function KalendarzClient({ treningi, stats }: Props) {
         {isHoliday && (
           <div className="absolute top-0.5 right-0.5 text-[8px]">🎉</div>
         )}
-        <div className={`text-xs ${isToday ? 'font-bold text-green-300' : 'text-white/80'}`}>
+
+        <div className={`text-xs day-number ${isToday ? 'font-bold text-green-300' : 'text-white/80'}`}>
           {dayNum}
         </div>
+
+        {isToday && (
+          <div className="text-[7px] day-label uppercase tracking-wider leading-none mt-0.5">
+            Dziś
+          </div>
+        )}
 
         {events.length > 0 && (
           <div className="flex gap-0.5 mt-0.5 items-center">
@@ -333,7 +330,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
               />
             ))}
             {events.length > 3 && (
-              <span className="text-[7px] text-white/60 font-bold ml-0.5">
+              <span className={`text-[7px] font-bold ml-0.5 ${isToday ? 'text-white' : 'text-white/60'}`}>
                 +{events.length - 3}
               </span>
             )}
@@ -343,9 +340,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
     );
   };
 
-  // ══════════════════════════════════════════════
-  // RENDER SIATKI MIESIĄCA
-  // ══════════════════════════════════════════════
   const renderMonthGrid = () => {
     const cells: React.ReactNode[] = [];
     const firstDay = firstWeekdayMon(viewYear, viewMonth);
@@ -380,9 +374,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
     return cells;
   };
 
-  // ══════════════════════════════════════════════
-  // RENDER
-  // ══════════════════════════════════════════════
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
@@ -395,7 +386,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
 
       <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">
         <div className="max-w-2xl mx-auto">
-          {/* HEADER */}
           <header className="mb-4 animate-fadeIn">
             <h1 className="text-2xl font-bold text-white mb-1">Kalendarz</h1>
             <p className="text-xs text-white/60">
@@ -403,7 +393,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
             </p>
           </header>
 
-          {/* WYEKSPONOWANY "DZIŚ" */}
           <button
             onClick={goToToday}
             className={`w-full text-left rounded-2xl p-4 mb-5 transition-all animate-fadeIn group ${
@@ -464,7 +453,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
             </div>
           </button>
 
-          {/* STATYSTYKI MIESIĄCA */}
           <div className="grid grid-cols-4 gap-2 mb-5 animate-fadeIn">
             <StatBox icon="📅" color="text-blue-400" border="border-blue-400/30" value={monthStats.treningi} label="Treningi" />
             <StatBox icon="🏆" color="text-red-400" border="border-red-400/30" value={monthStats.mecze} label="Mecze" />
@@ -472,7 +460,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
             <StatBox icon="🎯" color="text-purple-400" border="border-purple-400/30" value={monthStats.turnieje} label="Turnieje" />
           </div>
 
-          {/* KALENDARZ */}
           <div
             ref={calendarRef}
             className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 mb-5 animate-fadeIn"
@@ -508,7 +495,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
               <span>→</span>
             </div>
 
-            {/* Dni tygodnia */}
             <div className="grid grid-cols-7 gap-1 mb-1">
               {DAYS_SHORT.map((d) => (
                 <div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-widest py-1">
@@ -517,12 +503,10 @@ export function KalendarzClient({ treningi, stats }: Props) {
               ))}
             </div>
 
-            {/* Siatka dni */}
             <div className="grid grid-cols-7 gap-1">
               {renderMonthGrid()}
             </div>
 
-            {/* Legenda */}
             <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-white/10 text-[10px] flex-wrap">
               {Object.entries(TYP_CONFIG).map(([key, cfg]) => (
                 <div key={key} className="flex items-center gap-1.5">
@@ -533,9 +517,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════ */}
-          {/* LISTA WYDARZEŃ WYBRANEGO DNIA */}
-          {/* ══════════════════════════════════════════ */}
           <div ref={eventsAnchorRef} className="scroll-mt-4" />
 
           <SelectedDayView
@@ -548,7 +529,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
             draggedId={draggedId}
           />
 
-          {/* NAJBLIŻSZE WYDARZENIA */}
           {upcoming.length > 0 && (
             <details className="mt-6 animate-fadeIn" open>
               <summary className="flex items-center gap-2 mb-4 cursor-pointer list-none">
@@ -569,7 +549,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
         </div>
       </div>
 
-      {/* FAB */}
       <button
         onClick={handleFabClick}
         className="group fixed bottom-24 right-5 md:bottom-8 md:right-8 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 flex items-center justify-center text-white shadow-2xl shadow-green-500/50 hover:shadow-green-400/70 transition-all hover:scale-110 active:scale-95 animate-glow"
@@ -578,7 +557,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
         <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform" strokeWidth={2.5} />
       </button>
 
-      {/* TOAST */}
       {toast && (
         <div className="fixed bottom-40 right-5 md:bottom-24 md:right-8 z-50 bg-slate-900/95 backdrop-blur-md border border-green-400/40 rounded-xl px-4 py-2.5 text-xs text-white shadow-xl animate-fadeIn">
           {toast}
@@ -616,6 +594,57 @@ function StatBox({
   );
 }
 
+/**
+ * Kosz — teraz wewnątrz karty, obok chevronu.
+ * Dzięki e.preventDefault() + e.stopPropagation()
+ * kliknięcie nie przenosi do /obecnosc.
+ */
+function DeleteEventButton({ id }: { id: number }) {
+  const [open, setOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  return (
+    <>
+      <form ref={formRef} action={usunTrening} className="hidden">
+        <input type="hidden" name="id" value={id} />
+      </form>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all"
+        title="Usuń wydarzenie"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
+
+      <ConfirmDialog
+        open={open}
+        title="Usunąć to wydarzenie?"
+        message={
+          <>
+            Usuną się też wszystkie wpisy obecności dla tego treningu.
+            <br />
+            <br />
+            <span style={{ color: '#f87171' }}>Tej operacji nie można cofnąć.</span>
+          </>
+        }
+        confirmLabel="Usuń"
+        variant="danger"
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {
+          formRef.current?.requestSubmit();
+          setOpen(false);
+        }}
+      />
+    </>
+  );
+}
+
 function EventCard({
   trening,
   stats,
@@ -632,53 +661,65 @@ function EventCard({
   const proc = s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
 
   return (
-    <Link
-      href={`/kalendarz/${trening.id}/obecnosc`}
-      draggable={!!onDragStart}
-      onDragStart={(e) => onDragStart?.(e, trening.id)}
-      className={`group block bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl p-3 hover:bg-slate-900 transition-all ${
+    <div
+      className={`group relative bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl transition-all hover:bg-slate-900 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-lg text-xl flex-shrink-0`}>
-          {cfg.icon}
-        </div>
-        <div className="flex-shrink-0 w-14">
-          <div className="text-lg font-bold text-white">{trening.godzina}</div>
-        </div>
-        <div className="w-px h-10 bg-white/10" />
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold text-white text-sm">
-            {cfg.label}
-            {trening.przeciwnik && (
-              <span className="text-white/60 font-medium"> vs {trening.przeciwnik}</span>
+      {/* Główna treść karty — link do /obecnosc */}
+      <Link
+        href={`/kalendarz/${trening.id}/obecnosc`}
+        draggable={!!onDragStart}
+        onDragStart={(e) => onDragStart?.(e, trening.id)}
+        className="block p-3"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-lg text-xl flex-shrink-0`}>
+            {cfg.icon}
+          </div>
+          <div className="flex-shrink-0 w-14">
+            <div className="text-lg font-bold text-white">{trening.godzina}</div>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="flex-1 min-w-0 pr-20">
+            <div className="font-semibold text-white text-sm">
+              {cfg.label}
+              {trening.przeciwnik && (
+                <span className="text-white/60 font-medium"> vs {trening.przeciwnik}</span>
+              )}
+            </div>
+            {trening.miejsce ? (
+              <div className="text-xs text-white/50 mt-0.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{trening.miejsce}</span>
+              </div>
+            ) : (
+              <div className="text-xs text-white/50 mt-0.5">Brak lokalizacji</div>
+            )}
+            {s && s.total > 0 ? (
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[11px] text-white/60">
+                  👥 {s.obecni}/{s.total} obecnych
+                </span>
+                <div className="flex-1 max-w-[80px] h-1 bg-slate-950/60 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${proc}%` }} />
+                </div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-white/40 mt-1.5">Brak wpisów obecności</div>
             )}
           </div>
-          {trening.miejsce ? (
-            <div className="text-xs text-white/50 mt-0.5 flex items-center gap-1">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{trening.miejsce}</span>
-            </div>
-          ) : (
-            <div className="text-xs text-white/50 mt-0.5">Brak lokalizacji</div>
-          )}
-          {s && s.total > 0 ? (
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[11px] text-white/60">
-                👥 {s.obecni}/{s.total} obecnych
-              </span>
-              <div className="flex-1 max-w-[80px] h-1 bg-slate-950/60 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: `${proc}%` }} />
-              </div>
-            </div>
-          ) : (
-            <div className="text-[11px] text-white/40 mt-1.5">Brak wpisów obecności</div>
-          )}
         </div>
-        <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+      </Link>
+
+      {/* Akcje — kosz + chevron, absolutnie po prawej, wyśrodkowane pionowo */}
+      <div className="absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-1.5 pointer-events-none">
+        <div className="pointer-events-auto">
+          <DeleteEventButton id={trening.id} />
+        </div>
+        <ChevronRight className="w-5 h-5 text-white/40 transition-all flex-shrink-0" />
       </div>
-    </Link>
+    </div>
   );
 }
 

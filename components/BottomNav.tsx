@@ -32,7 +32,7 @@ const sekcje = [
   {
     nazwa: 'Trening',
     items: [
-      { href: '/kalendarz', label: 'Plan', icon: Calendar },
+      { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
       { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
     ] as Item[],
   },
