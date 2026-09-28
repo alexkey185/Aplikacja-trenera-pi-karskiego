@@ -406,7 +406,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
         <div className="max-w-2xl lg:max-w-7xl mx-auto w-full lg:h-full lg:flex lg:flex-col">
 
           {/* HEADER */}
-          <header className="mb-4 lg:mb-3 flex items-center gap-3 animate-fadeIn flex-shrink-0">
+          <header className="mb-5 lg:mb-3 flex items-center gap-3 animate-fadeIn flex-shrink-0">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
@@ -427,15 +427,15 @@ export function KalendarzClient({ treningi, stats }: Props) {
           </header>
 
           {/* GRID 2/3 + 1/3 */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-4 lg:flex-1 lg:min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-4 lg:flex-1 lg:min-h-0">
 
             {/* LEWA KOLUMNA (2/3) */}
-            <div className="lg:col-span-2 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0">
+            <div className="lg:col-span-2 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
 
-              {/* Karta "Dziś" */}
+              {/* Karta "Dziś" — większy padding na mobile */}
               <button
                 onClick={goToToday}
-                className={`w-full text-left rounded-2xl p-4 lg:p-3 transition-all animate-fadeIn flex-shrink-0 ${
+                className={`w-full text-left rounded-2xl p-5 lg:p-3 transition-all animate-fadeIn flex-shrink-0 ${
                   isTodaySelected
                     ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
                     : 'bg-slate-900/80 backdrop-blur-md border border-green-400/20 hover:border-green-400/40 hover:bg-slate-900/90'
@@ -449,7 +449,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-0.5">
+                    <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-green-400">
                         Dzisiaj
                       </span>
@@ -468,7 +468,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                             {todayEvents[0].godzina}
                           </span>
                         </div>
-                        <div className="text-xs lg:text-[11px] text-white/60 mt-0.5 truncate">
+                        <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5 truncate">
                           {TYP_CONFIG[todayEvents[0].typ]?.icon} {TYP_CONFIG[todayEvents[0].typ]?.label}
                           {todayEvents[0].przeciwnik && ` vs ${todayEvents[0].przeciwnik}`}
                           {todayEvents[0].miejsce && ` · ${todayEvents[0].miejsce}`}
@@ -479,7 +479,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                         <div className="text-white font-bold text-base lg:text-sm leading-tight">
                           Brak wydarzeń
                         </div>
-                        <div className="text-xs lg:text-[11px] text-white/60 mt-0.5">
+                        <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5">
                           Nic nie zaplanowano na dziś
                         </div>
                       </>
@@ -489,7 +489,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
               </button>
 
               {/* STATYSTYKI MIESIĄCA */}
-              <div className="grid grid-cols-4 gap-2 animate-fadeIn flex-shrink-0">
+              <div className="grid grid-cols-4 gap-2 lg:gap-2 animate-fadeIn flex-shrink-0">
                 <CompactStat
                   icon="📅"
                   color="text-blue-400"
@@ -584,7 +584,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
             </div>
 
             {/* PRAWA KOLUMNA (1/3) */}
-            <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 lg:overflow-y-auto">
+            <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
               <div ref={eventsAnchorRef} className="scroll-mt-4" />
 
               <SelectedDayView
@@ -718,11 +718,6 @@ function DeleteEventButton({ id }: { id: number }) {
   );
 }
 
-/**
- * EventCard — karta wydarzenia w prawej kolumnie.
- * `highlighted` — gdy true, karta dostaje zieloną ramkę i glow
- * (taki sam efekt jak komórka "dziś" w kalendarzu).
- */
 function EventCard({
   trening,
   stats,
