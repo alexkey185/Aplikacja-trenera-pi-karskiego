@@ -80,22 +80,25 @@ export default async function Kadra({
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
-      <div className="relative z-20 p-3 md:p-6 lg:p-8 pb-24">
-        <div className="max-w-3xl mx-auto">
-          <header className="mb-3 animate-fadeIn">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
+      {/* Padding główny: mobile p-3, desktop p-8 */}
+      <div className="relative z-20 p-3 md:p-6 lg:p-8 pb-24 md:pb-28">
+        <div className="max-w-3xl md:max-w-5xl mx-auto">
+
+          {/* HEADER */}
+          <header className="mb-3 md:mb-6 animate-fadeIn">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="flex items-center gap-2 md:gap-3">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-lg blur-md opacity-60" />
-                  <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-                    <Users className="w-4 h-4 text-white" strokeWidth={2.5} />
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-lg md:rounded-2xl blur-md opacity-60" />
+                  <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg md:shadow-2xl">
+                    <Users className="w-4 h-4 md:w-6 md:h-6 text-white" strokeWidth={2.5} />
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-sm md:text-lg font-bold leading-tight text-white drop-shadow-lg tracking-wide">
+                  <h1 className="text-sm md:text-2xl font-bold leading-tight text-white drop-shadow-lg tracking-wide">
                     LISTA ZAWODNIKÓW
                   </h1>
-                  <p className="text-[10px] text-white/60 font-medium">
+                  <p className="text-[10px] md:text-xs text-white/60 font-medium md:mt-0.5">
                     {liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'} na liście
                   </p>
                 </div>
@@ -105,13 +108,13 @@ export default async function Kadra({
 
             {/* Pasek wyszukiwania */}
             <form action="/kadra" method="GET" className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+              <Search className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
               <input
                 name="q"
                 type="text"
                 defaultValue={q}
-                placeholder="Szukaj..."
-                className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg pl-8 pr-3 py-2 text-xs text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
+                placeholder="Szukaj zawodnika..."
+                className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg md:rounded-2xl pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 text-xs md:text-sm text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
               />
             </form>
           </header>
@@ -125,7 +128,7 @@ export default async function Kadra({
           {liczba === 0 ? (
             <EmptyState />
           ) : (
-            <ul className="space-y-1 list-none p-0 m-0">
+            <ul className="space-y-1 md:space-y-2 list-none p-0 m-0">
               {zawodnicy!.map((z: Zawodnik, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
@@ -152,37 +155,37 @@ export default async function Kadra({
                   >
                     <Link
                       href={`/zawodnicy/${z.id}`}
-                      className="flex items-center gap-2.5 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg px-2.5 py-1.5 hover:bg-slate-900 transition-all active:scale-[0.99]"
+                      className="flex items-center gap-2.5 md:gap-4 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg md:rounded-2xl px-2.5 md:px-4 py-2 md:py-3 hover:bg-slate-900 transition-all active:scale-[0.99]"
                     >
-                      {/* Avatar */}
+                      {/* Avatar: mobile 32px, desktop 48px */}
                       <div className="relative flex-shrink-0">
-                        <div className="w-7 h-7 rounded-md bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[10px]">
+                        <div className="w-8 h-8 md:w-12 md:h-12 rounded-md md:rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[11px] md:text-base">
                           {inicjaly(z.imie, z.nazwisko)}
                         </div>
                         {z.numer != null && (
-                          <div className="absolute -bottom-0.5 -right-0.5 px-1 py-0 rounded bg-slate-950 border border-amber-400/40 text-amber-400 text-[8px] font-bold leading-tight">
+                          <div className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 px-1 md:px-1.5 py-0 md:py-0.5 rounded bg-slate-950 border border-amber-400/40 text-amber-400 text-[8px] md:text-[10px] font-bold leading-tight">
                             {z.numer}
                           </div>
                         )}
                       </div>
 
-                      {/* Dane */}
+                      {/* Dane: nazwisko + rocznik/pozycja */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white text-xs truncate leading-tight">
+                        <div className="font-semibold text-white text-sm md:text-base truncate leading-tight">
                           {z.imie} {z.nazwisko}
                         </div>
-                        <div className="text-[9px] text-white/40 leading-tight truncate">
+                        <div className="text-[10px] md:text-xs text-white/40 leading-tight truncate md:mt-0.5">
                           {z.rocznik ?? '—'}
                           {z.pozycja ? ` · ${z.pozycja}` : ''}
                         </div>
                       </div>
 
-                      {/* Frekwencja */}
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className={`text-[10px] font-bold ${procentKolor}`}>
+                      {/* Frekwencja: mobile % + pasek 32px, desktop większe */}
+                      <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
+                        <span className={`text-[11px] md:text-sm font-bold ${procentKolor}`}>
                           {procent}%
                         </span>
-                        <div className="w-8 h-0.5 bg-slate-950/60 rounded-full overflow-hidden">
+                        <div className="w-8 md:w-20 h-0.5 md:h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${pasekKolor}`}
                             style={{ width: `${procent}%` }}
@@ -191,7 +194,7 @@ export default async function Kadra({
                       </div>
 
                       {/* Chevron */}
-                      <span className="text-white/30 text-base flex-shrink-0 leading-none">
+                      <span className="text-white/30 text-base md:text-xl flex-shrink-0 leading-none">
                         ›
                       </span>
                     </Link>
@@ -216,23 +219,23 @@ export default async function Kadra({
 
 function EmptyState() {
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-center animate-fadeIn relative overflow-hidden">
+    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-8 md:p-12 text-center animate-fadeIn relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-green-500/20 rounded-full blur-3xl" />
       <div className="relative">
-        <div className="w-16 h-16 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
-          <Users className="w-8 h-8 text-green-400" strokeWidth={1.5} />
+        <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4 md:mb-5">
+          <Users className="w-8 h-8 md:w-10 md:h-10 text-green-400" strokeWidth={1.5} />
         </div>
-        <h3 className="font-bold text-base mb-1 text-white drop-shadow">
+        <h3 className="font-bold text-base md:text-xl mb-1 md:mb-2 text-white drop-shadow">
           Zacznijmy od składu
         </h3>
-        <p className="text-xs text-white/60 mb-5 max-w-xs mx-auto">
+        <p className="text-xs md:text-sm text-white/60 mb-5 md:mb-6 max-w-xs mx-auto">
           Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i frekwencją.
         </p>
         <Link
           href="/zawodnicy/nowy"
-          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-green-500/40"
+          className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 md:px-5 py-2.5 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm transition-all hover:shadow-lg hover:shadow-green-500/40"
         >
-          <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+          <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:rotate-90 transition-transform" />
           Dodaj pierwszego zawodnika
         </Link>
       </div>
