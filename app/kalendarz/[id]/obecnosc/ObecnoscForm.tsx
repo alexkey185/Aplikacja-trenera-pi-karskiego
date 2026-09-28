@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { zapiszObecnosc } from './actions';
-import { Check, X, Save, TrendingUp, Info } from 'lucide-react';
+import { Check, X, Save, TrendingUp, Info, RotateCw } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -44,7 +44,6 @@ export function ObecnoscForm({
   previousStatus?: Record<number, string>;
   typTreningu?: string;
 }) {
-  // Stan lokalny — nie wpływa na statystyki dopóki nie klikniesz Zapisz
   const [statuses, setStatuses] = useState<Record<number, string>>(() => {
     const init: Record<number, string> = {};
     zawodnicy.forEach((z) => {
@@ -69,7 +68,6 @@ export function ObecnoscForm({
     return init;
   });
 
-  // Detekcja niezapisanych zmian — do blokady wyjścia z karty
   const hasChanges = useMemo(() => {
     const initialCount = Object.keys(initialStatus).length;
     if (initialCount === 0) return false;
@@ -96,7 +94,6 @@ export function ObecnoscForm({
   const showExitWarning =
     userTouched && (hasChanges || Object.keys(initialStatus).length === 0);
 
-  // Ostrzeżenie przeglądarki przy próbie wyjścia — bez widocznego bannera
   useEffect(() => {
     if (!showExitWarning) return;
 
@@ -142,9 +139,12 @@ export function ObecnoscForm({
     setUserTouched(true);
   };
 
+  const inicjaly = (imie: string, nazwisko: string) =>
+    `${imie.charAt(0)}${nazwisko.charAt(0)}`.toUpperCase();
+
   return (
     <form action={zapiszObecnosc.bind(null, treningId)} className="space-y-3">
-      {/* Info o dziedziczeniu z poprzedniego treningu */}
+      {/* Info o dziedziczeniu */}
       {usesPrevious && odziedziczoneNieobecnosci > 0 && (
         <div className="bg-blue-500/10 border border-blue-400/30 rounded-2xl px-3 py-2.5 flex items-start gap-2 text-[11px] text-blue-200 animate-fadeIn">
           <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
@@ -158,7 +158,7 @@ export function ObecnoscForm({
         </div>
       )}
 
-      {/* Licznik na żywo */}
+      {/* Licznik — tylko zielony pasek (bez czerwonego segmentu) */}
       <div className="bg-slate-900/80 backdrop-blur-lg border border-white/20 rounded-2xl p-3 animate-fadeIn sticky top-4 z-10 shadow-2xl shadow-black/40">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
@@ -177,24 +177,30 @@ export function ObecnoscForm({
                 {procent}%
               </span>
             </div>
-            <div className="text-[10px] text-white/60 mt-0.5">
-              obecnych na treningu
+            <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2">
+              <span>obecnych na treningu</span>
+              {stats.nieobecny > 0 && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <span className="text-red-400/80 font-medium">
+                    {stats.nieobecny} nieob.
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
-        <div className="mt-2 h-1 bg-slate-900/70 rounded-full overflow-hidden flex">
-          {stats.obecny > 0 && (
-            <div
-              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
-              style={{ width: `${(stats.obecny / total) * 100}%` }}
-            />
-          )}
-          {stats.nieobecny > 0 && (
-            <div
-              className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-500"
-              style={{ width: `${(stats.nieobecny / total) * 100}%` }}
-            />
-          )}
+        <div className="mt-2 h-1 bg-slate-900/70 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              procent >= 80
+                ? 'bg-gradient-to-r from-green-500 to-green-400'
+                : procent >= 50
+                ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+                : 'bg-gradient-to-r from-red-500 to-red-400'
+            }`}
+            style={{ width: `${procent}%` }}
+          />
         </div>
       </div>
 
@@ -213,30 +219,36 @@ export function ObecnoscForm({
           return (
             <li
               key={z.id}
-              className={`bg-slate-900/80 backdrop-blur-md border rounded-lg md:rounded-xl px-2.5 md:px-3 py-1.5 md:py-2 animate-fadeIn stagger-${Math.min(
+              className={`bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-lg md:rounded-xl px-2.5 md:px-3 py-1.5 md:py-2 animate-fadeIn stagger-${Math.min(
                 i + 1,
                 8
-              )} ${
-                isInherited
-                  ? 'border-blue-400/30 ring-1 ring-blue-400/20'
-                  : 'border-white/10'
-              }`}
+              )}`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
+                {/* Avatar — inicjały + numer jako badge (jak w Kadrze) */}
                 <div className="relative flex-shrink-0">
-                  <div
-                    className={`absolute inset-0 rounded-md md:rounded-lg blur-sm opacity-40 ${
-                      opcjaAktywna?.bgActive.split(' ')[0] ?? ''
-                    }`}
-                  />
-                  <div className="relative w-7 h-7 md:w-9 md:h-9 rounded-md md:rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-white/20 flex items-center justify-center font-bold text-white text-[10px] md:text-xs">
-                    {z.numer ?? '—'}
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[10px] md:text-xs">
+                    {inicjaly(z.imie, z.nazwisko)}
                   </div>
+                  {z.numer != null && (
+                    <div className="absolute -bottom-0.5 -right-0.5 px-1 py-0 md:px-1.5 md:py-0.5 rounded bg-slate-950 border border-amber-400/40 text-amber-400 text-[8px] md:text-[9px] font-bold leading-tight">
+                      {z.numer}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-xs md:text-sm truncate text-white leading-tight">
-                    {z.imie} {z.nazwisko}
+                  <div className="flex items-center gap-1.5">
+                    <div className="font-semibold text-xs md:text-sm truncate text-white leading-tight">
+                      {z.imie} {z.nazwisko}
+                    </div>
+                    {isInherited && (
+                      <RotateCw
+                        className="w-3 h-3 text-blue-300/60 flex-shrink-0"
+                        strokeWidth={2.5}
+                        aria-label="Status z poprzedniego treningu"
+                      />
+                    )}
                   </div>
                   <div
                     className={`text-[9px] md:text-[11px] font-medium truncate leading-tight mt-0.5 ${
@@ -244,11 +256,6 @@ export function ObecnoscForm({
                     }`}
                   >
                     {opcjaAktywna?.title ?? '—'}
-                    {isInherited && (
-                      <span className="text-blue-300/70 ml-1.5 text-[8px] md:text-[9px] uppercase tracking-wider font-bold">
-                        · z poprzedniego
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -284,7 +291,7 @@ export function ObecnoscForm({
         })}
       </ul>
 
-      {/* Ukryte pola dla formularza */}
+      {/* Ukryte pola */}
       {Object.entries(statuses).map(([zawodnikId, status]) => (
         <input
           key={zawodnikId}
