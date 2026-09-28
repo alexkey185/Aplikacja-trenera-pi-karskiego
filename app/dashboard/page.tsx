@@ -73,6 +73,19 @@ export default async function Dashboard({
 
   const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
 
+  // 3 dni dla mobile: dzisiaj + 2 następne (jeśli dziś jest w widocznym tygodniu)
+  const dniMobile = (() => {
+    const startIdx = dni.findIndex((d) => toISO(d) === dzisStr);
+    if (startIdx === -1) return dni.slice(0, 3);
+    const start = dni.slice(startIdx, startIdx + 3);
+    const brakuje = 3 - start.length;
+    if (brakuje > 0) {
+      const prev = dni.slice(0, startIdx).slice(-brakuje);
+      return [...prev, ...start];
+    }
+    return start;
+  })();
+
   const eventMap = new Map<string, any[]>();
   (treningi ?? []).forEach((t) => {
     if (!eventMap.has(t.data)) eventMap.set(t.data, []);
@@ -168,11 +181,11 @@ export default async function Dashboard({
             <div className="flex items-center justify-between mb-4">
               <Link
                 href={`/dashboard?w=${prevWeek}`}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Link>
-              <div className="text-center">
+              <div className="text-center px-2">
                 <div className="font-bold text-white text-sm capitalize">
                   {poniedzialek.toLocaleDateString('pl-PL', {
                     day: '2-digit',
@@ -192,14 +205,109 @@ export default async function Dashboard({
               </div>
               <Link
                 href={`/dashboard?w=${nextWeek}`}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
               >
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* Siatka 7 dni */}
-            <div className="grid grid-cols-7 gap-1.5 md:gap-2">
+            {/* MOBILE: 3 dni (dzisiaj + 2 następne) */}
+            <div className="md:hidden grid grid-cols-3 gap-2">
+              {dniMobile.map((d, i) => {
+                const dataStr = toISO(d);
+                const eventy = eventMap.get(dataStr) ?? [];
+                const czyDzis = dataStr === dzisStr;
+                const maEventy = eventy.length > 0;
+
+                return (
+                  <Link
+                    key={i}
+                    href={`/dashboard/${dataStr}`}
+                    className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${
+                      czyDzis
+                        ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                        : 'bg-slate-800/60 border border-white/10'
+                    }`}
+                  >
+                    <div className="mb-3 pb-2 border-b border-white/10">
+                      <div
+                        className={`text-[10px] uppercase tracking-widest font-bold ${
+                          czyDzis ? 'text-green-300' : 'text-white/40'
+                        }`}
+                      >
+                        {formatDzienTyg(d)}
+                      </div>
+                      <div
+                        className={`text-2xl font-black leading-none mt-1 ${
+                          czyDzis ? 'text-green-400' : 'text-white'
+                        }`}
+                      >
+                        {d.getDate()}
+                      </div>
+                      <div className="text-[10px] text-white/40 mt-0.5 capitalize">
+                        {d.toLocaleDateString('pl-PL', { month: 'short' })}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 space-y-1.5">
+                      {eventy.length === 0 && (
+                        <div className="text-[10px] text-white/30 text-center py-2">
+                          brak
+                        </div>
+                      )}
+                      {eventy.slice(0, 4).map((t: any) => (
+                        <div
+                          key={t.id}
+                          className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(
+                            t.typ
+                          )} bg-white/5`}
+                        >
+                          <div className="font-bold leading-tight">
+                            {t.godzina}
+                          </div>
+                          <div className="text-white/70 leading-tight capitalize truncate">
+                            {t.typ}
+                          </div>
+                        </div>
+                      ))}
+                      {eventy.length > 4 && (
+                        <div className="text-[10px] text-white/40 text-center pt-0.5">
+                          +{eventy.length - 4}
+                        </div>
+                      )}
+                    </div>
+
+                    {maEventy && (
+                      <div className="flex gap-1 mt-2">
+                        {eventy.slice(0, 5).map((e: any, idx) => (
+                          <div
+                            key={idx}
+                            className={`w-1.5 h-1.5 rounded-full ${typKolor(
+                              e.typ
+                            )}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {czyDzis && (
+                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Link do pełnego tygodnia (mobile) */}
+            <Link
+              href="/kalendarz"
+              className="md:hidden mt-3 flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 transition-all"
+            >
+              📅 Zobacz cały tydzień
+            </Link>
+
+            {/* DESKTOP: siatka 7 kolumn */}
+            <div className="hidden md:grid grid-cols-7 gap-2">
               {dni.map((d, i) => {
                 const dataStr = toISO(d);
                 const eventy = eventMap.get(dataStr) ?? [];
@@ -210,7 +318,7 @@ export default async function Dashboard({
                   <Link
                     key={i}
                     href={`/dashboard/${dataStr}`}
-                    className={`group relative rounded-2xl p-2 md:p-3 transition-all hover:-translate-y-0.5 min-h-[140px] md:min-h-[180px] flex flex-col ${
+                    className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${
                       czyDzis
                         ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
                         : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
@@ -218,14 +326,14 @@ export default async function Dashboard({
                   >
                     <div className="mb-2 flex-shrink-0">
                       <div
-                        className={`text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${
+                        className={`text-[10px] uppercase tracking-widest font-bold ${
                           czyDzis ? 'text-green-300' : 'text-white/40'
                         }`}
                       >
                         {formatDzienTyg(d)}
                       </div>
                       <div
-                        className={`text-lg md:text-2xl font-black leading-none mt-0.5 ${
+                        className={`text-2xl font-black leading-none mt-0.5 ${
                           czyDzis ? 'text-green-400' : 'text-white'
                         }`}
                       >
@@ -237,7 +345,7 @@ export default async function Dashboard({
                       {eventy.slice(0, 3).map((t: any) => (
                         <div
                           key={t.id}
-                          className={`text-[9px] md:text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
+                          className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
                             t.typ
                           )} bg-white/5`}
                         >
@@ -261,7 +369,7 @@ export default async function Dashboard({
                         {eventy.slice(0, 4).map((e: any, idx) => (
                           <div
                             key={idx}
-                            className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${typKolor(
+                            className={`w-1.5 h-1.5 rounded-full ${typKolor(
                               e.typ
                             )}`}
                           />
@@ -335,7 +443,7 @@ export default async function Dashboard({
                           {t.godzina}
                         </div>
                       </div>
-                      <div className="w-px h-10 bg-white/10 flex-shrink-0" />
+                      <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white text-sm truncate capitalize">
                           {t.typ}
