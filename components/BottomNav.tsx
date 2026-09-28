@@ -8,7 +8,7 @@ import {
   Users,
   Calendar,
   BarChart3,
-  LayoutDashboard,
+  Zap,
   User,
   LogOut,
   type LucideIcon,
@@ -25,7 +25,7 @@ const sekcje = [
   {
     nazwa: 'Główne',
     items: [
-      { href: '/dashboard', label: 'Kalendarz', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dzisiaj', icon: Zap },
       { href: '/kadra', label: 'Kadra', icon: Users },
     ] as Item[],
   },
@@ -94,14 +94,15 @@ export function BottomNav() {
 
   return (
     <>
-      {/* SIDEBAR — desktop */}
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col z-50 bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
+        {/* Logo — przezroczysty wordmark */}
         <div className="p-5 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center">
             <img
-              src="/wordmark-on-dark.png"
+              src="/wordmark-transparent-400.png"
               alt="Talent"
               className="h-9 w-auto"
+              style={{ mixBlendMode: 'lighten' }}
             />
           </Link>
         </div>
@@ -114,9 +115,14 @@ export function BottomNav() {
               </div>
               <div className="space-y-1">
                 {sekcja.items.map((item) => {
-                  const aktywny = pathname.startsWith(item.href);
+                  const aktywny =
+                    item.href === '/dashboard'
+                      ? pathname === '/dashboard' ||
+                        pathname.startsWith('/dashboard/')
+                      : pathname.startsWith(item.href);
                   const Icon = item.icon;
-                  const showBadge = item.href === '/dashboard' && dzisiajCount > 0;
+                  const showBadge =
+                    item.href === '/dashboard' && dzisiajCount > 0;
                   return (
                     <Link
                       key={item.href}
@@ -130,7 +136,10 @@ export function BottomNav() {
                       {aktywny && (
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-400 rounded-r-full" />
                       )}
-                      <Icon className="w-5 h-5 flex-shrink-0" strokeWidth={aktywny ? 2.5 : 2} />
+                      <Icon
+                        className="w-5 h-5 flex-shrink-0"
+                        strokeWidth={aktywny ? 2.5 : 2}
+                      />
                       <span className="flex-1">{item.label}</span>
                       {showBadge && (
                         <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md min-w-[20px] text-center">
@@ -172,11 +181,14 @@ export function BottomNav() {
         </div>
       </aside>
 
-      {/* DOLNA NAWIGACJA — mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <div className="bg-slate-900/90 backdrop-blur-xl border-t border-white/10 px-2 pb-2 pt-2 flex justify-around shadow-2xl shadow-black/50">
           {wszystkieItems.map((item) => {
-            const aktywny = pathname.startsWith(item.href);
+            const aktywny =
+              item.href === '/dashboard'
+                ? pathname === '/dashboard' ||
+                  pathname.startsWith('/dashboard/')
+                : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
               <Link
@@ -213,7 +225,6 @@ export function BottomNav() {
         </div>
       </nav>
 
-      {/* MODAL WYLOGOWANIA */}
       <ConfirmDialog
         open={showLogoutModal}
         title="Wylogować się?"

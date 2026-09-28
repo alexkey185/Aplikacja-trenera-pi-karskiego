@@ -12,6 +12,7 @@ import {
   Clock,
   MapPin,
   ChevronRight as ChevronRightIcon,
+  BarChart3 as BarChart3Icon,
 } from 'lucide-react';
 
 function getMonday(date: Date): Date {
@@ -215,7 +216,6 @@ export default async function Dashboard({
                         : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
                     }`}
                   >
-                    {/* Nagłówek dnia */}
                     <div className="mb-2 flex-shrink-0">
                       <div
                         className={`text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${
@@ -233,7 +233,6 @@ export default async function Dashboard({
                       </div>
                     </div>
 
-                    {/* Wydarzenia */}
                     <div className="flex-1 space-y-1 overflow-hidden">
                       {eventy.slice(0, 3).map((t: any) => (
                         <div
@@ -242,7 +241,9 @@ export default async function Dashboard({
                             t.typ
                           )} bg-white/5`}
                         >
-                          <div className="font-bold leading-tight">{t.godzina}</div>
+                          <div className="font-bold leading-tight">
+                            {t.godzina}
+                          </div>
                           <div className="truncate text-white/70 leading-tight capitalize">
                             {t.typ}
                           </div>
@@ -255,7 +256,6 @@ export default async function Dashboard({
                       )}
                     </div>
 
-                    {/* Wskaźniki na dole */}
                     {maEventy && (
                       <div className="flex gap-0.5 mt-1 flex-shrink-0">
                         {eventy.slice(0, 4).map((e: any, idx) => (
@@ -277,7 +277,6 @@ export default async function Dashboard({
               })}
             </div>
 
-            {/* Legenda */}
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-[10px] flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -303,7 +302,11 @@ export default async function Dashboard({
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-                Dzisiaj · {teraz.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+                Dzisiaj ·{' '}
+                {teraz.toLocaleDateString('pl-PL', {
+                  day: '2-digit',
+                  month: 'long',
+                })}
               </h2>
             </div>
 
@@ -370,39 +373,143 @@ export default async function Dashboard({
             )}
           </div>
 
-          {/* SZYBKIE AKCJE */}
-          <div className="grid grid-cols-3 gap-3 animate-fadeIn">
-            <Link
-              href="/kalendarz/nowy"
-              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-green-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
-            >
-              <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-400/30 flex items-center justify-center">
-                <Plus className="w-5 h-5 text-green-400 group-hover:rotate-90 transition-transform" />
+          {/* NADCHODZĄCE + FREKWENCJA */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
+            {/* Nadchodzące */}
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+                  Nadchodzące
+                </h2>
               </div>
-              <span className="text-xs font-semibold text-white/80">
-                Nowe wydarzenie
-              </span>
-            </Link>
-            <Link
-              href="/kadra"
-              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-blue-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
-            >
-              <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-400/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-400" />
+              {(() => {
+                const nadchodzace = (treningi ?? [])
+                  .filter((t) => t.data > dzisStr)
+                  .sort((a, b) => {
+                    const cmp = a.data.localeCompare(b.data);
+                    if (cmp !== 0) return cmp;
+                    return (a.godzina || '').localeCompare(b.godzina || '');
+                  })
+                  .slice(0, 3);
+
+                if (nadchodzace.length === 0) {
+                  return (
+                    <div className="text-center py-6 text-white/40 text-sm">
+                      Brak nadchodzących wydarzeń
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {nadchodzace.map((t: any) => (
+                      <Link
+                        key={t.id}
+                        href={`/kalendarz/${t.id}/obecnosc`}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(
+                          t.typ
+                        )} bg-white/5 hover:bg-white/10 transition-all`}
+                      >
+                        <div className="flex-shrink-0 text-center w-10">
+                          <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
+                            {new Date(t.data).toLocaleDateString('pl-PL', {
+                              month: 'short',
+                            })}
+                          </div>
+                          <div className="text-lg font-black text-white leading-none">
+                            {new Date(t.data).getDate()}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-white truncate capitalize">
+                            {t.godzina} · {t.typ}
+                            {t.przeciwnik && (
+                              <span className="text-white/60 font-normal">
+                                {' '}
+                                vs {t.przeciwnik}
+                              </span>
+                            )}
+                          </div>
+                          {t.miejsce && (
+                            <div className="text-[10px] text-white/50 truncate mt-0.5">
+                              {t.miejsce}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Frekwencja miesiąca */}
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
+                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+                  Frekwencja —{' '}
+                  {teraz.toLocaleDateString('pl-PL', { month: 'long' })}
+                </h2>
               </div>
-              <span className="text-xs font-semibold text-white/80">Kadra</span>
-            </Link>
-            <Link
-              href="/kalendarz"
-              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-purple-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
-            >
-              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-purple-400" />
-              </div>
-              <span className="text-xs font-semibold text-white/80">
-                Pełny plan
-              </span>
-            </Link>
+              {(() => {
+                const rokMiesiac = dzisStr.substring(0, 7);
+                const treningiMies = (treningi ?? []).filter((t) =>
+                  t.data.startsWith(rokMiesiac)
+                );
+                const idsMies = treningiMies.map((t) => t.id);
+                const obecnosciMies = (obecnosci ?? []).filter((o) =>
+                  idsMies.includes(o.trening_id)
+                );
+                const obecniMies = obecnosciMies.filter(
+                  (o) => o.status === 'obecny' || o.status === 'spozniony'
+                ).length;
+                const procent =
+                  obecnosciMies.length > 0
+                    ? Math.round((obecniMies / obecnosciMies.length) * 100)
+                    : 0;
+
+                return (
+                  <>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl font-black text-white leading-none">
+                        {procent}
+                      </span>
+                      <span className="text-2xl text-white/40 font-bold">%</span>
+                    </div>
+                    <div className="w-full h-3 bg-slate-950/60 rounded-full overflow-hidden mb-3 shadow-inner">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          procent >= 80
+                            ? 'bg-gradient-to-r from-green-500 to-green-400'
+                            : procent >= 60
+                            ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+                            : 'bg-gradient-to-r from-red-500 to-red-400'
+                        }`}
+                        style={{ width: `${procent}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-white/50">
+                      <span>
+                        <span className="text-green-400 font-semibold">
+                          {obecniMies}
+                        </span>{' '}
+                        obecnych
+                      </span>
+                      <span>{obecnosciMies.length} wpisów</span>
+                    </div>
+                    <Link
+                      href="/statystyki"
+                      className="mt-4 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
+                    >
+                      <BarChart3Icon className="w-3.5 h-3.5" />
+                      Zobacz pełne statystyki
+                    </Link>
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
       </div>
