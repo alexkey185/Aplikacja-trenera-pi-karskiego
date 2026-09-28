@@ -4,32 +4,24 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { NowyTreningForm } from './NowyTreningForm';
 import { ArrowLeft, Plus } from 'lucide-react';
 
-export default function NowyTrening() {
+export default async function NowyTrening({
+  searchParams,
+}: {
+  searchParams: Promise<{ data?: string }>;
+}) {
   noStore();
+  const params = await searchParams;
+  const defaultData = params.data && /^\d{4}-\d{2}-\d{2}$/.test(params.data)
+    ? params.data
+    : undefined;
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.png"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg-mobile.png" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.png"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg.png" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
@@ -60,7 +52,7 @@ export default function NowyTrening() {
             </div>
           </header>
 
-          <NowyTreningForm />
+          <NowyTreningForm defaultData={defaultData} />
         </div>
       </div>
     </main>

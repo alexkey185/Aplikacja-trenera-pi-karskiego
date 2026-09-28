@@ -55,7 +55,6 @@ body::after {
   z-index: 0;
 }
 
-/* MAIN — responsywny padding-top */
 main {
   position: relative;
   z-index: 1;
@@ -64,21 +63,21 @@ main {
   box-sizing: border-box;
 }
 
-/* Desktop — mały padding */
 @media (min-width: 768px) {
   main {
     padding-top: 0;
   }
 }
 
-/* Mobile — stały odstęp od góry dla Safari URL bar + safe area dla notcha */
 @media (max-width: 767px) {
   main {
     padding-top: max(4rem, env(safe-area-inset-top));
   }
 }
 
-/* Animacje */
+/* ══════════════════════════════════════════════ */
+/* ANIMACJE */
+/* ══════════════════════════════════════════════ */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -119,6 +118,20 @@ main {
   }
 }
 
+/* Delikatny glow dla "dziś" — nie za mocny, ale zauważalny */
+@keyframes today-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 8px rgba(34, 197, 94, 0.35),
+      inset 0 0 8px rgba(34, 197, 94, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 16px rgba(34, 197, 94, 0.55),
+      inset 0 0 12px rgba(34, 197, 94, 0.12);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.4s ease-out;
   animation-fill-mode: both;
@@ -133,7 +146,6 @@ main {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Opóźnienia dla list (stagger) */
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }
 .stagger-3 { animation-delay: 0.15s; }
@@ -143,7 +155,6 @@ main {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* Efekt szkła */
 .glass {
   background: rgba(30, 41, 59, 0.5);
   backdrop-filter: blur(12px);
@@ -158,7 +169,6 @@ main {
   border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
-/* Przejścia */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
   transition-duration: 200ms;
@@ -169,7 +179,6 @@ button:active:not(:disabled), a:active {
   transform: scale(0.97);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -187,8 +196,63 @@ button:active:not(:disabled), a:active {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
-/* Dynamiczna wysokość viewportu — uwzględnia pasek URL Safari */
+
 .h-dvh {
   height: 100vh;
   height: 100dvh;
+}
+
+/* ══════════════════════════════════════════════ */
+/* KALENDARZ — komórki dni */
+/* ══════════════════════════════════════════════ */
+
+/* DZIŚ — subtelny zielony tint + delikatny glow + zielona cyfra */
+.day-today {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.55) !important;
+  animation: today-glow 2.5s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.day-today .day-number {
+  color: #4ade80 !important;
+  font-weight: 800 !important;
+}
+
+.day-today .day-label {
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+  opacity: 0.9;
+}
+
+/* WYBRANY (nie dziś) — delikatny niebieski ring */
+.day-selected {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 1.5px solid rgba(96, 165, 250, 0.5) !important;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.day-selected .day-number {
+  color: #93c5fd !important;
+  font-weight: 700 !important;
+}
+
+/* Weekend — subtelny niebieski tint */
+.day-weekend {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Święto — czerwony tint */
+.day-holiday {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Hover na dzień */
+.day-hoverable:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  transform: scale(1.06);
+  z-index: 3;
 }

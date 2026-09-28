@@ -12,12 +12,13 @@ import {
   Repeat,
 } from 'lucide-react';
 
-export function NowyTreningForm() {
-  const dzis = new Date().toISOString().split('T')[0];
+export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
+  // Bezpieczne pobieranie dzisiejszej daty w lokalnej strefie czasowej
+  const dzis = defaultData ?? new Date().toLocaleDateString('sv-SE');
   const zaMiesiac = (() => {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
-    return d.toISOString().split('T')[0];
+    return d.toLocaleDateString('sv-SE');
   })();
 
   const [data, setData] = useState(dzis);
