@@ -49,7 +49,6 @@ export function BottomNav() {
   const [email, setEmail] = useState<string | null>(null);
   const [dzisiajCount, setDzisiajCount] = useState<number>(0);
 
-  // Email użytkownika
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -57,7 +56,6 @@ export function BottomNav() {
     });
   }, []);
 
-  // Liczba wydarzeń dzisiaj (dla badge)
   useEffect(() => {
     const supabase = createClient();
     const dzis = new Date().toISOString().split('T')[0];
@@ -83,33 +81,21 @@ export function BottomNav() {
   }
 
   const inicjal = email ? email.charAt(0).toUpperCase() : '?';
-
   const wszystkieItems = sekcje.flatMap((s) => s.items);
 
   return (
     <>
-      {/* SIDEBAR — tylko na desktopie */}
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col z-50 bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
-        {/* Logo */}
         <div className="p-5 border-b border-white/10">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-              <span className="text-white font-black text-lg leading-none">
-                T
-              </span>
-            </div>
-            <div>
-              <div className="text-lg font-black text-white tracking-tight leading-none">
-                talent<span className="text-green-400">.</span>
-              </div>
-              <div className="text-[10px] text-white/50 font-medium mt-0.5">
-                Aplikacja trenera
-              </div>
-            </div>
+          <Link href="/dashboard" className="flex items-center">
+            <img
+  src="/wordmark-on-dark.svg"
+  alt="Talent"
+  className="h-9 w-auto"
+/>
           </Link>
         </div>
 
-        {/* Menu z sekcjami */}
         <nav className="flex-1 p-3 overflow-y-auto">
           {sekcje.map((sekcja, sIdx) => (
             <div key={sekcja.nazwa} className={sIdx > 0 ? 'mt-4' : ''}>
@@ -149,7 +135,6 @@ export function BottomNav() {
           ))}
         </nav>
 
-        {/* User + Logout */}
         <div className="p-3 border-t border-white/10">
           <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 mb-2">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">
@@ -172,7 +157,6 @@ export function BottomNav() {
         </div>
       </aside>
 
-      {/* DOLNA NAWIGACJA — tylko na mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <div className="bg-slate-900/90 backdrop-blur-xl border-t border-white/10 px-2 pb-2 pt-2 flex justify-around shadow-2xl shadow-black/50">
           {wszystkieItems.map((item) => {

@@ -12,8 +12,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Talent',
-  description: 'Aplikacja trenera',
+  title: 'Talent — Aplikacja Trenera',
+  description: 'Aplikacja dla trenerów piłki nożnej',
   applicationName: 'Talent',
   appleWebApp: {
     capable: true,
@@ -23,7 +23,17 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icons/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon-16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
@@ -55,6 +65,7 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={supabaseUrl} />
           </>
         )}
+        <meta name="theme-color" content="#0a0e1a" />
       </head>
       <body className={`${geistSans.variable} antialiased`}>
         <div className="md:pl-60">{children}</div>

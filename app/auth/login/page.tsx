@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
-
+import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { LoginForm } from '@/components/login-form';
 import { ArrowLeft } from 'lucide-react';
 
 export default async function LoginPage() {
-  
+  noStore();
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,13 +18,13 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="relative w-full h-dvh overflow-hidden bg-slate-950 pt-0">
+    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950 pt-0">
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-hero-mobile.png"
           alt=""
           fill
-          
+          priority
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -36,7 +36,7 @@ export default async function LoginPage() {
           src="/talent-hero.png"
           alt=""
           fill
-          
+          priority
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -53,13 +53,14 @@ export default async function LoginPage() {
         <ArrowLeft className="w-5 h-5" />
       </Link>
 
-      <div className="relative z-20 h-full flex flex-col items-center justify-center px-6 py-6 overflow-y-auto">
-        <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-white mb-2 animate-fadeIn leading-none drop-shadow-2xl">
-          talent
-          <span className="text-green-500">.</span>
-        </h1>
+      <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-6 py-10">
+        <img
+          src="/wordmark-on-dark.png"
+          alt="Talent"
+          className="w-56 h-auto mb-4 animate-fadeIn drop-shadow-2xl"
+        />
 
-        <p className="text-white/80 text-center text-sm mb-8 animate-fadeIn font-medium drop-shadow">
+        <p className="text-white/80 text-center text-sm mb-10 animate-fadeIn font-medium drop-shadow">
           Twój zespół, Twoje zasady
         </p>
 
@@ -67,7 +68,7 @@ export default async function LoginPage() {
           <LoginForm />
         </div>
 
-        <p className="text-center text-xs text-white/60 mt-6 drop-shadow">
+        <p className="text-center text-xs text-white/60 mt-8 drop-shadow">
           Wersja 1.0
         </p>
       </div>
