@@ -10,6 +10,7 @@ import {
   MapPin,
   Trash2,
   Calendar as CalendarIcon,
+  Printer,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
 import { usunTrening } from './[id]/edytuj/actions';
@@ -132,6 +133,22 @@ const formatShort = (iso: string) => {
   const d = parseISO(iso);
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
 };
+
+// Poniedziałek tygodnia zawierającego daną datę
+function getMonday(date: Date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function addDays(date: Date, days: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
 
 // ══════════════════════════════════════════════
 // KOMPONENT
@@ -285,6 +302,12 @@ export function KalendarzClient({ treningi, stats }: Props) {
     }
   };
 
+  // URL eksportu — tydzień zawierający aktualnie wybrany dzień
+  const eksportUrl = useMemo(() => {
+    const monday = getMonday(parseISO(selectedDate));
+    return `/kalendarz/eksport?w=${getLocalISO(monday)}`;
+  }, [selectedDate]);
+
   // ══════════════════════════════════════════════
   // RENDER KOMÓRKI DNIA
   // ══════════════════════════════════════════════
@@ -405,7 +428,9 @@ export function KalendarzClient({ treningi, stats }: Props) {
       <div className="relative z-20 p-4 md:p-6 lg:p-5 pb-28 lg:pb-5 lg:h-full lg:flex lg:flex-col">
         <div className="max-w-2xl lg:max-w-7xl mx-auto w-full lg:h-full lg:flex lg:flex-col">
 
-          {/* HEADER */}
+          {/* ═══════════════════════════════════════ */}
+          {/* HEADER — z przyciskiem Eksport */}
+          {/* ═══════════════════════════════════════ */}
           <header className="mb-5 lg:mb-3 flex items-center gap-3 animate-fadeIn flex-shrink-0">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
@@ -423,6 +448,17 @@ export function KalendarzClient({ treningi, stats }: Props) {
                 </p>
               </div>
             </div>
+
+            {/* ⬇️ PRZYCISK EKSPORTU */}
+            <Link
+              href={eksportUrl}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-xs font-semibold transition-all flex-shrink-0"
+              title="Eksportuj plan tygodnia"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Eksport</span>
+            </Link>
+
             <UserAvatar />
           </header>
 
@@ -432,7 +468,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
             {/* LEWA KOLUMNA (2/3) */}
             <div className="lg:col-span-2 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
 
-              {/* Karta "Dziś" — większy padding na mobile */}
+              {/* Karta "Dziś" */}
               <button
                 onClick={goToToday}
                 className={`w-full text-left rounded-2xl p-5 lg:p-3 transition-all animate-fadeIn flex-shrink-0 ${
