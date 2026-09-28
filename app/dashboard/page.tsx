@@ -3,50 +3,74 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
-  Users,
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  BarChart3,
   Plus,
+  Users,
+  Trophy,
   Clock,
   MapPin,
+  ChevronRight as ChevronRightIcon,
 } from 'lucide-react';
+
+function getMonday(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function toISO(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
 
 export default async function Dashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ m?: string }>;
+  searchParams: Promise<{ w?: string }>;
 }) {
   const params = await searchParams;
 
-  const dzis = new Date();
-  let rok = dzis.getFullYear();
-  let miesiac = dzis.getMonth();
+  const teraz = new Date();
+  const dzisStr = toISO(teraz);
 
-  if (params.m) {
-    const parts = params.m.split('-');
-    const r = Number(parts[0]);
-    const m = Number(parts[1]);
-    if (!isNaN(r) && !isNaN(m) && m >= 1 && m <= 12) {
-      rok = r;
-      miesiac = m - 1;
+  let poniedzialek = getMonday(teraz);
+  if (params.w) {
+    const parsed = new Date(params.w + 'T00:00:00');
+    if (!isNaN(parsed.getTime())) {
+      poniedzialek = getMonday(parsed);
     }
   }
+
+  const niedziela = addDays(poniedzialek, 6);
 
   const supabase = await createClient();
   const { data: treningi } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce')
-    .order('data', { ascending: true });
-
-  const { data: zawodnicy } = await supabase
-    .from('zawodnicy')
-    .select('id');
+    .order('data', { ascending: true })
+    .order('godzina', { ascending: true });
 
   const { data: obecnosci } = await supabase
     .from('obecnosc')
     .select('trening_id, status');
+
+  const stats = new Map<number, { obecni: number; nieobecni: number }>();
+  (obecnosci ?? []).forEach((o) => {
+    const s = stats.get(o.trening_id) ?? { obecni: 0, nieobecni: 0 };
+    if (o.status === 'obecny' || o.status === 'spozniony') s.obecni += 1;
+    else s.nieobecni += 1;
+    stats.set(o.trening_id, s);
+  });
+
+  const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
 
   const eventMap = new Map<string, any[]>();
   (treningi ?? []).forEach((t) => {
@@ -54,49 +78,18 @@ export default async function Dashboard({
     eventMap.get(t.data)!.push(t);
   });
 
-  const pierwszyDzien = new Date(rok, miesiac, 1);
-  const ostatniDzien = new Date(rok, miesiac + 1, 0);
-  const dniWMiesiacu = ostatniDzien.getDate();
+  const dzisiejsze = eventMap.get(dzisStr) ?? [];
+  const jestWTygodniu =
+    dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
 
-  let offset = pierwszyDzien.getDay() - 1;
-  if (offset < 0) offset = 6;
+  const prevWeek = toISO(addDays(poniedzialek, -7));
+  const nextWeek = toISO(addDays(poniedzialek, 7));
 
-  const dni: (number | null)[] = [];
-  for (let i = 0; i < offset; i++) dni.push(null);
-  for (let d = 1; d <= dniWMiesiacu; d++) dni.push(d);
-  while (dni.length % 7 !== 0) dni.push(null);
+  const formatDzienTyg = (date: Date) =>
+    date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
 
-  const nazwyMiesiecy = [
-    'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień',
-  ];
-
-  const dniTygodnia = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
-
-  const prevM = miesiac === 0 ? 12 : miesiac;
-  const prevR = miesiac === 0 ? rok - 1 : rok;
-  const nextM = miesiac === 11 ? 1 : miesiac + 2;
-  const nextR = miesiac === 11 ? rok + 1 : rok;
-
-  const dzisStr = `${dzis.getFullYear()}-${String(dzis.getMonth() + 1).padStart(2, '0')}-${String(dzis.getDate()).padStart(2, '0')}`;
-
-  const teraz = new Date();
-  const czyMinelo = (t: any) => {
-    const [g] = (t.godzina || '00:00').split(':');
-    const dt = new Date(`${t.data}T${String(g).padStart(2, '0')}:00:00`);
-    return dt < teraz;
-  };
-
-  const nadchodzace = (treningi ?? [])
-    .filter((t) => !czyMinelo(t))
-    .sort((a, b) => {
-      const cmp = a.data.localeCompare(b.data);
-      if (cmp !== 0) return cmp;
-      return (a.godzina || '').localeCompare(b.godzina || '');
-    });
-
-  const dzisiejsze = (treningi ?? []).filter((t) => t.data === dzisStr);
-  const najblizsze = nadchodzace.filter((t) => t.data !== dzisStr).slice(0, 3);
+  const formatMiesiacRok = (date: Date) =>
+    date.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
 
   const typKolor = (typ: string) => {
     if (typ === 'mecz') return 'bg-red-500';
@@ -112,20 +105,10 @@ export default async function Dashboard({
     return 'border-l-blue-500';
   };
 
-  const poczatek = `${rok}-${String(miesiac + 1).padStart(2, '0')}-01`;
-  const koniec = `${rok}-${String(miesiac + 1).padStart(2, '0')}-${String(dniWMiesiacu).padStart(2, '0')}`;
-
-  const wydarzeniaWMiesiacu = (treningi ?? []).filter(
-    (t) => t.data >= poczatek && t.data <= koniec
-  );
-
-  const totalObecnosci = (obecnosci ?? []).filter(
-    (o) => o.status === 'obecny' || o.status === 'spozniony'
-  ).length;
-  const totalWpisow = (obecnosci ?? []).length;
-  const srednia = totalWpisow > 0 ? Math.round((totalObecnosci / totalWpisow) * 100) : 0;
-
-  const liczbaZawodnikow = zawodnicy?.length ?? 0;
+  const typIkona = (typ: string) => {
+    if (typ === 'mecz') return Trophy;
+    return CalendarIcon;
+  };
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
@@ -155,6 +138,7 @@ export default async function Dashboard({
 
       <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">
         <div className="max-w-6xl mx-auto">
+          {/* HEADER */}
           <header className="mb-6 animate-fadeIn">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -166,10 +150,10 @@ export default async function Dashboard({
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
-                    Kalendarz
+                    Tydzień
                   </h1>
-                  <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
-                    Plan miesiąca
+                  <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">
+                    {formatMiesiacRok(poniedzialek)}
                   </p>
                 </div>
               </div>
@@ -177,274 +161,248 @@ export default async function Dashboard({
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* KALENDARZ */}
-            <div className="lg:col-span-2 lg:order-1 order-2">
-              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 animate-fadeIn shadow-2xl shadow-black/60">
-                <div className="flex items-center justify-between mb-4">
-                  <Link
-                    href={`/dashboard?m=${prevR}-${String(prevM).padStart(2, '0')}`}
-                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Link>
-                  <div className="text-center">
-                    <div className="font-bold text-white text-lg">
-                      {nazwyMiesiecy[miesiac]} {rok}
-                    </div>
-                    <div className="text-xs text-white/60">
-                      {wydarzeniaWMiesiacu.length}{' '}
-                      {wydarzeniaWMiesiacu.length === 1 ? 'wydarzenie' : 'wydarzeń'}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/dashboard?m=${nextR}-${String(nextM).padStart(2, '0')}`}
-                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {dniTygodnia.map((d) => (
-                    <div
-                      key={d}
-                      className="text-center text-xs font-bold text-white/40 uppercase py-1"
-                    >
-                      {d}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-1">
-                  {dni.map((d, i) => {
-                    if (d === null) {
-                      return <div key={i} className="aspect-square" />;
-                    }
-
-                    const dateStr = `${rok}-${String(miesiac + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    const eventy = eventMap.get(dateStr) ?? [];
-                    const czyDzis = dateStr === dzisStr;
-                    const maEventy = eventy.length > 0;
-
-                    const href =
-                      eventy.length === 1
-                        ? `/kalendarz/${eventy[0].id}/obecnosc`
-                        : `/dashboard/${dateStr}`;
-
-                    return (
-                      <Link
-                        key={i}
-                        href={href}
-                        className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                          czyDzis
-                            ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/50 border-2 border-green-300'
-                            : maEventy
-                            ? 'bg-slate-800 border border-white/20 shadow-md hover:border-white/40'
-                            : 'bg-slate-800/40 border border-white/5 hover:border-white/20'
-                        }`}
-                      >
-                        <span
-                          className={`text-sm font-semibold ${
-                            czyDzis
-                              ? 'text-white drop-shadow'
-                              : maEventy
-                              ? 'text-white'
-                              : 'text-white/50'
-                          }`}
-                        >
-                          {d}
-                        </span>
-                        {maEventy && (
-                          <div className="flex gap-0.5 mt-0.5">
-                            {eventy.slice(0, 3).map((e, idx) => (
-                              <div
-                                key={idx}
-                                className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)} shadow-sm`}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </Link>
-                    );
+          {/* TIMELINE — 7 DNI */}
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
+            {/* Nawigacja tygodnia */}
+            <div className="flex items-center justify-between mb-4">
+              <Link
+                href={`/dashboard?w=${prevWeek}`}
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Link>
+              <div className="text-center">
+                <div className="font-bold text-white text-sm capitalize">
+                  {poniedzialek.toLocaleDateString('pl-PL', {
+                    day: '2-digit',
+                    month: 'long',
+                  })}{' '}
+                  —{' '}
+                  {niedziela.toLocaleDateString('pl-PL', {
+                    day: '2-digit',
+                    month: 'long',
                   })}
                 </div>
-
-                <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-xs flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
-                    <span className="text-white/70">Trening</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm" />
-                    <span className="text-white/70">Mecz</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-sm" />
-                    <span className="text-white/70">Sparing</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm" />
-                    <span className="text-white/70">Turniej</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Szybkie akcje — na desktopie pod kalendarzem */}
-              <div className="hidden lg:flex gap-2 flex-wrap mt-5">
-                <Link
-                  href="/kalendarz/nowy"
-                  className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5"
-                >
-                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                  Dodaj wydarzenie
-                </Link>
-              </div>
-            </div>
-
-            {/* PANEL BOCZNY */}
-            <div className="lg:col-span-1 lg:order-2 order-1 space-y-4">
-              {/* Dzisiaj */}
-              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
-                <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  Dzisiaj · {new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
-                </div>
-                {dzisiejsze.length === 0 ? (
-                  <div className="text-sm text-white/50 text-center py-3">
-                    Brak wydarzeń na dziś
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {dzisiejsze.map((t: any) => (
-                      <Link
-                        key={t.id}
-                        href={`/kalendarz/${t.id}/obecnosc`}
-                        className={`block bg-white/5 hover:bg-white/10 border-l-4 ${typBorder(t.typ)} rounded-r-xl px-3 py-2.5 transition-all`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="text-base font-bold text-white leading-none min-w-[42px]">
-                            {t.godzina}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-white truncate capitalize">
-                              {t.typ}
-                              {t.przeciwnik && (
-                                <span className="text-white/60 font-normal">
-                                  {' '}
-                                  vs {t.przeciwnik}
-                                </span>
-                              )}
-                            </div>
-                            {t.miejsce && (
-                              <div className="text-[10px] text-white/50 truncate mt-0.5">
-                                {t.miejsce}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
+                {jestWTygodniu && (
+                  <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">
+                    Bieżący tydzień
                   </div>
                 )}
               </div>
+              <Link
+                href={`/dashboard?w=${nextWeek}`}
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-              {/* Najbliższe */}
-              {najblizsze.length > 0 && (
-                <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Clock className="w-3 h-3" />
-                    Najbliższe
-                  </div>
-                  <div className="space-y-2">
-                    {najblizsze.map((t: any) => (
-                      <Link
-                        key={t.id}
-                        href={`/kalendarz/${t.id}/obecnosc`}
-                        className={`block bg-white/5 hover:bg-white/10 border-l-4 ${typBorder(t.typ)} rounded-r-xl px-3 py-2.5 transition-all`}
+            {/* Siatka 7 dni */}
+            <div className="grid grid-cols-7 gap-1.5 md:gap-2">
+              {dni.map((d, i) => {
+                const dataStr = toISO(d);
+                const eventy = eventMap.get(dataStr) ?? [];
+                const czyDzis = dataStr === dzisStr;
+                const maEventy = eventy.length > 0;
+
+                return (
+                  <Link
+                    key={i}
+                    href={`/dashboard/${dataStr}`}
+                    className={`group relative rounded-2xl p-2 md:p-3 transition-all hover:-translate-y-0.5 min-h-[140px] md:min-h-[180px] flex flex-col ${
+                      czyDzis
+                        ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                        : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
+                    }`}
+                  >
+                    {/* Nagłówek dnia */}
+                    <div className="mb-2 flex-shrink-0">
+                      <div
+                        className={`text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${
+                          czyDzis ? 'text-green-300' : 'text-white/40'
+                        }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="text-base font-bold text-white leading-none min-w-[42px]">
-                            {t.godzina}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-white truncate capitalize">
-                              {t.typ}
-                              {t.przeciwnik && (
-                                <span className="text-white/60 font-normal">
-                                  {' '}
-                                  vs {t.przeciwnik}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[10px] text-white/50 truncate mt-0.5">
-                              {new Date(t.data).toLocaleDateString('pl-PL', {
-                                weekday: 'short',
-                                day: '2-digit',
-                                month: '2-digit',
-                              })}
-                            </div>
+                        {formatDzienTyg(d)}
+                      </div>
+                      <div
+                        className={`text-lg md:text-2xl font-black leading-none mt-0.5 ${
+                          czyDzis ? 'text-green-400' : 'text-white'
+                        }`}
+                      >
+                        {d.getDate()}
+                      </div>
+                    </div>
+
+                    {/* Wydarzenia */}
+                    <div className="flex-1 space-y-1 overflow-hidden">
+                      {eventy.slice(0, 3).map((t: any) => (
+                        <div
+                          key={t.id}
+                          className={`text-[9px] md:text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
+                            t.typ
+                          )} bg-white/5`}
+                        >
+                          <div className="font-bold leading-tight">{t.godzina}</div>
+                          <div className="truncate text-white/70 leading-tight capitalize">
+                            {t.typ}
                           </div>
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      ))}
+                      {eventy.length > 3 && (
+                        <div className="text-[9px] text-white/40 text-center pt-0.5">
+                          +{eventy.length - 3} więcej
+                        </div>
+                      )}
+                    </div>
 
-              {/* Frekwencja */}
-              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn shadow-xl shadow-black/40">
-                <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-3">
-                  Frekwencja
-                </div>
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Średnia</span>
-                    <span
-                      className={`text-lg font-bold ${
-                        srednia >= 80
-                          ? 'text-green-400'
-                          : srednia >= 60
-                          ? 'text-yellow-400'
-                          : 'text-red-400'
-                      }`}
-                    >
-                      {srednia}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Zawodnicy</span>
-                    <span className="text-lg font-bold text-white">
-                      {liczbaZawodnikow}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">W tym miesiącu</span>
-                    <span className="text-lg font-bold text-white">
-                      {wydarzeniaWMiesiacu.length}
-                    </span>
-                  </div>
-                </div>
-                <Link
-                  href="/statystyki"
-                  className="mt-3 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
-                >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  Zobacz pełne statystyki
-                </Link>
+                    {/* Wskaźniki na dole */}
+                    {maEventy && (
+                      <div className="flex gap-0.5 mt-1 flex-shrink-0">
+                        {eventy.slice(0, 4).map((e: any, idx) => (
+                          <div
+                            key={idx}
+                            className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${typKolor(
+                              e.typ
+                            )}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {czyDzis && (
+                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Legenda */}
+            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-[10px] flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-white/60">Trening</span>
               </div>
-
-              {/* Szybkie akcje — na mobile pod panelem */}
-              <div className="lg:hidden flex gap-2 flex-wrap">
-                <Link
-                  href="/kalendarz/nowy"
-                  className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-3 rounded-2xl text-sm transition-all hover:shadow-lg hover:shadow-green-500/40"
-                >
-                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                  Dodaj wydarzenie
-                </Link>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="text-white/60">Mecz</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                <span className="text-white/60">Sparing</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-purple-500" />
+                <span className="text-white/60">Turniej</span>
               </div>
             </div>
+          </div>
+
+          {/* DZISIAJ — szczegóły */}
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+                Dzisiaj · {teraz.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+              </h2>
+            </div>
+
+            {dzisiejsze.length === 0 ? (
+              <div className="text-center py-6 text-white/40 text-sm">
+                Brak wydarzeń na dziś
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {dzisiejsze.map((t: any) => {
+                  const Icon = typIkona(t.typ);
+                  const s = stats.get(t.id);
+                  return (
+                    <Link
+                      key={t.id}
+                      href={`/kalendarz/${t.id}/obecnosc`}
+                      className={`group flex items-center gap-4 p-3 rounded-2xl border-l-4 ${typBorder(
+                        t.typ
+                      )} bg-white/5 hover:bg-white/10 transition-all`}
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+                      </div>
+                      <div className="flex-shrink-0">
+                        <div className="text-lg font-bold text-white leading-none">
+                          {t.godzina}
+                        </div>
+                      </div>
+                      <div className="w-px h-10 bg-white/10 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white text-sm truncate capitalize">
+                          {t.typ}
+                          {t.przeciwnik && (
+                            <span className="text-white/60 font-normal">
+                              {' '}
+                              vs {t.przeciwnik}
+                            </span>
+                          )}
+                        </div>
+                        {t.miejsce && (
+                          <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{t.miejsce}</span>
+                          </div>
+                        )}
+                        {s && (s.obecni > 0 || s.nieobecni > 0) && (
+                          <div className="text-xs mt-1 flex items-center gap-3">
+                            <span className="text-green-400 font-medium">
+                              ✓ {s.obecni}
+                            </span>
+                            {s.nieobecni > 0 && (
+                              <span className="text-red-400 font-medium">
+                                ✗ {s.nieobecni}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* SZYBKIE AKCJE */}
+          <div className="grid grid-cols-3 gap-3 animate-fadeIn">
+            <Link
+              href="/kalendarz/nowy"
+              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-green-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
+            >
+              <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-400/30 flex items-center justify-center">
+                <Plus className="w-5 h-5 text-green-400 group-hover:rotate-90 transition-transform" />
+              </div>
+              <span className="text-xs font-semibold text-white/80">
+                Nowe wydarzenie
+              </span>
+            </Link>
+            <Link
+              href="/kadra"
+              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-blue-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-400/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-400" />
+              </div>
+              <span className="text-xs font-semibold text-white/80">Kadra</span>
+            </Link>
+            <Link
+              href="/kalendarz"
+              className="group bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-purple-400/40 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all hover:-translate-y-0.5"
+            >
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-purple-400" />
+              </div>
+              <span className="text-xs font-semibold text-white/80">
+                Pełny plan
+              </span>
+            </Link>
           </div>
         </div>
       </div>
