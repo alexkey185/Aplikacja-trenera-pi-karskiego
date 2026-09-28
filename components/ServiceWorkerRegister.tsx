@@ -7,7 +7,18 @@ export function ServiceWorkerRegister() {
     if (typeof window === 'undefined') return;
     if (!('serviceWorker' in navigator)) return;
 
-    // Rejestrujemy dopiero po pełnym załadowaniu strony
+    // NIE rejestruj Service Workera w trybie dev (powoduje cache problemów)
+    if (process.env.NODE_ENV !== 'production') {
+      // W trybie dev — wyrejestruj stary Service Worker, jeśli istnieje
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((reg) => {
+          reg.unregister();
+          console.log('✓ Service Worker wyrejestrowany (tryb dev)');
+        });
+      });
+      return;
+    }
+
     const register = () => {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
