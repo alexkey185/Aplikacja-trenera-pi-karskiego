@@ -13,6 +13,7 @@ import {
   LogOut,
   type LucideIcon,
 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type Item = {
   href: string;
@@ -47,14 +48,21 @@ export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
+  const [imie, setImie] = useState<string | null>(null);
+  const [nazwisko, setNazwisko] = useState<string | null>(null);
   const [dzisiajCount, setDzisiajCount] = useState<number>(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? null);
+      const u = data.user;
+      setEmail(u?.email ?? null);
+      setImie(u?.user_metadata?.imie ?? null);
+      setNazwisko(u?.user_metadata?.nazwisko ?? null);
     });
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -69,7 +77,7 @@ export function BottomNav() {
   }, [pathname]);
 
   async function handleLogout() {
-    if (!confirm('Wylogować się?')) return;
+    setLogoutLoading(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/auth/login');
@@ -80,19 +88,21 @@ export function BottomNav() {
     return null;
   }
 
-  const inicjal = email ? email.charAt(0).toUpperCase() : '?';
+  const pelneImie = imie && nazwisko ? `${imie} ${nazwisko}` : null;
+  const inicjal = (imie?.charAt(0) || email?.charAt(0) || '?').toUpperCase();
   const wszystkieItems = sekcje.flatMap((s) => s.items);
 
   return (
     <>
+      {/* SIDEBAR — desktop */}
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col z-50 bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
         <div className="p-5 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center">
             <img
-  src="/wordmark-on-dark.svg"
-  alt="Talent"
-  className="h-9 w-auto"
-/>
+              src="/wordmark-on-dark.png"
+              alt="Talent"
+              className="h-9 w-auto"
+            />
           </Link>
         </div>
 
@@ -136,7 +146,10 @@ export function BottomNav() {
         </nav>
 
         <div className="p-3 border-t border-white/10">
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 mb-2">
+          <Link
+            href="/profil"
+            className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 mb-2 transition-colors"
+          >
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">
               {inicjal}
             </div>
@@ -144,11 +157,13 @@ export function BottomNav() {
               <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
                 Zalogowany
               </div>
-              <div className="text-xs text-white truncate">{email ?? '...'}</div>
+              <div className="text-xs text-white truncate">
+                {pelneImie ?? email ?? '...'}
+              </div>
             </div>
-          </div>
+          </Link>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center justify-center gap-2 text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 hover:border-red-400/60 px-3 py-2 rounded-xl text-sm font-medium transition-all"
           >
             <LogOut className="w-4 h-4" />
@@ -157,6 +172,7 @@ export function BottomNav() {
         </div>
       </aside>
 
+      {/* DOLNA NAWIGACJA — mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <div className="bg-slate-900/90 backdrop-blur-xl border-t border-white/10 px-2 pb-2 pt-2 flex justify-around shadow-2xl shadow-black/50">
           {wszystkieItems.map((item) => {
@@ -196,6 +212,19 @@ export function BottomNav() {
           })}
         </div>
       </nav>
+
+      {/* MODAL WYLOGOWANIA */}
+      <ConfirmDialog
+        open={showLogoutModal}
+        title="Wylogować się?"
+        message="Zakończysz sesję i wrócisz do ekranu logowania."
+        confirmLabel="Wyloguj"
+        variant="warning"
+        loading={logoutLoading}
+        icon={<LogOut className="w-7 h-7" />}
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </>
   );
 }
