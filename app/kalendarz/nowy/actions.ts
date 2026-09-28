@@ -66,6 +66,11 @@ export async function dodajTrening(formData: FormData) {
     }
   }
 
+  // ══════════════════════════════════════════════
+  // Jeśli cykliczny — generujemy wspólny UUID dla wszystkich
+  // ══════════════════════════════════════════════
+  const cyklId = cyklDostepny ? crypto.randomUUID() : null;
+
   const rows = dates.map((d) => ({
     data: d,
     godzina,
@@ -73,6 +78,7 @@ export async function dodajTrening(formData: FormData) {
     typ,
     przeciwnik,
     notatki,
+    cykl_id: cyklId,
   }));
 
   const { error } = await supabase.from('treningi').insert(rows);

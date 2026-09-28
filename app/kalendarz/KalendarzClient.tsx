@@ -9,6 +9,7 @@ import {
   Plus,
   MapPin,
   Trash2,
+  Pencil,
   Calendar as CalendarIcon,
   Printer,
 } from 'lucide-react';
@@ -134,19 +135,12 @@ const formatShort = (iso: string) => {
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
 };
 
-// Poniedziałek tygodnia zawierającego daną datę
 function getMonday(date: Date) {
   const d = new Date(date);
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   d.setDate(diff);
   d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
   return d;
 }
 
@@ -428,9 +422,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
       <div className="relative z-20 p-4 md:p-6 lg:p-5 pb-28 lg:pb-5 lg:h-full lg:flex lg:flex-col">
         <div className="max-w-2xl lg:max-w-7xl mx-auto w-full lg:h-full lg:flex lg:flex-col">
 
-          {/* ═══════════════════════════════════════ */}
-          {/* HEADER — z przyciskiem Eksport */}
-          {/* ═══════════════════════════════════════ */}
+          {/* HEADER */}
           <header className="mb-5 lg:mb-3 flex items-center gap-3 animate-fadeIn flex-shrink-0">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
@@ -449,7 +441,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
               </div>
             </div>
 
-            {/* ⬇️ PRZYCISK EKSPORTU */}
             <Link
               href={eksportUrl}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-xs font-semibold transition-all flex-shrink-0"
@@ -462,13 +453,11 @@ export function KalendarzClient({ treningi, stats }: Props) {
             <UserAvatar />
           </header>
 
-          {/* GRID 2/3 + 1/3 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-4 lg:flex-1 lg:min-h-0">
 
             {/* LEWA KOLUMNA (2/3) */}
             <div className="lg:col-span-2 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
 
-              {/* Karta "Dziś" */}
               <button
                 onClick={goToToday}
                 className={`w-full text-left rounded-2xl p-5 lg:p-3 transition-all animate-fadeIn flex-shrink-0 ${
@@ -524,43 +513,13 @@ export function KalendarzClient({ treningi, stats }: Props) {
                 </div>
               </button>
 
-              {/* STATYSTYKI MIESIĄCA */}
               <div className="grid grid-cols-4 gap-2 lg:gap-2 animate-fadeIn flex-shrink-0">
-                <CompactStat
-                  icon="📅"
-                  color="text-blue-400"
-                  bg="from-blue-500/20 to-blue-700/10"
-                  border="border-blue-400/30"
-                  label="Treningi"
-                  value={monthStats.treningi}
-                />
-                <CompactStat
-                  icon="🏆"
-                  color="text-red-400"
-                  bg="from-red-500/20 to-red-700/10"
-                  border="border-red-400/30"
-                  label="Mecze"
-                  value={monthStats.mecze}
-                />
-                <CompactStat
-                  icon="🔥"
-                  color="text-orange-400"
-                  bg="from-orange-500/20 to-orange-700/10"
-                  border="border-orange-400/30"
-                  label="Sparingi"
-                  value={monthStats.sparingi}
-                />
-                <CompactStat
-                  icon="🎯"
-                  color="text-purple-400"
-                  bg="from-purple-500/20 to-purple-700/10"
-                  border="border-purple-400/30"
-                  label="Turnieje"
-                  value={monthStats.turnieje}
-                />
+                <CompactStat icon="📅" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
+                <CompactStat icon="🏆" color="text-red-400" bg="from-red-500/20 to-red-700/10" border="border-red-400/30" label="Mecze" value={monthStats.mecze} />
+                <CompactStat icon="🔥" color="text-orange-400" bg="from-orange-500/20 to-orange-700/10" border="border-orange-400/30" label="Sparingi" value={monthStats.sparingi} />
+                <CompactStat icon="🎯" color="text-purple-400" bg="from-purple-500/20 to-purple-700/10" border="border-purple-400/30" label="Turnieje" value={monthStats.turnieje} />
               </div>
 
-              {/* KALENDARZ */}
               <div
                 ref={calendarRef}
                 className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-4 animate-fadeIn shadow-2xl shadow-black/60 lg:flex-1 lg:flex lg:flex-col lg:min-h-0"
@@ -654,7 +613,6 @@ export function KalendarzClient({ treningi, stats }: Props) {
         </div>
       </div>
 
-      {/* FAB */}
       <button
         onClick={handleFabClick}
         className="group fixed bottom-24 right-5 md:bottom-6 md:right-6 z-40 w-14 h-14 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 flex items-center justify-center text-white shadow-2xl shadow-green-500/50 hover:shadow-green-400/70 transition-all hover:scale-110 active:scale-95 animate-glow"
@@ -708,6 +666,9 @@ function CompactStat({
   );
 }
 
+/**
+ * Kosz — usuwa wydarzenie.
+ */
 function DeleteEventButton({ id }: { id: number }) {
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -795,7 +756,7 @@ function EventCard({
             <div className="text-sm font-bold text-white">{trening.godzina}</div>
           </div>
           <div className="w-px h-8 bg-white/10" />
-          <div className="flex-1 min-w-0 pr-16">
+          <div className="flex-1 min-w-0 pr-24">
             <div className="font-semibold text-white text-xs truncate">
               {cfg.label}
               {trening.przeciwnik && (
@@ -826,7 +787,18 @@ function EventCard({
         </div>
       </Link>
 
+      {/* Akcje: edycja + usuwanie + chevron */}
       <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Link
+            href={`/kalendarz/${trening.id}/edytuj`}
+            onClick={(e) => e.stopPropagation()}
+            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center text-white/40 hover:text-white transition-all"
+            title="Edytuj wydarzenie"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Link>
+        </div>
         <div className="pointer-events-auto">
           <DeleteEventButton id={trening.id} />
         </div>
