@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { UserAvatar } from '@/components/UserAvatar';
 import { Users, Plus, Search } from 'lucide-react';
 
-// Definicja typu dla zawodnika (zamiast any)
 type Zawodnik = {
   id: number;
   imie: string;
@@ -26,7 +25,6 @@ export default async function Kadra({
 
   const supabase = await createClient();
 
-  // Budowanie zapytania z opcjonalnym filtrowaniem
   let query = supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
@@ -105,7 +103,7 @@ export default async function Kadra({
               <UserAvatar />
             </div>
 
-            {/* Pasek wyszukiwania zamiast usuniętych przycisków nawigacji */}
+            {/* Pasek wyszukiwania */}
             <form action="/kadra" method="GET" className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
               <input
@@ -127,58 +125,78 @@ export default async function Kadra({
           {liczba === 0 ? (
             <EmptyState />
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 list-none p-0 m-0 pb-28">
+            // ZMIANA: 2 kolumny na mobile, 3 na większych ekranach
+            <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 list-none p-0 m-0 pb-28">
               {zawodnicy!.map((z: Zawodnik, i: number) => {
                 const s = frekwencjaMap.get(z.id);
                 const procent =
-                  s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : null;
+                  s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
+
+                const procentKolor =
+                  procent >= 80
+                    ? 'text-green-400'
+                    : procent >= 50
+                    ? 'text-yellow-400'
+                    : 'text-red-400';
+
+                const pasekKolor =
+                  procent >= 80
+                    ? 'bg-green-500'
+                    : procent >= 50
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500';
 
                 return (
                   <li
                     key={z.id}
-                    className={`group relative bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 animate-fadeIn stagger-${Math.min(
-                      i + 1,
-                      8
-                    )}`}
+                    className={`group animate-fadeIn stagger-${Math.min(i + 1, 8)}`}
                   >
                     <Link
                       href={`/zawodnicy/${z.id}`}
-                      className="flex items-center gap-3 p-3 min-w-0"
+                      className="flex flex-col items-center bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-2xl p-3 h-full transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/50"
                     >
-                      <div className="relative flex-shrink-0">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-base shadow-inner">
+                      {/* Avatar z numerem */}
+                      <div className="relative flex-shrink-0 mb-2">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/80 text-sm shadow-inner">
                           {inicjaly(z.imie, z.nazwisko)}
                         </div>
                         {z.numer != null && (
-                          <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-slate-950 border border-amber-400/40 text-amber-400 text-[10px] font-bold leading-none shadow-lg">
+                          <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-slate-950 border border-amber-400/40 text-amber-400 text-[9px] font-bold leading-none shadow-lg">
                             #{z.numer}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-white text-sm truncate uppercase tracking-wide drop-shadow">
-                          {z.imie} {z.nazwisko}
+                      {/* Imię i nazwisko — pionowo, wyśrodkowane */}
+                      <div className="w-full text-center mb-2">
+                        <div className="font-bold text-white text-[11px] leading-tight truncate uppercase tracking-wide">
+                          {z.imie}
                         </div>
-                        <div className="text-[10px] text-white/50 uppercase tracking-widest font-medium truncate mt-0.5">
-                          Rocznik {z.rocznik ?? '—'}
+                        <div className="font-bold text-white text-[11px] leading-tight truncate uppercase tracking-wide">
+                          {z.nazwisko}
                         </div>
-                        {procent !== null && (
-                          <div className="text-[10px] text-white/40 mt-0.5">
-                            Frekwencja:{' '}
-                            <span
-                              className={
-                                procent >= 80
-                                  ? 'text-green-400 font-semibold'
-                                  : procent >= 50
-                                  ? 'text-yellow-400 font-semibold'
-                                  : 'text-red-400 font-semibold'
-                              }
-                            >
-                              {procent}%
-                            </span>
-                          </div>
-                        )}
+                        <div className="text-[9px] text-white/50 uppercase tracking-widest font-medium mt-0.5">
+                          {z.rocznik ?? '—'}
+                          {z.pozycja ? ` · ${z.pozycja}` : ''}
+                        </div>
+                      </div>
+
+                      {/* Frekwencja — pasek postępu */}
+                      <div className="w-full mt-auto">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[9px] text-white/40 uppercase tracking-wider">
+                            Frekw.
+                          </span>
+                          <span className={`text-[10px] font-bold ${procentKolor}`}>
+                            {procent}%
+                          </span>
+                        </div>
+                        <div className="w-full h-1 bg-slate-950/60 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${pasekKolor} transition-all`}
+                            style={{ width: `${procent}%` }}
+                          />
+                        </div>
                       </div>
                     </Link>
                   </li>
