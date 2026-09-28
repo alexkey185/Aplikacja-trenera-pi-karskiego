@@ -6,7 +6,6 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  Plus,
   Users,
   Trophy,
   Clock,
@@ -29,7 +28,10 @@ function addDays(date: Date, days: number): Date {
 }
 
 function toISO(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 }
 
 export default async function Dashboard({
@@ -73,7 +75,6 @@ export default async function Dashboard({
 
   const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
 
-  // 3 dni dla mobile: dzisiaj + 2 następne (jeśli dziś jest w widocznym tygodniu)
   const dniMobile = (() => {
     const startIdx = dni.findIndex((d) => toISO(d) === dzisStr);
     if (startIdx === -1) return dni.slice(0, 3);
@@ -122,6 +123,20 @@ export default async function Dashboard({
   const typIkona = (typ: string) => {
     if (typ === 'mecz') return Trophy;
     return CalendarIcon;
+  };
+
+  // ══════════════════════════════════════════════
+  // LOGIKA: gdzie ma prowadzić klik w dzień
+  // - 0 wydarzeń → widok dzienny (pusty dzień)
+  // - 1 wydarzenie → od razu obecność tego treningu
+  // - 2+ wydarzeń → widok dzienny (wybór)
+  // ══════════════════════════════════════════════
+  const getDayHref = (dataStr: string) => {
+    const events = eventMap.get(dataStr) ?? [];
+    if (events.length === 1) {
+      return `/kalendarz/${events[0].id}/obecnosc`;
+    }
+    return `/dashboard/${dataStr}`;
   };
 
   return (
@@ -211,18 +226,19 @@ export default async function Dashboard({
               </Link>
             </div>
 
-            {/* MOBILE: 3 dni (dzisiaj + 2 następne) */}
+            {/* MOBILE: 3 dni */}
             <div className="md:hidden grid grid-cols-3 gap-2">
               {dniMobile.map((d, i) => {
                 const dataStr = toISO(d);
                 const eventy = eventMap.get(dataStr) ?? [];
                 const czyDzis = dataStr === dzisStr;
                 const maEventy = eventy.length > 0;
+                const href = getDayHref(dataStr);
 
                 return (
                   <Link
                     key={i}
-                    href={`/dashboard/${dataStr}`}
+                    href={href}
                     className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${
                       czyDzis
                         ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
@@ -313,11 +329,12 @@ export default async function Dashboard({
                 const eventy = eventMap.get(dataStr) ?? [];
                 const czyDzis = dataStr === dzisStr;
                 const maEventy = eventy.length > 0;
+                const href = getDayHref(dataStr);
 
                 return (
                   <Link
                     key={i}
-                    href={`/dashboard/${dataStr}`}
+                    href={href}
                     className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${
                       czyDzis
                         ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
@@ -521,12 +538,12 @@ export default async function Dashboard({
                       >
                         <div className="flex-shrink-0 text-center w-10">
                           <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
-                            {new Date(t.data).toLocaleDateString('pl-PL', {
+                            {new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', {
                               month: 'short',
                             })}
                           </div>
                           <div className="text-lg font-black text-white leading-none">
-                            {new Date(t.data).getDate()}
+                            {new Date(t.data + 'T00:00:00').getDate()}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">

@@ -11,8 +11,6 @@ import {
   MapPin,
 } from 'lucide-react';
 
-
-
 export default async function Obecnosc({
   params,
 }: {
@@ -44,6 +42,31 @@ export default async function Obecnosc({
   (obecnosc ?? []).forEach((o) => {
     initialStatus[o.zawodnik_id] = o.status;
   });
+
+  // ──────────────────────────────────────────────
+  // LOGIKA A + C:
+  // Znajdź poprzedni trening tego samego typu (wcześniejsza data)
+  // i skopiuj jego statusy obecności jako fallback.
+  // ──────────────────────────────────────────────
+  const { data: previousTrening } = await supabase
+    .from('treningi')
+    .select('id')
+    .eq('typ', trening.typ)
+    .lt('data', trening.data)
+    .order('data', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const previousStatus: Record<number, string> = {};
+  if (previousTrening) {
+    const { data: prevObecnosc } = await supabase
+      .from('obecnosc')
+      .select('zawodnik_id, status')
+      .eq('trening_id', previousTrening.id);
+    (prevObecnosc ?? []).forEach((o) => {
+      previousStatus[o.zawodnik_id] = o.status;
+    });
+  }
 
   const typIkona = trening.typ === 'mecz' ? '🏆' : '🟦';
 
@@ -106,7 +129,7 @@ export default async function Obecnosc({
               <div className="flex items-center gap-2 text-white/90">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
                 <span className="font-medium capitalize">
-                  {new Date(trening.data).toLocaleDateString('pl-PL', {
+                  {new Date(trening.data + 'T00:00:00').toLocaleDateString('pl-PL', {
                     weekday: 'long',
                     day: '2-digit',
                     month: 'long',
@@ -143,6 +166,8 @@ export default async function Obecnosc({
               treningId={idNum}
               zawodnicy={zawodnicy}
               initialStatus={initialStatus}
+              previousStatus={previousStatus}
+              typTreningu={trening.typ}
             />
           )}
         </div>
