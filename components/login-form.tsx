@@ -17,14 +17,38 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const validate = () => {
+    const errors: { email?: string; password?: string } = {};
+
+    if (!email.trim()) {
+      errors.email = 'Wpisz swój adres e-mail';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Adres e-mail jest nieprawidłowy';
+    }
+
+    if (!password) {
+      errors.password = 'Wpisz swoje hasło';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!validate()) return;
+
     const supabase = createClient();
     setIsLoading(true);
-    setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -42,10 +66,7 @@ export function LoginForm() {
 
   return (
     <div className="w-full">
-      {/* Card */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl shadow-black/60">
-
-        {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 shadow-2xl shadow-green-500/30 mb-4">
             <LogIn className="w-7 h-7 text-white" strokeWidth={2.5} />
@@ -58,9 +79,7 @@ export function LoginForm() {
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
-
+        <form onSubmit={handleLogin} noValidate className="space-y-4">
           {/* Email */}
           <div>
             <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
@@ -69,12 +88,26 @@ export function LoginForm() {
             </label>
             <input
               type="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((fe) => ({ ...fe, email: undefined }));
+                }
+              }}
               placeholder="trener@example.com"
-              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
+                fieldErrors.email
+                  ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
+                  : 'border-white/15 focus:border-green-400/60 focus:bg-white/10'
+              }`}
             />
+            {fieldErrors.email && (
+              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+                <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                <span>{fieldErrors.email}</span>
+              </div>
+            )}
           </div>
 
           {/* Hasło */}
@@ -93,17 +126,31 @@ export function LoginForm() {
             </div>
             <input
               type="password"
-              required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) {
+                  setFieldErrors((fe) => ({ ...fe, password: undefined }));
+                }
+              }}
               placeholder="Wpisz hasło"
-              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
+                fieldErrors.password
+                  ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
+                  : 'border-white/15 focus:border-green-400/60 focus:bg-white/10'
+              }`}
             />
+            {fieldErrors.password && (
+              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+                <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                <span>{fieldErrors.password}</span>
+              </div>
+            )}
           </div>
 
-          {/* Error */}
+          {/* Global error (z Supabase) */}
           {error && (
-            <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200">
+            <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -129,7 +176,6 @@ export function LoginForm() {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <p className="text-xs text-white/50">
             Nie masz konta?{' '}
@@ -143,7 +189,6 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Back link */}
       <div className="text-center mt-6">
         <Link
           href="/"
