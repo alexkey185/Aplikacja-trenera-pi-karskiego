@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
@@ -36,37 +35,14 @@ type Props = {
   stats: StatsMap;
 };
 
-const MONTHS_PL = [
-  'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-  'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień',
-];
-
-const MONTHS_PL_GENITIVE = [
-  'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
-  'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia',
-];
-
+const MONTHS_PL = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+const MONTHS_PL_GENITIVE = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
 const DAYS_SHORT = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
+const DAYS_LONG = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
 
-const DAYS_LONG = [
-  'Niedziela', 'Poniedziałek', 'Wtorek', 'Środa',
-  'Czwartek', 'Piątek', 'Sobota',
-];
+const HOLIDAYS = new Set(['2026-01-01', '2026-01-06', '2026-04-06', '2026-05-01', '2026-05-03', '2026-06-04', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25', '2026-12-26']);
 
-const HOLIDAYS = new Set([
-  '2026-01-01', '2026-01-06', '2026-04-06', '2026-05-01', '2026-05-03',
-  '2026-06-04', '2026-08-15', '2026-11-01', '2026-11-11',
-  '2026-12-25', '2026-12-26',
-]);
-
-const TYP_CONFIG: Record<string, {
-  color: string;
-  bg: string;
-  border: string;
-  gradient: string;
-  icon: string;
-  label: string;
-}> = {
+const TYP_CONFIG: Record<string, { color: string; bg: string; border: string; gradient: string; icon: string; label: string }> = {
   trening: { color: 'bg-blue-500', bg: 'bg-blue-500/15', border: 'border-blue-400/40', gradient: 'from-blue-400 to-blue-600', icon: '📅', label: 'Trening' },
   mecz: { color: 'bg-red-500', bg: 'bg-red-500/15', border: 'border-red-400/40', gradient: 'from-red-400 to-red-600', icon: '🏆', label: 'Mecz' },
   sparing: { color: 'bg-orange-500', bg: 'bg-orange-500/15', border: 'border-orange-400/40', gradient: 'from-orange-400 to-orange-600', icon: '🔥', label: 'Sparing' },
@@ -108,10 +84,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
 
   const eventsByDate = useMemo(() => {
     const map: Record<string, Trening[]> = {};
-    treningi.forEach((t) => {
-      if (!map[t.data]) map[t.data] = [];
-      map[t.data].push(t);
-    });
+    treningi.forEach((t) => { if (!map[t.data]) map[t.data] = []; map[t.data].push(t); });
     Object.values(map).forEach((arr) => arr.sort((a, b) => a.godzina.localeCompare(b.godzina)));
     return map;
   }, [treningi]);
@@ -152,12 +125,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
     }
   };
 
-  const goToToday = () => {
-    setViewYear(todayDate.getFullYear());
-    setViewMonth(todayDate.getMonth());
-    selectDay(todayISO);
-  };
-
+  const goToToday = () => { setViewYear(todayDate.getFullYear()); setViewMonth(todayDate.getMonth()); selectDay(todayISO); };
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
   const handleFabClick = () => { router.push(`/kalendarz/nowy?data=${selectedDate}`); };
 
@@ -171,23 +139,11 @@ export function KalendarzClient({ treningi, stats }: Props) {
     };
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchend', onTouchEnd);
-    };
+    return () => { el.removeEventListener('touchstart', onTouchStart); el.removeEventListener('touchend', onTouchEnd); };
   }, [viewMonth, viewYear]);
 
-  const handleDragStart = (e: React.DragEvent, id: number) => {
-    setDraggedId(id);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', String(id));
-  };
-
-  const handleDragOver = (e: React.DragEvent, iso: string) => {
-    e.preventDefault();
-    if (dragOverDate !== iso) setDragOverDate(iso);
-  };
-
+  const handleDragStart = (e: React.DragEvent, id: number) => { setDraggedId(id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(id)); };
+  const handleDragOver = (e: React.DragEvent, iso: string) => { e.preventDefault(); if (dragOverDate !== iso) setDragOverDate(iso); };
   const handleDragLeave = () => { setDragOverDate(null); };
 
   const handleDrop = async (e: React.DragEvent, iso: string) => {
@@ -291,78 +247,52 @@ export function KalendarzClient({ treningi, stats }: Props) {
               </div>
             </div>
 
-            {/* ⬇️ LOGO MOBILE + LOGO+AVATAR DESKTOP */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <Image
-                src="/logo-wielopole.png"
-                alt="KS Wielopole"
-                width={56}
-                height={56}
-                className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-lg"
-                priority
-              />
-              <div className="hidden md:block">
-                <UserAvatar />
-              </div>
+              <Link href={eksportUrl} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-xs font-semibold transition-all flex-shrink-0" title="Eksportuj plan tygodnia">
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Eksport</span>
+              </Link>
+              <UserAvatar />
             </div>
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-4 lg:flex-1 lg:min-h-0">
             <div className="lg:col-span-2 lg:flex lg:flex-col lg:gap-3 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-
-              <div className="flex items-stretch gap-2 md:gap-3 animate-fadeIn flex-shrink-0">
-                <button
-                  onClick={goToToday}
-                  className={`flex-1 text-left rounded-2xl p-5 lg:p-3 transition-all ${
-                    isTodaySelected
-                      ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
-                      : 'bg-slate-900/80 backdrop-blur-md border border-green-400/20 hover:border-green-400/40 hover:bg-slate-900/90'
-                  }`}
-                >
-                  <div className="flex items-center gap-4 lg:gap-3">
-                    <div className="relative flex-shrink-0">
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-md opacity-60 animate-pulse" />
-                      <div className="relative w-12 h-12 lg:w-10 lg:h-10 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-                        <span className="text-xl lg:text-lg">⚡</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-green-400">Dzisiaj</span>
-                        <span className="text-[10px] text-white/50 capitalize">· {todayDate.getDate()} {MONTHS_PL_GENITIVE[todayDate.getMonth()]}</span>
-                      </div>
-                      {todayEvents.length > 0 ? (
-                        <>
-                          <div className="text-white font-bold text-base lg:text-sm leading-tight">
-                            {todayEvents.length === 1 ? '1 wydarzenie' : `${todayEvents.length} wydarzenia`}
-                            <span className="text-white/60 font-normal"> · pierwsze o </span>
-                            <span className="text-green-300 font-bold">{todayEvents[0].godzina}</span>
-                          </div>
-                          <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5 truncate">
-                            {TYP_CONFIG[todayEvents[0].typ]?.icon} {TYP_CONFIG[todayEvents[0].typ]?.label}
-                            {todayEvents[0].przeciwnik && ` vs ${todayEvents[0].przeciwnik}`}
-                            {todayEvents[0].miejsce && ` · ${todayEvents[0].miejsce}`}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-white font-bold text-base lg:text-sm leading-tight">Brak wydarzeń</div>
-                          <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5">Nic nie zaplanowano na dziś</div>
-                        </>
-                      )}
+              <button onClick={goToToday} className={`w-full text-left rounded-2xl p-5 lg:p-3 transition-all animate-fadeIn flex-shrink-0 ${isTodaySelected ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20' : 'bg-slate-900/80 backdrop-blur-md border border-green-400/20 hover:border-green-400/40 hover:bg-slate-900/90'}`}>
+                <div className="flex items-center gap-4 lg:gap-3">
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-md opacity-60 animate-pulse" />
+                    <div className="relative w-12 h-12 lg:w-10 lg:h-10 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
+                      <span className="text-xl lg:text-lg">⚡</span>
                     </div>
                   </div>
-                </button>
-
-                <Link
-                  href={eksportUrl}
-                  className="flex flex-col items-center justify-center gap-1.5 px-3 md:px-5 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-green-400/40 hover:bg-slate-900 transition-all shrink-0 text-white/70 hover:text-white shadow-lg shadow-black/30"
-                  title="Eksportuj plan tygodnia do PDF"
-                >
-                  <Printer className="w-5 h-5 md:w-6 md:h-6 text-green-400" strokeWidth={2.5} />
-                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">Eksport</span>
-                </Link>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-green-400">Dzisiaj</span>
+                      <span className="text-[10px] text-white/50 capitalize">· {todayDate.getDate()} {MONTHS_PL_GENITIVE[todayDate.getMonth()]}</span>
+                    </div>
+                    {todayEvents.length > 0 ? (
+                      <>
+                        <div className="text-white font-bold text-base lg:text-sm leading-tight">
+                          {todayEvents.length === 1 ? '1 wydarzenie' : `${todayEvents.length} wydarzenia`}
+                          <span className="text-white/60 font-normal"> · pierwsze o </span>
+                          <span className="text-green-300 font-bold">{todayEvents[0].godzina}</span>
+                        </div>
+                        <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5 truncate">
+                          {TYP_CONFIG[todayEvents[0].typ]?.icon} {TYP_CONFIG[todayEvents[0].typ]?.label}
+                          {todayEvents[0].przeciwnik && ` vs ${todayEvents[0].przeciwnik}`}
+                          {todayEvents[0].miejsce && ` · ${todayEvents[0].miejsce}`}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-white font-bold text-base lg:text-sm leading-tight">Brak wydarzeń</div>
+                        <div className="text-xs lg:text-[11px] text-white/60 mt-1 lg:mt-0.5">Nic nie zaplanowano na dziś</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </button>
 
               <div className="grid grid-cols-4 gap-2 lg:gap-2 animate-fadeIn flex-shrink-0">
                 <CompactStat icon="📅" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
@@ -373,18 +303,14 @@ export function KalendarzClient({ treningi, stats }: Props) {
 
               <div ref={calendarRef} className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-4 animate-fadeIn shadow-2xl shadow-black/60 lg:flex-1 lg:flex lg:flex-col lg:min-h-0">
                 <div className="flex items-center justify-between mb-4 lg:mb-2 flex-shrink-0">
-                  <button onClick={() => changeMonth(-1)} className="w-9 h-9 lg:w-8 lg:h-8 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors active:scale-95">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => changeMonth(-1)} className="w-9 h-9 lg:w-8 lg:h-8 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors active:scale-95"><ChevronLeft className="w-4 h-4" /></button>
                   <div className="text-center">
                     <div className="font-bold text-white text-sm lg:text-base">{MONTHS_PL[viewMonth]} {viewYear}</div>
                     {viewYear === todayDate.getFullYear() && viewMonth === todayDate.getMonth() && (
                       <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Bieżący miesiąc</div>
                     )}
                   </div>
-                  <button onClick={() => changeMonth(1)} className="w-9 h-9 lg:w-8 lg:h-8 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors active:scale-95">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => changeMonth(1)} className="w-9 h-9 lg:w-8 lg:h-8 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors active:scale-95"><ChevronRight className="w-4 h-4" /></button>
                 </div>
 
                 <div className="lg:hidden flex items-center justify-center gap-2 mb-3 text-white/30 text-[10px]">
@@ -392,9 +318,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                 </div>
 
                 <div className="grid grid-cols-7 gap-1 lg:gap-0.5 mb-1 flex-shrink-0">
-                  {DAYS_SHORT.map((d) => (
-                    <div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-widest py-0.5">{d}</div>
-                  ))}
+                  {DAYS_SHORT.map((d) => (<div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-widest py-0.5">{d}</div>))}
                 </div>
 
                 <div className="grid grid-cols-7 gap-1 lg:gap-0.5 lg:flex-1 lg:min-h-0 lg:auto-rows-fr">

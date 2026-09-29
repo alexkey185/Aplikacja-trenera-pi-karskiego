@@ -131,21 +131,7 @@ export default async function Kadra({
                   </p>
                 </div>
               </div>
-
-              {/* ⬇️ LOGO MOBILE + LOGO+AVATAR DESKTOP */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <Image
-                  src="/logo-wielopole.png"
-                  alt="KS Wielopole"
-                  width={56}
-                  height={56}
-                  className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-lg"
-                  priority
-                />
-                <div className="hidden md:block">
-                  <UserAvatar />
-                </div>
-              </div>
+              <UserAvatar />
             </div>
 
             <form action="/kadra" method="GET" className="relative">
