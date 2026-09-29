@@ -66,10 +66,7 @@ export function SignUpForm() {
 
   return (
     <div className="w-full">
-      {/* Card */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl shadow-black/60">
-
-        {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 shadow-2xl shadow-green-500/30 mb-4">
             <UserPlus className="w-7 h-7 text-white" strokeWidth={2.5} />
@@ -82,10 +79,7 @@ export function SignUpForm() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSignUp} className="space-y-4">
-
-          {/* Email */}
           <div>
             <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Mail className="w-3.5 h-3.5 text-green-400" />
@@ -101,7 +95,6 @@ export function SignUpForm() {
             />
           </div>
 
-          {/* Hasło */}
           <div>
             <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Lock className="w-3.5 h-3.5 text-green-400" />
@@ -117,7 +110,6 @@ export function SignUpForm() {
             />
           </div>
 
-          {/* Powtórz hasło */}
           <div>
             <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Lock className="w-3.5 h-3.5 text-green-400" />
@@ -133,35 +125,30 @@ export function SignUpForm() {
             />
           </div>
 
-          {/* ═══════════════════════════════════════ */}
-          {/* Checkbox akceptacji Regulaminu */}
-          {/* ═══════════════════════════════════════ */}
           <div className="pt-1">
-            <label className="flex items-start gap-3 cursor-pointer group select-none">
-              <div className="relative flex-shrink-0 mt-0.5">
-                <input
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="sr-only"
-                />
+            <div className="flex items-start gap-3">
+              <button
+                type="button"
+                onClick={() => setAcceptedTerms(!acceptedTerms)}
+                className="relative flex-shrink-0 mt-0.5"
+                aria-label="Zaakceptuj regulamin"
+              >
                 <div
                   className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     acceptedTerms
                       ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 shadow-lg shadow-green-500/40'
-                      : 'bg-white/5 border-white/25 group-hover:border-white/40'
+                      : 'bg-white/5 border-white/25 hover:border-white/40'
                   }`}
                 >
                   {acceptedTerms && (
                     <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                   )}
                 </div>
-              </div>
+              </button>
               <span className="text-xs text-white/60 leading-relaxed">
                 Akceptuję{' '}
                 <Link
                   href="/regulamin"
-                  target="_blank"
                   className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
                 >
                   Regulamin
@@ -169,7 +156,6 @@ export function SignUpForm() {
                 oraz{' '}
                 <Link
                   href="/prywatnosc"
-                  target="_blank"
                   className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
                 >
                   Politykę prywatności
@@ -177,10 +163,9 @@ export function SignUpForm() {
                 , a także oświadczam, że jako trener będę przetwarzał dane
                 zawodników zgodnie z przepisami RODO.
               </span>
-            </label>
+            </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -188,7 +173,6 @@ export function SignUpForm() {
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading || !acceptedTerms}
@@ -208,7 +192,6 @@ export function SignUpForm() {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <p className="text-xs text-white/50">
             Masz już konto?{' '}
@@ -222,7 +205,6 @@ export function SignUpForm() {
         </div>
       </div>
 
-      {/* Back link */}
       <div className="text-center mt-6">
         <Link
           href="/"

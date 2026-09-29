@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
 
 export const metadata = {
   title: 'Regulamin — Talent',
@@ -11,13 +10,7 @@ export default function Regulamin() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-300 py-12 px-6">
       <div className="max-w-3xl mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-8 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Powrót
-        </Link>
+        <BackButton />
 
         <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
           Regulamin
@@ -62,9 +55,7 @@ export default function Regulamin() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">
-              2. Definicje
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">2. Definicje</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 <strong className="text-white">Aplikacja</strong> — serwis
@@ -90,9 +81,7 @@ export default function Regulamin() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">
-              3. Zakres usług
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">3. Zakres usług</h2>
             <p className="mb-3">Aplikacja umożliwia w szczególności:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Tworzenie i prowadzenie listy zawodników drużyny</li>
@@ -117,17 +106,13 @@ export default function Regulamin() {
               4.1. Korzystanie z Aplikacji wymaga utworzenia konta. Konto
               zakłada się poprzez rejestrację z użyciem adresu e-mail i hasła.
             </p>
-            <p className="mb-3">
-              4.2. Warunkiem utworzenia konta jest:
-            </p>
+            <p className="mb-3">4.2. Warunkiem utworzenia konta jest:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Ukończenie 18 lat przez Użytkownika</li>
               <li>Podanie prawdziwego adresu e-mail</li>
               <li>Akceptacja Regulaminu i Polityki prywatności</li>
             </ul>
-            <p className="mt-3 mb-3">
-              4.3. Użytkownik zobowiązany jest do:
-            </p>
+            <p className="mt-3 mb-3">4.3. Użytkownik zobowiązany jest do:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Nieudostępniania danych logowania osobom trzecim</li>
               <li>
@@ -180,9 +165,7 @@ export default function Regulamin() {
             <h2 className="text-lg font-bold text-white mb-2">
               6. Odpowiedzialność
             </h2>
-            <p className="mb-3">
-              6.1. Operator nie ponosi odpowiedzialności za:
-            </p>
+            <p className="mb-3">6.1. Operator nie ponosi odpowiedzialności za:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 Dane wprowadzone przez Użytkownika i skutki ich wykorzystania
@@ -272,9 +255,7 @@ export default function Regulamin() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">
-              10. Opłaty
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">10. Opłaty</h2>
             <p>
               Korzystanie z Aplikacji jest obecnie bezpłatne. Operator
               zastrzega sobie prawo do wprowadzenia odpłatności za wybrane
@@ -299,9 +280,7 @@ export default function Regulamin() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">
-              12. Reklamacje
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">12. Reklamacje</h2>
             <p className="mb-3">
               Reklamacje dotyczące działania Aplikacji można składać na adres
               e-mail:{' '}
@@ -328,9 +307,7 @@ export default function Regulamin() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">
-              14. Kontakt
-            </h2>
+            <h2 className="text-lg font-bold text-white mb-2">14. Kontakt</h2>
             <p>
               W sprawach związanych z Regulaminem prosimy o kontakt z
               Operatorem pod adresem:{' '}

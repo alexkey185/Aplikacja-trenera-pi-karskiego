@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
 
 export const metadata = {
   title: 'Polityka prywatności — Talent',
@@ -11,13 +10,7 @@ export default function PolitykaPrywatnosci() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-300 py-12 px-6">
       <div className="max-w-3xl mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-8 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Powrót
-        </Link>
+        <BackButton />
 
         <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
           Polityka prywatności
@@ -34,15 +27,14 @@ export default function PolitykaPrywatnosci() {
             </h2>
             <p className="mb-3">
               Niniejsza Polityka prywatności opisuje zasady przetwarzania danych
-              osobowych w aplikacji internetowej <strong className="text-white">Talent</strong>{' '}
-              (dalej: „Aplikacja"), dostępnej pod adresem{' '}
+              osobowych w aplikacji internetowej{' '}
+              <strong className="text-white">Talent</strong> (dalej:
+              „Aplikacja"), dostępnej pod adresem{' '}
               <strong className="text-white">https://[TWOJA-DOMENA].pl</strong>,
               służącej do zarządzania drużyną piłkarską — planowania treningów,
               meczów oraz prowadzenia ewidencji obecności zawodników.
             </p>
-            <p>
-              Administratorem danych osobowych (dalej: „Administrator") jest:
-            </p>
+            <p>Administratorem danych osobowych (dalej: „Administrator") jest:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>
                 <strong className="text-white">[IMIĘ I NAZWISKO]</strong>
@@ -98,9 +90,7 @@ export default function PolitykaPrywatnosci() {
             <h2 className="text-lg font-bold text-white mb-2">
               3. Cel i podstawa prawna przetwarzania
             </h2>
-            <p className="mb-3">
-              Dane przetwarzamy w następujących celach:
-            </p>
+            <p className="mb-3">Dane przetwarzamy w następujących celach:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
                 <strong className="text-white">Świadczenie usługi</strong> —
@@ -108,7 +98,9 @@ export default function PolitykaPrywatnosci() {
                 treningów (art. 6 ust. 1 lit. b RODO — wykonanie umowy).
               </li>
               <li>
-                <strong className="text-white">Prawnie uzasadniony interes</strong>{' '}
+                <strong className="text-white">
+                  Prawnie uzasadniony interes
+                </strong>{' '}
                 — zapewnienie bezpieczeństwa i prawidłowego działania Aplikacji,
                 dochodzenie roszczeń (art. 6 ust. 1 lit. f RODO).
               </li>
@@ -178,8 +170,8 @@ export default function PolitykaPrywatnosci() {
                 (przetwarzanie w chmurze)
               </li>
               <li>
-                <strong className="text-white">Vercel Inc.</strong> —
-                dostawca hostingu aplikacji
+                <strong className="text-white">Vercel Inc.</strong> — dostawca
+                hostingu aplikacji
               </li>
               <li>
                 <strong className="text-white">[DOSTAWCA-SMTP]</strong> —

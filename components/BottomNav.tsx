@@ -44,6 +44,16 @@ const sekcje = [
   },
 ];
 
+// Ścieżki publiczne — bez sidebara i bottom nav
+const HIDDEN_PATHS = ['/', '/auth', '/prywatnosc', '/regulamin'];
+
+function shouldHideNav(pathname: string): boolean {
+  return HIDDEN_PATHS.some((path) => {
+    if (path === '/') return pathname === '/';
+    return pathname === path || pathname.startsWith(path + '/');
+  });
+}
+
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -54,7 +64,11 @@ export function BottomNav() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
+  const hidden = shouldHideNav(pathname);
+
   useEffect(() => {
+    if (hidden) return;
+
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user;
@@ -62,9 +76,11 @@ export function BottomNav() {
       setImie(u?.user_metadata?.imie ?? null);
       setNazwisko(u?.user_metadata?.nazwisko ?? null);
     });
-  }, [pathname]);
+  }, [pathname, hidden]);
 
   useEffect(() => {
+    if (hidden) return;
+
     const supabase = createClient();
     const dzis = new Date().toISOString().split('T')[0];
     supabase
@@ -74,7 +90,7 @@ export function BottomNav() {
       .then(({ data }) => {
         setDzisiajCount(data?.length ?? 0);
       });
-  }, [pathname]);
+  }, [pathname, hidden]);
 
   async function handleLogout() {
     setLogoutLoading(true);
@@ -84,7 +100,7 @@ export function BottomNav() {
     router.refresh();
   }
 
-  if (pathname === '/' || pathname.startsWith('/auth')) {
+  if (hidden) {
     return null;
   }
 
