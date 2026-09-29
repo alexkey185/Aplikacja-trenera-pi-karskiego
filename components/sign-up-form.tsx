@@ -11,12 +11,14 @@ import {
   Loader2,
   AlertCircle,
   ArrowLeft,
+  Check,
 } from 'lucide-react';
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -26,6 +28,12 @@ export function SignUpForm() {
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
+
+    if (!acceptedTerms) {
+      setError('Musisz zaakceptować Regulamin i Politykę prywatności');
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== repeatPassword) {
       setError('Hasła nie są identyczne');
@@ -125,6 +133,53 @@ export function SignUpForm() {
             />
           </div>
 
+          {/* ═══════════════════════════════════════ */}
+          {/* Checkbox akceptacji Regulaminu */}
+          {/* ═══════════════════════════════════════ */}
+          <div className="pt-1">
+            <label className="flex items-start gap-3 cursor-pointer group select-none">
+              <div className="relative flex-shrink-0 mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                    acceptedTerms
+                      ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 shadow-lg shadow-green-500/40'
+                      : 'bg-white/5 border-white/25 group-hover:border-white/40'
+                  }`}
+                >
+                  {acceptedTerms && (
+                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                  )}
+                </div>
+              </div>
+              <span className="text-xs text-white/60 leading-relaxed">
+                Akceptuję{' '}
+                <Link
+                  href="/regulamin"
+                  target="_blank"
+                  className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
+                >
+                  Regulamin
+                </Link>{' '}
+                oraz{' '}
+                <Link
+                  href="/prywatnosc"
+                  target="_blank"
+                  className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
+                >
+                  Politykę prywatności
+                </Link>
+                , a także oświadczam, że jako trener będę przetwarzał dane
+                zawodników zgodnie z przepisami RODO.
+              </span>
+            </label>
+          </div>
+
           {/* Error */}
           {error && (
             <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200">
@@ -136,8 +191,8 @@ export function SignUpForm() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-wait disabled:hover:translate-y-0 disabled:hover:shadow-none mt-2"
+            disabled={isLoading || !acceptedTerms}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none mt-2"
           >
             {isLoading ? (
               <>
