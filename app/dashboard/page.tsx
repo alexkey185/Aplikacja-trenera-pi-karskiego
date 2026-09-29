@@ -6,7 +6,6 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  Users,
   Trophy,
   Clock,
   MapPin,
@@ -40,7 +39,6 @@ export default async function Dashboard({
   searchParams: Promise<{ w?: string }>;
 }) {
   const params = await searchParams;
-
   const teraz = new Date();
   const dzisStr = toISO(teraz);
 
@@ -125,9 +123,6 @@ export default async function Dashboard({
     return CalendarIcon;
   };
 
-  // ══════════════════════════════════════════════
-  // Klik w dzień → przekieruj do obecności (jeśli 1 wydarzenie)
-  // ══════════════════════════════════════════════
   const getDayHref = (dataStr: string) => {
     const events = eventMap.get(dataStr) ?? [];
     if (events.length === 1) {
@@ -139,26 +134,10 @@ export default async function Dashboard({
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg-mobile.webp" alt="" fill quality={60} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg.webp" alt="" fill quality={60} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
@@ -174,53 +153,44 @@ export default async function Dashboard({
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
-                    Tydzień
-                  </h1>
-                  <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">
-                    {formatMiesiacRok(poniedzialek)}
-                  </p>
+                  <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Tydzień</h1>
+                  <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">{formatMiesiacRok(poniedzialek)}</p>
                 </div>
               </div>
-              <UserAvatar />
+
+              {/* ⬇️ LOGO MOBILE + LOGO+AVATAR DESKTOP */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <Image
+                  src="/logo-wielopole.png"
+                  alt="KS Wielopole"
+                  width={56}
+                  height={56}
+                  className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-lg"
+                  priority
+                />
+                <div className="hidden md:block">
+                  <UserAvatar />
+                </div>
+              </div>
             </div>
           </header>
 
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="flex items-center justify-between mb-4">
-              <Link
-                href={`/dashboard?w=${prevWeek}`}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
-              >
+              <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
                 <ChevronLeft className="w-4 h-4" />
               </Link>
               <div className="text-center px-2">
                 <div className="font-bold text-white text-sm capitalize">
-                  {poniedzialek.toLocaleDateString('pl-PL', {
-                    day: '2-digit',
-                    month: 'long',
-                  })}{' '}
-                  —{' '}
-                  {niedziela.toLocaleDateString('pl-PL', {
-                    day: '2-digit',
-                    month: 'long',
-                  })}
+                  {poniedzialek.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} — {niedziela.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
                 </div>
-                {jestWTygodniu && (
-                  <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">
-                    Bieżący tydzień
-                  </div>
-                )}
+                {jestWTygodniu && <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Bieżący tydzień</div>}
               </div>
-              <Link
-                href={`/dashboard?w=${nextWeek}`}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
-              >
+              <Link href={`/dashboard?w=${nextWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* MOBILE: 3 dni */}
             <div className="md:hidden grid grid-cols-3 gap-2">
               {dniMobile.map((d, i) => {
                 const dataStr = toISO(d);
@@ -228,94 +198,38 @@ export default async function Dashboard({
                 const czyDzis = dataStr === dzisStr;
                 const maEventy = eventy.length > 0;
                 const href = getDayHref(dataStr);
-
                 return (
-                  <Link
-                    key={i}
-                    href={href}
-                    className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${
-                      czyDzis
-                        ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
-                        : 'bg-slate-800/60 border border-white/10'
-                    }`}
-                  >
+                  <Link key={i} href={href} className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20' : 'bg-slate-800/60 border border-white/10'}`}>
                     <div className="mb-3 pb-2 border-b border-white/10">
-                      <div
-                        className={`text-[10px] uppercase tracking-widest font-bold ${
-                          czyDzis ? 'text-green-300' : 'text-white/40'
-                        }`}
-                      >
-                        {formatDzienTyg(d)}
-                      </div>
-                      <div
-                        className={`text-2xl font-black leading-none mt-1 ${
-                          czyDzis ? 'text-green-400' : 'text-white'
-                        }`}
-                      >
-                        {d.getDate()}
-                      </div>
-                      <div className="text-[10px] text-white/40 mt-0.5 capitalize">
-                        {d.toLocaleDateString('pl-PL', { month: 'short' })}
-                      </div>
+                      <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
+                      <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : 'text-white'}`}>{d.getDate()}</div>
+                      <div className="text-[10px] text-white/40 mt-0.5 capitalize">{d.toLocaleDateString('pl-PL', { month: 'short' })}</div>
                     </div>
-
                     <div className="flex-1 space-y-1.5">
-                      {eventy.length === 0 && (
-                        <div className="text-[10px] text-white/30 text-center py-2">
-                          brak
-                        </div>
-                      )}
+                      {eventy.length === 0 && <div className="text-[10px] text-white/30 text-center py-2">brak</div>}
                       {eventy.slice(0, 4).map((t: any) => (
-                        <div
-                          key={t.id}
-                          className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(
-                            t.typ
-                          )} bg-white/5`}
-                        >
-                          <div className="font-bold leading-tight">
-                            {t.godzina}
-                          </div>
-                          <div className="text-white/70 leading-tight capitalize truncate">
-                            {t.typ}
-                          </div>
+                        <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(t.typ)} bg-white/5`}>
+                          <div className="font-bold leading-tight">{t.godzina}</div>
+                          <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
                         </div>
                       ))}
-                      {eventy.length > 4 && (
-                        <div className="text-[10px] text-white/40 text-center pt-0.5">
-                          +{eventy.length - 4}
-                        </div>
-                      )}
+                      {eventy.length > 4 && <div className="text-[10px] text-white/40 text-center pt-0.5">+{eventy.length - 4}</div>}
                     </div>
-
                     {maEventy && (
                       <div className="flex gap-1 mt-2">
-                        {eventy.slice(0, 5).map((e: any, idx) => (
-                          <div
-                            key={idx}
-                            className={`w-1.5 h-1.5 rounded-full ${typKolor(
-                              e.typ
-                            )}`}
-                          />
-                        ))}
+                        {eventy.slice(0, 5).map((e: any, idx) => (<div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />))}
                       </div>
                     )}
-
-                    {czyDzis && (
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
-                    )}
+                    {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
                   </Link>
                 );
               })}
             </div>
 
-            <Link
-              href="/kalendarz"
-              className="md:hidden mt-3 flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 transition-all"
-            >
+            <Link href="/kalendarz" className="md:hidden mt-3 flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 transition-all">
               📅 Zobacz cały tydzień
             </Link>
 
-            {/* DESKTOP: 7 dni */}
             <div className="hidden md:grid grid-cols-7 gap-2">
               {dni.map((d, i) => {
                 const dataStr = toISO(d);
@@ -323,162 +237,73 @@ export default async function Dashboard({
                 const czyDzis = dataStr === dzisStr;
                 const maEventy = eventy.length > 0;
                 const href = getDayHref(dataStr);
-
                 return (
-                  <Link
-                    key={i}
-                    href={href}
-                    className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${
-                      czyDzis
-                        ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
-                        : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
-                    }`}
-                  >
+                  <Link key={i} href={href} className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20' : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'}`}>
                     <div className="mb-2 flex-shrink-0">
-                      <div
-                        className={`text-[10px] uppercase tracking-widest font-bold ${
-                          czyDzis ? 'text-green-300' : 'text-white/40'
-                        }`}
-                      >
-                        {formatDzienTyg(d)}
-                      </div>
-                      <div
-                        className={`text-2xl font-black leading-none mt-0.5 ${
-                          czyDzis ? 'text-green-400' : 'text-white'
-                        }`}
-                      >
-                        {d.getDate()}
-                      </div>
+                      <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
+                      <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : 'text-white'}`}>{d.getDate()}</div>
                     </div>
-
                     <div className="flex-1 space-y-1 overflow-hidden">
                       {eventy.slice(0, 3).map((t: any) => (
-                        <div
-                          key={t.id}
-                          className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
-                            t.typ
-                          )} bg-white/5`}
-                        >
-                          <div className="font-bold leading-tight">
-                            {t.godzina}
-                          </div>
-                          <div className="truncate text-white/70 leading-tight capitalize">
-                            {t.typ}
-                          </div>
+                        <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(t.typ)} bg-white/5`}>
+                          <div className="font-bold leading-tight">{t.godzina}</div>
+                          <div className="truncate text-white/70 leading-tight capitalize">{t.typ}</div>
                         </div>
                       ))}
-                      {eventy.length > 3 && (
-                        <div className="text-[9px] text-white/40 text-center pt-0.5">
-                          +{eventy.length - 3} więcej
-                        </div>
-                      )}
+                      {eventy.length > 3 && <div className="text-[9px] text-white/40 text-center pt-0.5">+{eventy.length - 3} więcej</div>}
                     </div>
-
                     {maEventy && (
                       <div className="flex gap-0.5 mt-1 flex-shrink-0">
-                        {eventy.slice(0, 4).map((e: any, idx) => (
-                          <div
-                            key={idx}
-                            className={`w-1.5 h-1.5 rounded-full ${typKolor(
-                              e.typ
-                            )}`}
-                          />
-                        ))}
+                        {eventy.slice(0, 4).map((e: any, idx) => (<div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />))}
                       </div>
                     )}
-
-                    {czyDzis && (
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
-                    )}
+                    {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
                   </Link>
                 );
               })}
             </div>
 
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-[10px] flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-white/60">Trening</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-white/60">Mecz</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                <span className="text-white/60">Sparing</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-purple-500" />
-                <span className="text-white/60">Turniej</span>
-              </div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-white/60">Trening</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-white/60">Mecz</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-white/60">Sparing</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-white/60">Turniej</span></div>
             </div>
           </div>
 
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-                Dzisiaj ·{' '}
-                {teraz.toLocaleDateString('pl-PL', {
-                  day: '2-digit',
-                  month: 'long',
-                })}
-              </h2>
+              <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Dzisiaj · {teraz.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}</h2>
             </div>
-
             {dzisiejsze.length === 0 ? (
-              <div className="text-center py-6 text-white/40 text-sm">
-                Brak wydarzeń na dziś
-              </div>
+              <div className="text-center py-6 text-white/40 text-sm">Brak wydarzeń na dziś</div>
             ) : (
               <div className="space-y-2">
                 {dzisiejsze.map((t: any) => {
                   const Icon = typIkona(t.typ);
                   const s = stats.get(t.id);
                   return (
-                    <Link
-                      key={t.id}
-                      href={`/kalendarz/${t.id}/obecnosc`}
-                      className={`group flex items-center gap-4 p-3 rounded-2xl border-l-4 ${typBorder(
-                        t.typ
-                      )} bg-white/5 hover:bg-white/10 transition-all`}
-                    >
+                    <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className={`group flex items-center gap-4 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                       </div>
-                      <div className="flex-shrink-0">
-                        <div className="text-lg font-bold text-white leading-none">
-                          {t.godzina}
-                        </div>
-                      </div>
+                      <div className="flex-shrink-0"><div className="text-lg font-bold text-white leading-none">{t.godzina}</div></div>
                       <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white text-sm truncate capitalize">
                           {t.typ}
-                          {t.przeciwnik && (
-                            <span className="text-white/60 font-normal">
-                              {' '}
-                              vs {t.przeciwnik}
-                            </span>
-                          )}
+                          {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                         </div>
                         {t.miejsce && (
                           <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{t.miejsce}</span>
+                            <MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{t.miejsce}</span>
                           </div>
                         )}
                         {s && (s.obecni > 0 || s.nieobecni > 0) && (
                           <div className="text-xs mt-1 flex items-center gap-3">
-                            <span className="text-green-400 font-medium">
-                              ✓ {s.obecni}
-                            </span>
-                            {s.nieobecni > 0 && (
-                              <span className="text-red-400 font-medium">
-                                ✗ {s.nieobecni}
-                              </span>
-                            )}
+                            <span className="text-green-400 font-medium">✓ {s.obecni}</span>
+                            {s.nieobecni > 0 && <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>}
                           </div>
                         )}
                       </div>
@@ -494,63 +319,31 @@ export default async function Dashboard({
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-3.5 h-3.5 text-blue-400" />
-                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-                  Nadchodzące
-                </h2>
+                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Nadchodzące</h2>
               </div>
               {(() => {
-                const nadchodzace = (treningi ?? [])
-                  .filter((t) => t.data > dzisStr)
-                  .sort((a, b) => {
-                    const cmp = a.data.localeCompare(b.data);
-                    if (cmp !== 0) return cmp;
-                    return (a.godzina || '').localeCompare(b.godzina || '');
-                  })
-                  .slice(0, 3);
-
+                const nadchodzace = (treningi ?? []).filter((t) => t.data > dzisStr).sort((a, b) => {
+                  const cmp = a.data.localeCompare(b.data);
+                  if (cmp !== 0) return cmp;
+                  return (a.godzina || '').localeCompare(b.godzina || '');
+                }).slice(0, 3);
                 if (nadchodzace.length === 0) {
-                  return (
-                    <div className="text-center py-6 text-white/40 text-sm">
-                      Brak nadchodzących wydarzeń
-                    </div>
-                  );
+                  return <div className="text-center py-6 text-white/40 text-sm">Brak nadchodzących wydarzeń</div>;
                 }
-
                 return (
                   <div className="space-y-2">
                     {nadchodzace.map((t: any) => (
-                      <Link
-                        key={t.id}
-                        href={`/kalendarz/${t.id}/obecnosc`}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(
-                          t.typ
-                        )} bg-white/5 hover:bg-white/10 transition-all`}
-                      >
+                      <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
                         <div className="flex-shrink-0 text-center w-10">
-                          <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
-                            {new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', {
-                              month: 'short',
-                            })}
-                          </div>
-                          <div className="text-lg font-black text-white leading-none">
-                            {new Date(t.data + 'T00:00:00').getDate()}
-                          </div>
+                          <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">{new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', { month: 'short' })}</div>
+                          <div className="text-lg font-black text-white leading-none">{new Date(t.data + 'T00:00:00').getDate()}</div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-semibold text-white truncate capitalize">
                             {t.godzina} · {t.typ}
-                            {t.przeciwnik && (
-                              <span className="text-white/60 font-normal">
-                                {' '}
-                                vs {t.przeciwnik}
-                              </span>
-                            )}
+                            {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                           </div>
-                          {t.miejsce && (
-                            <div className="text-[10px] text-white/50 truncate mt-0.5">
-                              {t.miejsce}
-                            </div>
-                          )}
+                          {t.miejsce && <div className="text-[10px] text-white/50 truncate mt-0.5">{t.miejsce}</div>}
                         </div>
                       </Link>
                     ))}
@@ -562,63 +355,30 @@ export default async function Dashboard({
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
-                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-                  Frekwencja —{' '}
-                  {teraz.toLocaleDateString('pl-PL', { month: 'long' })}
-                </h2>
+                <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja — {teraz.toLocaleDateString('pl-PL', { month: 'long' })}</h2>
               </div>
               {(() => {
                 const rokMiesiac = dzisStr.substring(0, 7);
-                const treningiMies = (treningi ?? []).filter((t) =>
-                  t.data.startsWith(rokMiesiac)
-                );
+                const treningiMies = (treningi ?? []).filter((t) => t.data.startsWith(rokMiesiac));
                 const idsMies = treningiMies.map((t) => t.id);
-                const obecnosciMies = (obecnosci ?? []).filter((o) =>
-                  idsMies.includes(o.trening_id)
-                );
-                const obecniMies = obecnosciMies.filter(
-                  (o) => o.status === 'obecny' || o.status === 'spozniony'
-                ).length;
-                const procent =
-                  obecnosciMies.length > 0
-                    ? Math.round((obecniMies / obecnosciMies.length) * 100)
-                    : 0;
-
+                const obecnosciMies = (obecnosci ?? []).filter((o) => idsMies.includes(o.trening_id));
+                const obecniMies = obecnosciMies.filter((o) => o.status === 'obecny' || o.status === 'spozniony').length;
+                const procent = obecnosciMies.length > 0 ? Math.round((obecniMies / obecnosciMies.length) * 100) : 0;
                 return (
                   <>
                     <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-5xl font-black text-white leading-none">
-                        {procent}
-                      </span>
+                      <span className="text-5xl font-black text-white leading-none">{procent}</span>
                       <span className="text-2xl text-white/40 font-bold">%</span>
                     </div>
                     <div className="w-full h-3 bg-slate-950/60 rounded-full overflow-hidden mb-3 shadow-inner">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          procent >= 80
-                            ? 'bg-gradient-to-r from-green-500 to-green-400'
-                            : procent >= 60
-                            ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                            : 'bg-gradient-to-r from-red-500 to-red-400'
-                        }`}
-                        style={{ width: `${procent}%` }}
-                      />
+                      <div className={`h-full rounded-full transition-all ${procent >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' : procent >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${procent}%` }} />
                     </div>
                     <div className="flex items-center justify-between text-xs text-white/50">
-                      <span>
-                        <span className="text-green-400 font-semibold">
-                          {obecniMies}
-                        </span>{' '}
-                        obecnych
-                      </span>
+                      <span><span className="text-green-400 font-semibold">{obecniMies}</span> obecnych</span>
                       <span>{obecnosciMies.length} wpisów</span>
                     </div>
-                    <Link
-                      href="/statystyki"
-                      className="mt-4 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
-                    >
-                      <BarChart3Icon className="w-3.5 h-3.5" />
-                      Zobacz pełne statystyki
+                    <Link href="/statystyki" className="mt-4 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
+                      <BarChart3Icon className="w-3.5 h-3.5" />Zobacz pełne statystyki
                     </Link>
                   </>
                 );

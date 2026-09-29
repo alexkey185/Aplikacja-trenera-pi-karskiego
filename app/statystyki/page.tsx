@@ -79,7 +79,6 @@ export default async function Statystyki() {
     (w) => w.status === 'nieobecny' || w.status === 'usprawiedliwiony'
   ).length;
 
-  // Grupowanie frekwencji po miesiącach (ostatnie 6)
   const teraz = new Date();
   const miesiace: { label: string; procent: number; count: number }[] = [];
 
@@ -116,7 +115,7 @@ export default async function Statystyki() {
           src="/talent-bg-mobile.webp"
           alt=""
           fill
-          quality={75}
+          quality={60}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -127,7 +126,7 @@ export default async function Statystyki() {
           src="/talent-bg.webp"
           alt=""
           fill
-          quality={75}
+          quality={60}
           sizes="100vw"
           className="object-cover object-center"
           aria-hidden
@@ -160,7 +159,21 @@ export default async function Statystyki() {
                 </p>
               </div>
             </div>
-            <UserAvatar />
+
+            {/* Logo mobile + logo+avatar desktop */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Image
+                src="/logo-wielopole.png"
+                alt="KS Wielopole"
+                width={56}
+                height={56}
+                className="w-10 h-10 md:w-14 md:h-14 object-contain drop-shadow-lg"
+                priority
+              />
+              <div className="hidden md:block">
+                <UserAvatar />
+              </div>
+            </div>
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -176,7 +189,6 @@ export default async function Statystyki() {
                 </div>
 
                 <div className="relative">
-                  {/* Linie pomocnicze */}
                   <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                     {[100, 75, 50, 25, 0].map((v) => (
                       <div key={v} className="flex items-center gap-2">
@@ -188,7 +200,6 @@ export default async function Statystyki() {
                     ))}
                   </div>
 
-                  {/* Słupki */}
                   <div className="relative h-52 pl-10 flex items-end gap-3 pb-6">
                     {miesiace.map((m, i) => (
                       <div
@@ -241,7 +252,6 @@ export default async function Statystyki() {
                 </div>
 
                 <div className="flex items-center gap-6 flex-wrap">
-                  {/* SVG donut */}
                   <div className="relative flex-shrink-0">
                     <svg width="140" height="140" viewBox="0 0 140 140">
                       {(() => {
@@ -307,7 +317,6 @@ export default async function Statystyki() {
                     </div>
                   </div>
 
-                  {/* Legenda */}
                   <div className="flex-1 min-w-[180px] space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-400/30 flex items-center justify-center flex-shrink-0">
@@ -342,7 +351,6 @@ export default async function Statystyki() {
 
             {/* PANEL BOCZNY */}
             <div className="lg:col-span-1 space-y-5">
-              {/* Kafelki */}
               <div className="grid grid-cols-2 gap-3">
                 <BigStat
                   icon={Activity}
@@ -378,7 +386,6 @@ export default async function Statystyki() {
                 />
               </div>
 
-              {/* Info o treningach */}
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 animate-fadeIn flex items-center gap-3 shadow-xl shadow-black/40">
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                   <Activity className="w-5 h-5 text-white/60" strokeWidth={2} />
@@ -393,7 +400,6 @@ export default async function Statystyki() {
                 </div>
               </div>
 
-              {/* TOP 5 */}
               {top5.length > 0 && (
                 <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 animate-fadeIn shadow-xl shadow-black/40">
                   <div className="flex items-center gap-2 mb-4">
@@ -404,18 +410,12 @@ export default async function Statystyki() {
                   </div>
                   <ul className="space-y-2">
                     {top5.map((r, i) => (
-                      <RankRow
-                        key={r.id}
-                        r={r}
-                        pozycja={i + 1}
-                        kolor="green"
-                      />
+                      <RankRow key={r.id} r={r} pozycja={i + 1} kolor="green" />
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Do poprawy */}
               {najgorsi.length > 0 && najgorsi[0].procent < 70 && (
                 <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 animate-fadeIn shadow-xl shadow-black/40">
                   <div className="flex items-center gap-2 mb-4">
@@ -426,12 +426,7 @@ export default async function Statystyki() {
                   </div>
                   <ul className="space-y-2">
                     {najgorsi.slice(0, 3).map((r, i) => (
-                      <RankRow
-                        key={r.id}
-                        r={r}
-                        pozycja={i + 1}
-                        kolor="red"
-                      />
+                      <RankRow key={r.id} r={r} pozycja={i + 1} kolor="red" />
                     ))}
                   </ul>
                 </div>
@@ -439,7 +434,6 @@ export default async function Statystyki() {
             </div>
           </div>
 
-          {/* Pełny ranking */}
           {rankingSort.length > 0 && (
             <div className="mt-5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 animate-fadeIn shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
@@ -457,10 +451,7 @@ export default async function Statystyki() {
                     <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-white/70 flex-shrink-0">
                       {i + 1}
                     </div>
-                    <Link
-                      href={`/zawodnicy/${r.id}`}
-                      className="flex-1 min-w-0"
-                    >
+                    <Link href={`/zawodnicy/${r.id}`} className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate text-white drop-shadow">
                         {r.imie} {r.nazwisko}
                       </div>
