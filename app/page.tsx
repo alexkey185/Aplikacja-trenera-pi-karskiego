@@ -42,22 +42,37 @@ export default async function StartScreen() {
           </p>
         </div>
 
-        <Link
-          href={href}
-          className="group flex items-center justify-center gap-3 w-[min(100%,320px)] px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold text-base transition-all shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
-        >
-          {zalogowany ? (
-            <>
-              Wejdź do aplikacji
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </>
-          ) : (
-            <>
-              <LogIn className="w-5 h-5" />
-              Zaloguj się
-            </>
+        <div className="flex flex-col gap-3 items-center w-[min(100%,320px)]">
+          <Link
+            href={href}
+            className="group flex items-center justify-center gap-3 w-full px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold text-base transition-all shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
+          >
+            {zalogowany ? (
+              <>
+                Wejdź do aplikacji
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" />
+                Zaloguj się
+              </>
+            )}
+          </Link>
+
+          {/* Link do rejestracji — tylko dla niezalogowanych */}
+          {!zalogowany && (
+            <Link
+              href="/auth/sign-up"
+              className="text-sm text-white/50 hover:text-white/80 transition-colors"
+            >
+              Nie masz konta?{' '}
+              <span className="text-green-400 font-semibold">
+                Zarejestruj się
+              </span>
+            </Link>
           )}
-        </Link>
+        </div>
       </div>
 
       <footer className="flex-shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 pb-[calc(16px+env(safe-area-inset-bottom,0px))] pt-3 text-xs">
