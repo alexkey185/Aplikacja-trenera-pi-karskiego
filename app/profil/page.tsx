@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { zaktualizujProfil, wyloguj } from './actions';
@@ -12,6 +13,7 @@ import {
   Save,
   LogOut,
   AlertTriangle,
+  MessageSquare,
 } from 'lucide-react';
 
 export default async function Profil() {
@@ -50,10 +52,26 @@ export default async function Profil() {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image src="/talent-bg-mobile.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image
+          src="/talent-bg-mobile.webp"
+          alt=""
+          fill
+          quality={75}
+          sizes="100vw"
+          className="object-cover object-center"
+          aria-hidden
+        />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image src="/talent-bg.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image
+          src="/talent-bg.webp"
+          alt=""
+          fill
+          quality={75}
+          sizes="100vw"
+          className="object-cover object-center"
+          aria-hidden
+        />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
@@ -68,6 +86,7 @@ export default async function Profil() {
             </p>
           </header>
 
+          {/* Karta użytkownika */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative flex items-center gap-4">
@@ -105,6 +124,7 @@ export default async function Profil() {
             </div>
           </div>
 
+          {/* FORMULARZ — imię i nazwisko */}
           <form
             action={zaktualizujProfil}
             className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60"
@@ -152,6 +172,7 @@ export default async function Profil() {
             </button>
           </form>
 
+          {/* Informacje o koncie */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="p-5">
               <div className="text-xs text-white/50 uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
@@ -200,6 +221,30 @@ export default async function Profil() {
             </div>
           </div>
 
+          {/* ═══════════════════════════════════════ */}
+          {/* POMOC I OPINIE */}
+          {/* ═══════════════════════════════════════ */}
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+              <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+                Pomoc i opinie
+              </h3>
+            </div>
+            <p className="text-xs text-white/60 mb-4 leading-relaxed">
+              Znalazłeś błąd? Masz pomysł na nową funkcję? Napisz — to pomaga
+              ulepszyć aplikację.
+            </p>
+            <Link
+              href="/profil/pomoc"
+              className="w-full flex items-center justify-center gap-2 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-400/40 text-blue-200 font-semibold py-3 rounded-xl text-xs transition-all"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Zgłoś problem / pomysł
+            </Link>
+          </div>
+
+          {/* Wyloguj */}
           <form action={wyloguj} className="animate-fadeIn mb-4">
             <button
               type="submit"
@@ -210,6 +255,9 @@ export default async function Profil() {
             </button>
           </form>
 
+          {/* ═══════════════════════════════════════ */}
+          {/* STREFA NIEBEZPIECZNA */}
+          {/* ═══════════════════════════════════════ */}
           <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-red-400" />
