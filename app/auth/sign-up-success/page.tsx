@@ -1,10 +1,11 @@
+import Link from 'next/link';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 export default function Page() {
   return (
@@ -14,15 +15,23 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Thank you for signing up!
+                Dziękujemy za rejestrację!
               </CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
+              <CardDescription>
+                Sprawdź e-mail, aby potwierdzić konto
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
+              <p className="text-sm text-muted-foreground mb-4">
+                Konto zostało utworzone. Kliknij link w wiadomości e-mail, żeby
+                aktywować konto i móc się zalogować.
               </p>
+              <Link
+                href="/auth/login"
+                className="text-sm underline underline-offset-4"
+              >
+                Wróć do logowania
+              </Link>
             </CardContent>
           </Card>
         </div>
