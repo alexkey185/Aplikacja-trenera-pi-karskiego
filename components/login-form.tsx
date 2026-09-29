@@ -1,25 +1,19 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import {
+  Mail,
+  Lock,
+  LogIn,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+} from 'lucide-react';
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<'div'>) {
+export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +32,7 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      router.push('/dashboard')
-      router.refresh();
+      router.push('/dashboard');
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Wystąpił błąd');
     } finally {
@@ -48,76 +41,117 @@ export function LoginForm({
   };
 
   return (
-    <div className={cn('w-full', className)} {...props}>
-      <div className="bg-white/80 backdrop-blur-lg border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-green-900/10">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Zaloguj się</h2>
-          <p className="text-sm text-slate-500 mt-1">
+    <div className="w-full">
+      {/* Card */}
+      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl shadow-black/60">
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 shadow-2xl shadow-green-500/30 mb-4">
+            <LogIn className="w-7 h-7 text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="text-2xl font-bold text-white drop-shadow-lg">
+            Zaloguj się
+          </h1>
+          <p className="text-xs text-white/60 mt-1">
             Wpisz email i hasło, żeby wejść do aplikacji
           </p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
+
+          {/* Email */}
           <div>
-            <label
-              htmlFor="email"
-              className="flex items-center gap-2 mb-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider"
-            >
-              <Mail className="w-3.5 h-3.5" />
+            <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+              <Mail className="w-3.5 h-3.5 text-green-400" />
               Email
             </label>
             <input
-              id="email"
               type="email"
-              placeholder="twoj@email.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white border border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 rounded-xl px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+              placeholder="trener@example.com"
+              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all"
             />
           </div>
 
+          {/* Hasło */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="password"
-                className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider"
-              >
-                <Lock className="w-3.5 h-3.5" />
+            <div className="flex items-center justify-between mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider">
+                <Lock className="w-3.5 h-3.5 text-green-400" />
                 Hasło
               </label>
-              <a
+              <Link
                 href="/auth/forgot-password"
-                className="text-xs text-green-600 hover:text-green-700 font-medium"
+                className="text-[10px] text-green-400 hover:text-green-300 font-semibold transition-colors"
               >
                 Zapomniałeś?
-              </a>
+              </Link>
             </div>
             <input
-              id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white border border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 rounded-xl px-4 py-3 text-slate-900 outline-none transition-all"
+              placeholder="Wpisz hasło"
+              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all"
             />
           </div>
 
+          {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
-              {error}
+            <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading}
-            className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 mt-2"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-wait disabled:hover:translate-y-0 disabled:hover:shadow-none mt-2"
           >
-            <LogIn className="w-5 h-5" />
-            {isLoading ? 'Logowanie...' : 'Zaloguj się'}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Logowanie...
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" />
+                Zaloguj się
+              </>
+            )}
           </button>
         </form>
+
+        {/* Footer */}
+        <div className="mt-6 pt-5 border-t border-white/10 text-center">
+          <p className="text-xs text-white/50">
+            Nie masz konta?{' '}
+            <Link
+              href="/auth/sign-up"
+              className="text-green-400 hover:text-green-300 font-semibold transition-colors"
+            >
+              Zarejestruj się
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Back link */}
+      <div className="text-center mt-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Powrót do strony głównej
+        </Link>
       </div>
     </div>
   );
