@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
     <main className="relative w-full h-dvh overflow-hidden bg-slate-950 pt-0">
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
-          src="/talent-hero-mobile.png"
+          src="/talent-hero-mobile.webp"
           alt=""
           fill
           
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
-          src="/talent-hero.png"
+          src="/talent-hero.webp"
           alt=""
           fill
           

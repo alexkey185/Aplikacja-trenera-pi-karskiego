@@ -110,7 +110,7 @@ export default async function Kadra({
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
-          src="/talent-bg-mobile.png"
+          src="/talent-bg-mobile.webp"
           alt=""
           fill
           quality={75}
@@ -121,7 +121,7 @@ export default async function Kadra({
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
-          src="/talent-bg.png"
+          src="/talent-bg.webp"
           alt=""
           fill
           quality={75}
