@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { zaktualizujProfil, wyloguj } from './actions';
+import { DeleteAccountButton } from '@/components/DeleteAccountButton';
 import {
   User,
   Mail,
@@ -10,6 +11,7 @@ import {
   Info,
   Save,
   LogOut,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default async function Profil() {
@@ -48,26 +50,10 @@ export default async function Profil() {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg-mobile.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
+        <Image src="/talent-bg.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
@@ -82,7 +68,6 @@ export default async function Profil() {
             </p>
           </header>
 
-          {/* Karta użytkownika */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative flex items-center gap-4">
@@ -120,7 +105,6 @@ export default async function Profil() {
             </div>
           </div>
 
-          {/* FORMULARZ — imię i nazwisko */}
           <form
             action={zaktualizujProfil}
             className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60"
@@ -168,7 +152,6 @@ export default async function Profil() {
             </button>
           </form>
 
-          {/* Informacje o koncie */}
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="p-5">
               <div className="text-xs text-white/50 uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
@@ -217,16 +200,30 @@ export default async function Profil() {
             </div>
           </div>
 
-          {/* Wyloguj — przez server action, bez modala */}
-          <form action={wyloguj} className="animate-fadeIn">
+          <form action={wyloguj} className="animate-fadeIn mb-4">
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 hover:border-red-400/60 text-red-300 hover:text-red-200 font-semibold py-3.5 rounded-2xl text-sm transition-all"
+              className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-semibold py-3.5 rounded-2xl text-sm transition-all"
             >
               <LogOut className="w-4 h-4" />
               Wyloguj się
             </button>
           </form>
+
+          <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <h3 className="text-xs font-bold text-red-400/90 uppercase tracking-widest">
+                Strefa niebezpieczna
+              </h3>
+            </div>
+            <p className="text-xs text-white/50 mb-4 leading-relaxed">
+              Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane
+              (zawodnicy, treningi, obecności) zostaną trwale usunięte.
+            </p>
+            <DeleteAccountButton />
+          </div>
+
         </div>
       </div>
     </main>
