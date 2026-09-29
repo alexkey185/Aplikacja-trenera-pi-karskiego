@@ -24,17 +24,15 @@ export default async function StartScreen() {
         backgroundColor: '#0a0e1a',
         backgroundAttachment: 'fixed',
       }}
-      className="min-h-screen text-slate-400"
+      className="h-dvh w-full flex flex-col text-slate-400 overflow-hidden"
     >
-      <div className="min-h-screen flex flex-col items-center justify-center gap-7 p-6 text-center relative">
-        {/* Logo — SVG base64 */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-7 px-6 text-center min-h-0">
         <img
           src={TALENT_LOGO}
           alt="talent."
           className="w-[min(78vw,300px)] h-auto block"
         />
 
-        {/* Tagline */}
         <div className="flex flex-col gap-2 items-center">
           <h1 className="m-0 text-[22px] font-semibold text-slate-100 leading-tight max-w-[320px]">
             Twoja drużyna, Twoje zasady.
@@ -44,7 +42,6 @@ export default async function StartScreen() {
           </p>
         </div>
 
-        {/* Przycisk */}
         <Link
           href={href}
           className="group flex items-center justify-center gap-3 w-[min(100%,320px)] px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold text-base transition-all shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
@@ -61,23 +58,23 @@ export default async function StartScreen() {
             </>
           )}
         </Link>
-
-        {/* Footer */}
-        <footer className="absolute bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-0 right-0 text-xs">
-          <Link
-            href="#"
-            className="text-slate-600 hover:text-slate-400 transition-colors mx-2"
-          >
-            Polityka prywatności
-          </Link>
-          <Link
-            href="#"
-            className="text-slate-600 hover:text-slate-400 transition-colors mx-2"
-          >
-            Regulamin
-          </Link>
-        </footer>
       </div>
+
+      <footer className="flex-shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 pb-[calc(16px+env(safe-area-inset-bottom,0px))] pt-3 text-xs">
+        <Link
+          href="/prywatnosc"
+          className="text-slate-600 hover:text-slate-400 transition-colors"
+        >
+          Polityka prywatności
+        </Link>
+        <span className="text-slate-800 select-none">·</span>
+        <Link
+          href="/regulamin"
+          className="text-slate-600 hover:text-slate-400 transition-colors"
+        >
+          Regulamin
+        </Link>
+      </footer>
     </main>
   );
 }
