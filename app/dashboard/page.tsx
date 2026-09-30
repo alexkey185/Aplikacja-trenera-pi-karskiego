@@ -332,12 +332,12 @@ export default async function Dashboard({
                         </div>
                       </div>
 
-                      {/* Przycisk edycji — nad stretched linkiem (pointer-events-auto) */}
+                      {/* Przycisk edycji — tylko desktop (na mobile zbyt ciasno) */}
                       <Link
                         href={`/kalendarz/${t.id}/edytuj`}
                         title="Edytuj wydarzenie"
                         aria-label="Edytuj wydarzenie"
-                        className="relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
+                        className="hidden md:flex relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
                       >
                         <Pencil className="w-4 h-4" />
                       </Link>
