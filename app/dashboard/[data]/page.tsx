@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { TopBar } from '@/components/TopBar';
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
@@ -21,7 +23,6 @@ export default async function DzienSzczegoly({
 }: {
   params: Promise<{ data: string }>;
 }) {
-  
   const { data } = await params;
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) {
@@ -34,11 +35,14 @@ export default async function DzienSzczegoly({
   }
 
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
 
   const { data: treningi } = await supabase
     .from('treningi')
     .select('*')
     .eq('data', data)
+    .eq('druzyna_id', druzynaId)
     .order('godzina', { ascending: true });
 
   const treningIds = (treningi ?? []).map((t) => t.id);
@@ -83,7 +87,6 @@ export default async function DzienSzczegoly({
           src="/talent-bg-mobile.webp"
           alt=""
           fill
-          
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -95,7 +98,6 @@ export default async function DzienSzczegoly({
           src="/talent-bg.webp"
           alt=""
           fill
-          
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -109,7 +111,7 @@ export default async function DzienSzczegoly({
           <header className="mb-6 flex items-center gap-3 animate-fadeIn">
             <Link
               href="/dashboard"
-              className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors"
+              className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
@@ -141,6 +143,7 @@ export default async function DzienSzczegoly({
                 </p>
               </div>
             </div>
+            <TopBar />
           </header>
 
           {!treningi || treningi.length === 0 ? (

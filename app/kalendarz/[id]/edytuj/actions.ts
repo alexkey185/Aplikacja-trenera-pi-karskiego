@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { revalidatePath } from 'next/cache';
 
 // ══════════════════════════════════════════════
@@ -16,6 +17,11 @@ export async function aktualizujTrening(
 ): Promise<{ success: true; scope: 'single' | 'all' }> {
   const supabase = await createClient();
 
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny.');
+  }
+
   const data = (formData.get('data') as string)?.trim();
   const godzina = (formData.get('godzina') as string)?.trim();
   const miejsce = (formData.get('miejsce') as string)?.trim() || null;
@@ -27,15 +33,16 @@ export async function aktualizujTrening(
     throw new Error('Data i godzina są wymagane.');
   }
 
-  // Pobierz obecny trening żeby znać cykl_id
+  // Pobierz obecny trening żeby znać cykl_id — tylko z aktywnej drużyny
   const { data: trening, error: errFetch } = await supabase
     .from('treningi')
     .select('id, cykl_id')
     .eq('id', id)
+    .eq('druzyna_id', druzynaId)
     .single();
 
   if (errFetch || !trening) {
-    throw new Error('Nie znaleziono treningu.');
+    throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
   }
 
   // ══════════════════════════════════════════════
@@ -45,7 +52,8 @@ export async function aktualizujTrening(
     const { error } = await supabase
       .from('treningi')
       .update({ data, godzina, miejsce, typ, przeciwnik, notatki })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('druzyna_id', druzynaId);
 
     if (error) {
       throw new Error(error.message);
@@ -67,7 +75,8 @@ export async function aktualizujTrening(
         przeciwnik,
         notatki,
       })
-      .eq('cykl_id', trening.cykl_id);
+      .eq('cykl_id', trening.cykl_id)
+      .eq('druzyna_id', druzynaId);
 
     if (error) {
       throw new Error(error.message);
@@ -77,12 +86,13 @@ export async function aktualizujTrening(
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');
+  revalidatePath('/statystyki');
 
   return { success: true, scope: trening.cykl_id && scope === 'all' ? 'all' : 'single' };
 }
 
 // ══════════════════════════════════════════════
-// USUWANIE — zostaje bez zmian (używa redirect z form action)
+// USUWANIE — używa redirect z form action
 // ══════════════════════════════════════════════
 export async function usunTrening(formData: FormData) {
   const idStr = formData.get('id') as string;
@@ -92,8 +102,17 @@ export async function usunTrening(formData: FormData) {
     throw new Error('Nieprawidłowe ID.');
   }
 
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny.');
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.from('treningi').delete().eq('id', id);
+  const { error } = await supabase
+    .from('treningi')
+    .delete()
+    .eq('id', id)
+    .eq('druzyna_id', druzynaId);
 
   if (error) {
     throw new Error(error.message);
@@ -101,4 +120,6 @@ export async function usunTrening(formData: FormData) {
 
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
+  revalidatePath('/kalendarz/eksport');
+  revalidatePath('/statystyki');
 }

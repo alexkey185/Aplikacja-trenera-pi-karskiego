@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { TopBar } from '@/components/TopBar';
 import { ObecnoscForm } from './ObecnoscForm';
 import {
   ArrowLeft,
@@ -9,7 +11,6 @@ import {
   Calendar as CalendarIcon,
   Clock,
   MapPin,
-  Pencil,
 } from 'lucide-react';
 
 export default async function Obecnosc({
@@ -22,16 +23,21 @@ export default async function Obecnosc({
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
   const { data: trening, error: errT } = await supabase
     .from('treningi')
     .select('*')
     .eq('id', idNum)
+    .eq('druzyna_id', druzynaId)
     .single();
   if (errT || !trening) notFound();
 
   const { data: zawodnicy } = await supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, numer, pozycja')
+    .eq('druzyna_id', druzynaId)
     .order('nazwisko', { ascending: true });
 
   const { data: obecnosc } = await supabase
@@ -46,13 +52,14 @@ export default async function Obecnosc({
 
   // ──────────────────────────────────────────────
   // LOGIKA A + C:
-  // Znajdź poprzedni trening tego samego typu (wcześniejsza data)
-  // i skopiuj jego statusy obecności jako fallback.
+  // Znajdź poprzedni trening tego samego typu w TEJ SAMEJ drużynie
+  // (wcześniejsza data) i skopiuj jego statusy obecności jako fallback.
   // ──────────────────────────────────────────────
   const { data: previousTrening } = await supabase
     .from('treningi')
     .select('id')
     .eq('typ', trening.typ)
+    .eq('druzyna_id', druzynaId)
     .lt('data', trening.data)
     .order('data', { ascending: false })
     .limit(1)
@@ -123,10 +130,11 @@ export default async function Obecnosc({
                 </p>
               </div>
             </div>
+            <TopBar />
           </header>
 
-          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-5 animate-fadeIn shadow-xl shadow-black/40 flex items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm flex-1 min-w-0">
+          <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-5 animate-fadeIn shadow-xl shadow-black/40">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <div className="flex items-center gap-2 text-white/90">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
                 <span className="font-medium capitalize">
@@ -148,13 +156,6 @@ export default async function Obecnosc({
                 </div>
               )}
             </div>
-            <Link
-              href={`/kalendarz/${idNum}/edytuj`}
-              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
-              title="Edytuj wydarzenie"
-            >
-              <Pencil className="w-4 h-4" />
-            </Link>
           </div>
 
           {!zawodnicy || zawodnicy.length === 0 ? (

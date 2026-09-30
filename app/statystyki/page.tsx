@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { UserAvatar } from '@/components/UserAvatar';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { TopBar } from '@/components/TopBar';
 import {
   ArrowLeft,
   BarChart3,
@@ -17,19 +19,29 @@ import {
 
 export default async function Statystyki() {
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
 
   const { data: zawodnicy } = await supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, numer, pozycja')
+    .eq('druzyna_id', druzynaId)
     .order('nazwisko', { ascending: true });
 
   const { data: treningi } = await supabase
     .from('treningi')
-    .select('id, data, typ');
+    .select('id, data, typ')
+    .eq('druzyna_id', druzynaId);
 
-  const { data: obecnosci } = await supabase
-    .from('obecnosc')
-    .select('trening_id, zawodnik_id, status');
+  const treningiIds = (treningi ?? []).map((t) => t.id);
+
+  const { data: obecnosci } =
+    treningiIds.length > 0
+      ? await supabase
+          .from('obecnosc')
+          .select('trening_id, zawodnik_id, status')
+          .in('trening_id', treningiIds)
+      : { data: [] };
 
   const totalTreningi = treningi?.length ?? 0;
   const totalZawodnikow = zawodnicy?.length ?? 0;
@@ -136,7 +148,7 @@ export default async function Statystyki() {
                 <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">Frekwencja drużyny</p>
               </div>
             </div>
-            <UserAvatar />
+            <TopBar />
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

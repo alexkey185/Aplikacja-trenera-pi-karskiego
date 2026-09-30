@@ -10,10 +10,10 @@ import {
   FileText,
   Save,
   Repeat,
+  ExternalLink,
 } from 'lucide-react';
 
 export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
-  // Bezpieczne pobieranie dzisiejszej daty w lokalnej strefie czasowej
   const dzis = defaultData ?? new Date().toLocaleDateString('sv-SE');
   const zaMiesiac = (() => {
     const d = new Date();
@@ -25,9 +25,14 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
   const [typ, setTyp] = useState('trening');
   const [cykl, setCykl] = useState('nie_powtarzaj');
   const [dataDo, setDataDo] = useState(zaMiesiac);
+  const [miejsce, setMiejsce] = useState('');
 
-  // Cykliczność dostępna tylko dla treningu
   const cyklDostepny = typ === 'trening';
+
+  // Link do Google Maps — generowany z aktualnej wartości pola
+  const mapsUrl = miejsce.trim()
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(miejsce.trim())}`
+    : null;
 
   const info = useMemo(() => {
     if (!cyklDostepny || cykl === 'nie_powtarzaj') return null;
@@ -104,7 +109,6 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
           value={typ}
           onChange={(e) => {
             setTyp(e.target.value);
-            // Reset cykliczności gdy zmieniamy na coś innego niż trening
             if (e.target.value !== 'trening') {
               setCykl('nie_powtarzaj');
             }
@@ -119,11 +123,27 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
       </Field>
 
       <Field icon={MapPin} label="Miejsce">
-        <input
-          name="miejsce"
-          placeholder="np. Boisko Orlik"
-          className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2"
-        />
+        <div className="flex items-center gap-1.5 w-full">
+          <input
+            name="miejsce"
+            value={miejsce}
+            onChange={(e) => setMiejsce(e.target.value)}
+            placeholder="np. Boisko Orlik"
+            className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 min-w-0"
+          />
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Otwórz w Google Maps"
+              aria-label="Otwórz lokalizację w Google Maps"
+              className="w-7 h-7 rounded-lg bg-white/5 hover:bg-green-500/20 border border-white/10 hover:border-green-400/40 flex items-center justify-center text-white/50 hover:text-green-400 transition-all flex-shrink-0"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
       </Field>
 
       <Field icon={Trophy} label="Przeciwnik (dla meczu/sparingu)">
@@ -143,7 +163,6 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
         />
       </Field>
 
-      {/* CYKLICZNOŚĆ — tylko dla treningu */}
       {cyklDostepny && (
         <div className="pt-5 border-t border-white/10 space-y-4">
           <div className="flex items-center gap-2">

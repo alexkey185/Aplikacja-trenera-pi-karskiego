@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { UserAvatar } from '@/components/UserAvatar';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { TopBar } from '@/components/TopBar';
 import { Users, Plus, Search, ArrowUpDown } from 'lucide-react';
 
 type Zawodnik = {
@@ -37,10 +39,13 @@ export default async function Kadra({
     : 'alpha';
 
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
 
   let query = supabase
     .from('zawodnicy')
-    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki');
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+    .eq('druzyna_id', druzynaId);
 
   if (q) {
     query = query.or(`imie.ilike.%${q}%,nazwisko.ilike.%${q}%`);
@@ -48,9 +53,15 @@ export default async function Kadra({
 
   const { data: zawodnicy, error } = await query;
 
-  const { data: obecnosci } = await supabase
-    .from('obecnosc')
-    .select('zawodnik_id, status');
+  const zawodnicyIds = (zawodnicy ?? []).map((z) => z.id);
+
+  const { data: obecnosci } =
+    zawodnicyIds.length > 0
+      ? await supabase
+          .from('obecnosc')
+          .select('zawodnik_id, status')
+          .in('zawodnik_id', zawodnicyIds)
+      : { data: [] };
 
   const frekwencjaMap = new Map<number, { obecni: number; total: number }>();
   (obecnosci ?? []).forEach((o) => {
@@ -131,7 +142,7 @@ export default async function Kadra({
                   </p>
                 </div>
               </div>
-              <UserAvatar />
+              <TopBar />
             </div>
 
             <form action="/kadra" method="GET" className="relative">

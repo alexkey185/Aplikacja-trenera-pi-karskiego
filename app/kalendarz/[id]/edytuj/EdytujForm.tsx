@@ -12,6 +12,7 @@ import {
   FileText,
   Save,
   Repeat,
+  ExternalLink,
 } from 'lucide-react';
 
 type Trening = {
@@ -31,8 +32,14 @@ export function EdytujForm({ trening }: { trening: Trening }) {
   const [pendingScope, setPendingScope] = useState<'single' | 'all'>('single');
   const [formData, setFormData] = useState<FormData | null>(null);
   const [saving, setSaving] = useState(false);
+  const [miejsce, setMiejsce] = useState(trening.miejsce ?? '');
 
   const isCyclic = !!trening.cykl_id;
+
+  // Link do Google Maps — generowany dynamicznie z aktualnej wartości pola
+  const mapsUrl = miejsce.trim()
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(miejsce.trim())}`
+    : null;
 
   // ══════════════════════════════════════════════
   // Submit — jeśli cykliczny → modal, jeśli nie → zapis od razu
@@ -58,7 +65,6 @@ export function EdytujForm({ trening }: { trening: Trening }) {
     setSaving(true);
     try {
       await aktualizujTrening(trening.id, scope, fd);
-      // Sukces — zamknij modal, przekieruj
       setShowScopeModal(false);
       setFormData(null);
       router.push('/kalendarz');
@@ -128,11 +134,27 @@ export function EdytujForm({ trening }: { trening: Trening }) {
         </Field>
 
         <Field icon={MapPin} label="Miejsce">
-          <input
-            name="miejsce"
-            defaultValue={trening.miejsce ?? ''}
-            className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2"
-          />
+          <div className="flex items-center gap-1.5 w-full">
+            <input
+              name="miejsce"
+              value={miejsce}
+              onChange={(e) => setMiejsce(e.target.value)}
+              placeholder="np. Boisko Orlik"
+              className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 min-w-0"
+            />
+            {mapsUrl && (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Otwórz w Google Maps"
+                aria-label="Otwórz lokalizację w Google Maps"
+                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-green-500/20 border border-white/10 hover:border-green-400/40 flex items-center justify-center text-white/50 hover:text-green-400 transition-all flex-shrink-0"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
         </Field>
 
         <Field icon={Trophy} label="Przeciwnik">

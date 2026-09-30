@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { EdytujForm } from './EdytujForm';
 import { ArrowLeft, Pencil } from 'lucide-react';
 
@@ -16,10 +17,14 @@ export default async function EdytujTrening({
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
   const { data: trening, error } = await supabase
     .from('treningi')
     .select('*')
     .eq('id', idNum)
+    .eq('druzyna_id', druzynaId)
     .single();
   if (error || !trening) notFound();
 

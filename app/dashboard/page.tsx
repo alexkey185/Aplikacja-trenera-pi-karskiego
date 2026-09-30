@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { UserAvatar } from '@/components/UserAvatar';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { TopBar } from '@/components/TopBar';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -55,15 +57,25 @@ export default async function Dashboard({
   const niedziela = addDays(poniedzialek, 6);
 
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
   const { data: treningi } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce')
+    .eq('druzyna_id', druzynaId)
     .order('data', { ascending: true })
     .order('godzina', { ascending: true });
 
-  const { data: obecnosci } = await supabase
-    .from('obecnosc')
-    .select('trening_id, status');
+  const treningiIds = (treningi ?? []).map((t) => t.id);
+
+  const { data: obecnosci } =
+    treningiIds.length > 0
+      ? await supabase
+          .from('obecnosc')
+          .select('trening_id, status')
+          .in('trening_id', treningiIds)
+      : { data: [] };
 
   const stats = new Map<number, { obecni: number; nieobecni: number }>();
   (obecnosci ?? []).forEach((o) => {
@@ -159,7 +171,7 @@ export default async function Dashboard({
                   <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">{formatMiesiacRok(poniedzialek)}</p>
                 </div>
               </div>
-              <UserAvatar />
+              <TopBar />
             </div>
           </header>
 
@@ -347,7 +359,6 @@ export default async function Dashboard({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-            {/* Sekcja "Nadchodzące" — tylko desktop */}
             <div className="hidden md:block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-3.5 h-3.5 text-blue-400" />

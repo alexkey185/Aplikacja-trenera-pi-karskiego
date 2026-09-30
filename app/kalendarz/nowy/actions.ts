@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -13,6 +14,11 @@ function toISODate(d: Date): string {
 
 export async function dodajTrening(formData: FormData) {
   const supabase = await createClient();
+
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny.');
+  }
 
   const data = (formData.get('data') as string)?.trim();
   const godzina = (formData.get('godzina') as string)?.trim();
@@ -27,7 +33,6 @@ export async function dodajTrening(formData: FormData) {
     throw new Error('Data i godzina są wymagane.');
   }
 
-  // Cykliczność tylko dla treningu
   const cyklDostepny = typ === 'trening' && cykl !== 'nie_powtarzaj';
 
   const dates: string[] = [];
@@ -66,9 +71,6 @@ export async function dodajTrening(formData: FormData) {
     }
   }
 
-  // ══════════════════════════════════════════════
-  // Jeśli cykliczny — generujemy wspólny UUID dla wszystkich
-  // ══════════════════════════════════════════════
   const cyklId = cyklDostepny ? crypto.randomUUID() : null;
 
   const rows = dates.map((d) => ({
@@ -79,6 +81,7 @@ export async function dodajTrening(formData: FormData) {
     przeciwnik,
     notatki,
     cykl_id: cyklId,
+    druzyna_id: druzynaId,
   }));
 
   const { error } = await supabase.from('treningi').insert(rows);
@@ -89,5 +92,7 @@ export async function dodajTrening(formData: FormData) {
 
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
+  revalidatePath('/kalendarz/eksport');
+  revalidatePath('/statystyki');
   redirect('/kalendarz');
 }

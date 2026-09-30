@@ -12,11 +12,11 @@ import {
   Pencil,
   Calendar as CalendarIcon,
   Printer,
+  ExternalLink,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
 import { usunTrening } from './[id]/edytuj/actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { UserAvatar } from '@/components/UserAvatar';
 
 type Trening = {
   id: number;
@@ -33,8 +33,8 @@ type StatsMap = Record<number, { obecni: number; nieobecni: number; total: numbe
 type Props = {
   treningi: Trening[];
   stats: StatsMap;
+  topBar: React.ReactNode;
 };
-
 const MONTHS_PL = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
 const MONTHS_PL_GENITIVE = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
 const DAYS_SHORT = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
@@ -65,8 +65,7 @@ function getMonday(date: Date) {
   d.setHours(0, 0, 0, 0);
   return d;
 }
-
-export function KalendarzClient({ treningi, stats }: Props) {
+export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const router = useRouter();
   const todayISO = useMemo(() => getLocalISO(), []);
   const todayDate = useMemo(() => parseISO(todayISO), [todayISO]);
@@ -252,7 +251,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                 <Printer className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Eksport</span>
               </Link>
-              <UserAvatar />
+              {topBar}
             </div>
           </header>
 
@@ -393,12 +392,27 @@ function DeleteEventButton({ id }: { id: number }) {
 }
 
 function EventCard({ trening, stats, onDragStart, isDragging, highlighted = false }: { trening: Trening; stats: StatsMap; onDragStart?: (e: React.DragEvent, id: number) => void; isDragging?: boolean; highlighted?: boolean }) {
+  const router = useRouter();
   const cfg = TYP_CONFIG[trening.typ] ?? TYP_CONFIG.trening;
   const s = stats[trening.id];
   const proc = s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
+
+  const mapsUrl = trening.miejsce?.trim()
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trening.miejsce.trim())}`
+    : null;
+
+  const goToAttendance = () => {
+    router.push(`/kalendarz/${trening.id}/obecnosc`);
+  };
+
   return (
     <div className={`group relative rounded-xl transition-all ${isDragging ? 'opacity-50' : ''} ${highlighted ? 'bg-green-500/[0.06] border-[1.5px] border-green-400/55 shadow-[0_0_12px_rgba(34,197,94,0.25)]' : 'bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20'}`}>
-      <Link href={`/kalendarz/${trening.id}/obecnosc`} draggable={!!onDragStart} onDragStart={(e) => onDragStart?.(e, trening.id)} className="block p-2.5">
+      <div
+        onClick={goToAttendance}
+        draggable={!!onDragStart}
+        onDragStart={(e) => onDragStart?.(e, trening.id)}
+        className="block p-2.5 cursor-pointer"
+      >
         <div className="flex items-center gap-2.5">
           <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-md text-base flex-shrink-0`}>{cfg.icon}</div>
           <div className="flex-shrink-0 w-12"><div className="text-sm font-bold text-white">{trening.godzina}</div></div>
@@ -409,8 +423,30 @@ function EventCard({ trening, stats, onDragStart, isDragging, highlighted = fals
               {trening.przeciwnik && <span className="text-white/60 font-medium"> vs {trening.przeciwnik}</span>}
             </div>
             {trening.miejsce ? (
-              <div className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1"><MapPin className="w-2.5 h-2.5 flex-shrink-0" /><span className="truncate">{trening.miejsce}</span></div>
-            ) : (<div className="text-[10px] text-white/50 mt-0.5">Brak lokalizacji</div>)}
+              mapsUrl ? (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => { e.stopPropagation(); }}
+                  draggable={false}
+                  onDragStart={(e) => e.preventDefault()}
+                  title="Otwórz w Google Maps"
+                  className="text-[10px] text-white/50 hover:text-green-400 mt-0.5 flex items-center gap-1 group/maps transition-colors w-fit max-w-full"
+                >
+                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                  <span className="truncate">{trening.miejsce}</span>
+                  <ExternalLink className="w-2.5 h-2.5 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
+                </a>
+              ) : (
+                <div className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1">
+                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                  <span className="truncate">{trening.miejsce}</span>
+                </div>
+              )
+            ) : (
+              <div className="text-[10px] text-white/50 mt-0.5">Brak lokalizacji</div>
+            )}
             {s && s.total > 0 ? (
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="text-[10px] text-white/60">👥 {s.obecni}/{s.total}</span>
@@ -419,7 +455,7 @@ function EventCard({ trening, stats, onDragStart, isDragging, highlighted = fals
             ) : (<div className="text-[10px] text-white/40 mt-1">Brak wpisów</div>)}
           </div>
         </div>
-      </Link>
+      </div>
       <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 pointer-events-none">
         <div className="pointer-events-auto">
           <Link href={`/kalendarz/${trening.id}/edytuj`} onClick={(e) => e.stopPropagation()} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center text-white/40 hover:text-white transition-all" title="Edytuj wydarzenie">

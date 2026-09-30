@@ -1,21 +1,33 @@
 import { createClient } from '@/lib/supabase/server';
 import { unstable_noStore as noStore } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { KalendarzClient } from './KalendarzClient';
+import { TopBar } from '@/components/TopBar';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 
 export default async function KalendarzPage() {
   noStore();
   const supabase = await createClient();
 
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
   const { data: treningi } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce, notatki')
+    .eq('druzyna_id', druzynaId)
     .order('data', { ascending: true });
 
-  const { data: obecnosci } = await supabase
-    .from('obecnosc')
-    .select('trening_id, status');
+  const treningiIds = (treningi ?? []).map((t) => t.id);
 
-  // Grupujemy statystyki obecności po trening_id
+  const { data: obecnosci } =
+    treningiIds.length > 0
+      ? await supabase
+          .from('obecnosc')
+          .select('trening_id, status')
+          .in('trening_id', treningiIds)
+      : { data: [] };
+
   const statsMap = new Map<number, { obecni: number; nieobecni: number; total: number }>();
   (obecnosci ?? []).forEach((o) => {
     const s = statsMap.get(o.trening_id) ?? { obecni: 0, nieobecni: 0, total: 0 };
@@ -25,11 +37,16 @@ export default async function KalendarzPage() {
     statsMap.set(o.trening_id, s);
   });
 
-  // Map nie przechodzi przez granicę server→client, konwertujemy na plain object
   const stats: Record<number, { obecni: number; nieobecni: number; total: number }> = {};
   statsMap.forEach((v, k) => {
     stats[k] = v;
   });
 
-  return <KalendarzClient treningi={treningi ?? []} stats={stats} />;
+  return (
+    <KalendarzClient
+      treningi={treningi ?? []}
+      stats={stats}
+      topBar={<TopBar />}
+    />
+  );
 }

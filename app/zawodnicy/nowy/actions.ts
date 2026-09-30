@@ -1,11 +1,17 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 export async function dodajZawodnika(formData: FormData) {
   const supabase = await createClient();
+
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny. Utwórz najpierw drużynę.');
+  }
 
   const imie = (formData.get('imie') as string)?.trim();
   const nazwisko = (formData.get('nazwisko') as string)?.trim();
@@ -27,6 +33,7 @@ export async function dodajZawodnika(formData: FormData) {
     numer: numerStr ? parseInt(numerStr, 10) : null,
     kontakt_rodzica: kontakt,
     notatki,
+    druzyna_id: druzynaId,
   });
 
   if (error) {
