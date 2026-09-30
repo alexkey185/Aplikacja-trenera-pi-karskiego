@@ -7,9 +7,10 @@ export async function TopBar() {
   const druzyny = await getDruzyny();
   const activeId = await getActiveDruzynaId();
 
+  // Brak drużyn — pokaż tylko UserAvatar (i to tylko na desktopie)
   if (druzyny.length === 0 || !activeId) {
     return (
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
         <UserAvatar />
       </div>
     );
@@ -34,7 +35,10 @@ export async function TopBar() {
         activeId={activeId}
         zawodnicyCount={zawodnicyCount}
       />
-      <UserAvatar />
+      {/* UserAvatar tylko na desktopie — na mobile jest w dolnej nawigacji „Profil" */}
+      <div className="hidden md:block">
+        <UserAvatar />
+      </div>
     </div>
   );
 }

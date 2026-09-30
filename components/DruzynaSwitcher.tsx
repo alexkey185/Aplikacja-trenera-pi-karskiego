@@ -45,12 +45,10 @@ export function DruzynaSwitcher({
   const active = druzyny.find((d) => d.id === activeId) ?? druzyny[0];
   const activeColor = KOLORY[active?.kolor ?? 'green'] ?? KOLORY.green;
 
-  // Portal można utworzyć dopiero po mount (client-side)
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Oblicz pozycję dropdownu względem przycisku
   const updateCoords = () => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
@@ -76,7 +74,6 @@ export function DruzynaSwitcher({
     };
   }, [open]);
 
-  // Zamknij dropdown gdy klik poza
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -114,7 +111,7 @@ export function DruzynaSwitcher({
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={isPending}
-        className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border transition-all flex-shrink-0 ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border transition-all flex-shrink-0 max-w-[160px] md:max-w-[220px] ${
           open
             ? 'bg-white/10 border-white/25 ring-2 ring-green-400/30'
             : 'border-white/10 hover:border-white/20'
@@ -122,7 +119,7 @@ export function DruzynaSwitcher({
         aria-label="Zmień drużynę"
       >
         <span className={`w-2.5 h-2.5 rounded-full ${activeColor} flex-shrink-0`} />
-        <span className="text-xs font-semibold text-white/90 hidden sm:inline whitespace-nowrap max-w-[120px] truncate">
+        <span className="text-xs font-semibold text-white/90 whitespace-nowrap truncate">
           {active.nazwa}
         </span>
         <ChevronDown
