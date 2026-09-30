@@ -11,6 +11,7 @@ import {
   MapPin,
   ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
+  Pencil,
 } from 'lucide-react';
 
 function getMonday(date: Date): Date {
@@ -270,31 +271,42 @@ export default async function Dashboard({
                   const Icon = typIkona(t.typ);
                   const s = stats.get(t.id);
                   return (
-                    <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className={`group flex items-center gap-4 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
-                      </div>
-                      <div className="flex-shrink-0"><div className="text-lg font-bold text-white leading-none">{t.godzina}</div></div>
-                      <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white text-sm truncate capitalize">
-                          {t.typ}
-                          {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
+                    <div key={t.id} className={`group flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
+                      <Link href={`/kalendarz/${t.id}/obecnosc`} className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                         </div>
-                        {t.miejsce && (
-                          <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{t.miejsce}</span>
+                        <div className="flex-shrink-0"><div className="text-lg font-bold text-white leading-none">{t.godzina}</div></div>
+                        <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-white text-sm truncate capitalize">
+                            {t.typ}
+                            {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                           </div>
-                        )}
-                        {s && (s.obecni > 0 || s.nieobecni > 0) && (
-                          <div className="text-xs mt-1 flex items-center gap-3">
-                            <span className="text-green-400 font-medium">✓ {s.obecni}</span>
-                            {s.nieobecni > 0 && <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>}
-                          </div>
-                        )}
-                      </div>
-                      <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                    </Link>
+                          {t.miejsce && (
+                            <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{t.miejsce}</span>
+                            </div>
+                          )}
+                          {s && (s.obecni > 0 || s.nieobecni > 0) && (
+                            <div className="text-xs mt-1 flex items-center gap-3">
+                              <span className="text-green-400 font-medium">✓ {s.obecni}</span>
+                              {s.nieobecni > 0 && <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                      <Link
+                        href={`/kalendarz/${t.id}/edytuj`}
+                        className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
+                        title="Edytuj wydarzenie"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                      <Link href={`/kalendarz/${t.id}/obecnosc`} className="flex-shrink-0" title="Przejdź do obecności">
+                        <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    </div>
                   );
                 })}
               </div>
