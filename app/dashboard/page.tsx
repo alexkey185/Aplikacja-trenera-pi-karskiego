@@ -11,7 +11,7 @@ import {
   MapPin,
   ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
-  Pencil,
+  ExternalLink,
 } from 'lucide-react';
 
 function getMonday(date: Date): Date {
@@ -270,24 +270,58 @@ export default async function Dashboard({
                 {dzisiejsze.map((t: any) => {
                   const Icon = typIkona(t.typ);
                   const s = stats.get(t.id);
+                  const mapsUrl = t.miejsce?.trim()
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.miejsce.trim())}`
+                    : null;
                   return (
-                    <div key={t.id} className={`group flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
-                      <Link href={`/kalendarz/${t.id}/obecnosc`} className="flex items-center gap-4 flex-1 min-w-0">
+                    <div
+                      key={t.id}
+                      className={`group relative flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
+                    >
+                      {/* Stretched link — pokrywa całą kartę, prowadzi do obecności */}
+                      <Link
+                        href={`/kalendarz/${t.id}/obecnosc`}
+                        className="absolute inset-0 z-0 rounded-2xl"
+                        aria-label={`Przejdź do obecności: ${t.typ}`}
+                      />
+
+                      {/* Treść — nad stretched linkiem, pointer-events-none żeby klikało w link */}
+                      <div className="relative z-10 pointer-events-none flex items-center gap-4 flex-1 min-w-0">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                           <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                         </div>
-                        <div className="flex-shrink-0"><div className="text-lg font-bold text-white leading-none">{t.godzina}</div></div>
+                        <div className="flex-shrink-0">
+                          <div className="text-lg font-bold text-white leading-none">{t.godzina}</div>
+                        </div>
                         <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-white text-sm truncate capitalize">
                             {t.typ}
                             {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                           </div>
-                          {t.miejsce && (
-                            <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
-                              <MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{t.miejsce}</span>
-                            </div>
-                          )}
+
+                          {/* Miejsce — jako osobny link do Google Maps */}
+                          {t.miejsce ? (
+                            mapsUrl ? (
+                              <a
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Otwórz w Google Maps"
+                                className="pointer-events-auto text-xs text-white/50 hover:text-green-400 flex items-center gap-1 mt-0.5 w-fit max-w-full transition-colors group/maps"
+                              >
+                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{t.miejsce}</span>
+                                <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
+                              </a>
+                            ) : (
+                              <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{t.miejsce}</span>
+                              </div>
+                            )
+                          ) : null}
+
                           {s && (s.obecni > 0 || s.nieobecni > 0) && (
                             <div className="text-xs mt-1 flex items-center gap-3">
                               <span className="text-green-400 font-medium">✓ {s.obecni}</span>
@@ -295,17 +329,10 @@ export default async function Dashboard({
                             </div>
                           )}
                         </div>
-                      </Link>
-                      <Link
-                        href={`/kalendarz/${t.id}/edytuj`}
-                        className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
-                        title="Edytuj wydarzenie"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Link>
-                      <Link href={`/kalendarz/${t.id}/obecnosc`} className="flex-shrink-0" title="Przejdź do obecności">
-                        <ChevronRightIcon className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all" />
-                      </Link>
+                      </div>
+
+                      {/* Chevron — wizualnie na końcu, klik "przechodzi" do stretched linku */}
+                      <ChevronRightIcon className="relative z-10 w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 pointer-events-none" />
                     </div>
                   );
                 })}
