@@ -12,6 +12,7 @@ import {
   ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
   ExternalLink,
+  Pencil,
 } from 'lucide-react';
 
 function getMonday(date: Date): Date {
@@ -330,6 +331,16 @@ export default async function Dashboard({
                           )}
                         </div>
                       </div>
+
+                      {/* Przycisk edycji — nad stretched linkiem (pointer-events-auto) */}
+                      <Link
+                        href={`/kalendarz/${t.id}/edytuj`}
+                        title="Edytuj wydarzenie"
+                        aria-label="Edytuj wydarzenie"
+                        className="relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
 
                       {/* Chevron — wizualnie na końcu, klik "przechodzi" do stretched linku */}
                       <ChevronRightIcon className="relative z-10 w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 pointer-events-none" />
