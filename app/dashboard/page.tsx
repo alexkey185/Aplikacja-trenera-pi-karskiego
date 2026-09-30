@@ -279,14 +279,12 @@ export default async function Dashboard({
                       key={t.id}
                       className={`group relative flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
                     >
-                      {/* Stretched link — pokrywa całą kartę, prowadzi do obecności */}
                       <Link
                         href={`/kalendarz/${t.id}/obecnosc`}
                         className="absolute inset-0 z-0 rounded-2xl"
                         aria-label={`Przejdź do obecności: ${t.typ}`}
                       />
 
-                      {/* Treść — nad stretched linkiem, pointer-events-none żeby klikało w link */}
                       <div className="relative z-10 pointer-events-none flex items-center gap-4 flex-1 min-w-0">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                           <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -301,7 +299,6 @@ export default async function Dashboard({
                             {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                           </div>
 
-                          {/* Miejsce — jako osobny link do Google Maps */}
                           {t.miejsce ? (
                             mapsUrl ? (
                               <a
@@ -332,7 +329,6 @@ export default async function Dashboard({
                         </div>
                       </div>
 
-                      {/* Przycisk edycji — tylko desktop (na mobile zbyt ciasno) */}
                       <Link
                         href={`/kalendarz/${t.id}/edytuj`}
                         title="Edytuj wydarzenie"
@@ -342,7 +338,6 @@ export default async function Dashboard({
                         <Pencil className="w-4 h-4" />
                       </Link>
 
-                      {/* Chevron — wizualnie na końcu, klik "przechodzi" do stretched linku */}
                       <ChevronRightIcon className="relative z-10 w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 pointer-events-none" />
                     </div>
                   );
@@ -352,7 +347,8 @@ export default async function Dashboard({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
+            {/* Sekcja "Nadchodzące" — tylko desktop */}
+            <div className="hidden md:block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-3.5 h-3.5 text-blue-400" />
                 <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Nadchodzące</h2>
