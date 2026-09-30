@@ -12,6 +12,7 @@ import {
   Repeat,
   ExternalLink,
 } from 'lucide-react';
+import { TimePicker } from '@/components/TimePicker';
 
 export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
   const dzis = defaultData ?? new Date().toLocaleDateString('sv-SE');
@@ -91,15 +92,9 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
             className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
           />
         </Field>
-        <Field icon={Clock} label="Godzina" required>
-          <input
-            name="godzina"
-            type="time"
-            required
-            defaultValue="18:00"
-            className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
-          />
-        </Field>
+       <Field icon={Clock} label="Godzina" required>
+  <TimePicker name="godzina" defaultValue="18:00" />
+</Field>
       </div>
 
       <Field icon={Trophy} label="Typ wydarzenia" required>

@@ -14,6 +14,7 @@ import {
   Repeat,
   ExternalLink,
 } from 'lucide-react';
+import { TimePicker } from '@/components/TimePicker';
 
 type Trening = {
   id: number;
@@ -109,14 +110,8 @@ export function EdytujForm({ trening }: { trening: Trening }) {
             />
           </Field>
           <Field icon={Clock} label="Godzina" required>
-            <input
-              name="godzina"
-              type="time"
-              required
-              defaultValue={trening.godzina}
-              className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
-            />
-          </Field>
+  <TimePicker name="godzina" defaultValue={trening.godzina} />
+</Field>
         </div>
 
         <Field icon={Trophy} label="Typ wydarzenia" required>
