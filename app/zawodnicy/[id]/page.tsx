@@ -3,10 +3,10 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
+import { DeleteButton } from './edytuj/DeleteButton';
 import { ArrowLeft, CheckCircle2, XCircle, FileText, Pencil, Phone, Calendar, Trophy, Target, TrendingUp, Activity } from 'lucide-react';
 
 export default async function KartaZawodnika({ params }: { params: Promise<{ id: string }> }) {
-  
   const { id } = await params;
   const idNum = parseInt(id, 10);
   if (isNaN(idNum)) notFound();
@@ -46,10 +46,10 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image src="/talent-bg-mobile.webp" alt="" fill  quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image src="/talent-bg-mobile.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image src="/talent-bg.webp" alt="" fill  quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image src="/talent-bg.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
@@ -84,9 +84,12 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
                   )}
                 </div>
               </div>
-              <Link href={`/zawodnicy/${idNum}/edytuj`} className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors flex-shrink-0">
-                <Pencil className="w-4 h-4" />
-              </Link>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Link href={`/zawodnicy/${idNum}/edytuj`} className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors" title="Edytuj zawodnika" aria-label="Edytuj zawodnika">
+                  <Pencil className="w-4 h-4" />
+                </Link>
+                <DeleteButton id={idNum} compact />
+              </div>
             </div>
             {zawodnik.kontakt_rodzica && (
               <div className="relative mt-4 flex items-center gap-2 text-sm text-white/90 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">

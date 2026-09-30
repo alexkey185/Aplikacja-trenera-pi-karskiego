@@ -8,7 +8,6 @@ import { DeleteButton } from './DeleteButton';
 import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil } from 'lucide-react';
 
 export default async function EdytujZawodnika({ params }: { params: Promise<{ id: string }> }) {
-  
   const { id } = await params;
   const idNum = parseInt(id, 10);
   if (isNaN(idNum)) notFound();
@@ -20,10 +19,10 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <div className="fixed inset-0 z-0 md:hidden">
-        <Image src="/talent-bg-mobile.webp" alt="" fill  quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image src="/talent-bg-mobile.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-0 hidden md:block">
-        <Image src="/talent-bg.webp" alt="" fill  quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
+        <Image src="/talent-bg.webp" alt="" fill quality={75} sizes="100vw" className="object-cover object-center" aria-hidden />
       </div>
       <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
 
