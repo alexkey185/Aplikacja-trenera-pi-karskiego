@@ -660,6 +660,7 @@ export default async function Statystyki({
               </div>
             </div>
 
+            {/* ═══ PRAWA KOLUMNA — RANKING (bez medali) ═══ */}
             <div className="lg:col-span-1 space-y-5">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-2xl shadow-black/60">
                 <div className="flex items-center gap-2 mb-1">
@@ -681,33 +682,21 @@ export default async function Statystyki({
                 ) : (
                   <ul className="space-y-1.5">
                     {rankingSort.map((r, i) => {
-                      const medal =
-                        i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
                       const colorClass =
                         r.procent >= 80
                           ? 'text-green-400'
                           : r.procent >= 60
                           ? 'text-amber-400'
                           : 'text-red-400';
-                      const medalBg =
-                        r.procent >= 80
-                          ? 'bg-yellow-500/20 border-yellow-400/40'
-                          : r.procent >= 60
-                          ? 'bg-amber-500/20 border-amber-400/40'
-                          : 'bg-red-500/20 border-red-400/40';
                       return (
                         <li
                           key={r.id}
                           className="flex items-center gap-3 py-2.5 px-2.5 rounded-xl hover:bg-white/5 transition-colors"
                         >
-                          <div
-                            className={`w-9 h-9 rounded-lg border flex items-center justify-center text-base flex-shrink-0 ${medalBg}`}
-                          >
-                            {medal ?? (
-                              <span className="text-xs font-bold text-white/70">
-                                {i + 1}
-                              </span>
-                            )}
+                          <div className="w-9 h-9 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-white/70">
+                              {i + 1}
+                            </span>
                           </div>
                           <Link href={`/zawodnicy/${r.id}`} className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-white truncate">
