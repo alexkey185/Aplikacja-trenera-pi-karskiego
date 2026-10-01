@@ -1,53 +1,97 @@
-import Image from 'next/image';
-import { Suspense } from 'react';
-import { ToastListener } from '@/components/ToastListener';
+import type { Metadata, Viewport } from 'next';
+import { Geist } from 'next/font/google';
+import { Toaster } from 'sonner';
+import { BottomNav } from '@/components/BottomNav';
+import { ContentWrapper } from '@/components/ContentWrapper';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import './globals.css';
 
-// Wymuś dynamiczne renderowanie dla wszystkich stron w grupie (app)
-export const dynamic = 'force-dynamic';
+const defaultUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : 'http://localhost:3000';
 
-export default function AppLayout({
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(defaultUrl),
+  title: 'Talent — Aplikacja Trenera',
+  description: 'Aplikacja dla trenerów piłki nożnej',
+  applicationName: 'Talent',
+  appleWebApp: {
+    capable: true,
+    title: 'Talent',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/icons/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon-16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0e1a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  display: 'swap',
+  subsets: ['latin'],
+});
+
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* ToastListener używa useSearchParams — wymaga Suspense */}
-      <Suspense fallback={null}>
-        <ToastListener />
-      </Suspense>
+    <html lang="pl" suppressHydrationWarning>
+      <head>
+        {supabaseUrl && (
+          <>
+            <link rel="preconnect" href={supabaseUrl} />
+            <link rel="dns-prefetch" href={supabaseUrl} />
+          </>
+        )}
+        <meta name="theme-color" content="#0a0e1a" />
+      </head>
+      <body className={`${geistSans.variable} antialiased`}>
+        <ContentWrapper>{children}</ContentWrapper>
+        <BottomNav />
+        <ServiceWorkerRegister />
 
-      {/* Tło — mobile */}
-      <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          duration={3500}
+          toastOptions={{
+            style: {
+              background: 'rgba(15, 23, 42, 0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white',
+              backdropFilter: 'blur(16px)',
+              borderRadius: '16px',
+              padding: '14px 16px',
+              boxShadow: '0 20px 60px -15px rgba(0,0,0,0.6)',
+            },
+          }}
         />
-      </div>
-
-      {/* Tło — desktop */}
-      <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
-      </div>
-
-      {/* Overlay + blur */}
-      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
-
-      {/* Zawartość */}
-      <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">{children}</div>
-    </main>
+      </body>
+    </html>
   );
 }
