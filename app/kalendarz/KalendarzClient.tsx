@@ -17,7 +17,6 @@ import {
 import { przeniesTrening } from './actions';
 import { usunTrening } from './[id]/edytuj/actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { UserAvatar } from '@/components/UserAvatar';
 
 type Trening = {
   id: number;
@@ -34,6 +33,7 @@ type StatsMap = Record<number, { obecni: number; nieobecni: number; total: numbe
 type Props = {
   treningi: Trening[];
   stats: StatsMap;
+  topBar: React.ReactNode;
 };
 
 const MONTHS_PL = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
@@ -67,7 +67,7 @@ function getMonday(date: Date) {
   return d;
 }
 
-export function KalendarzClient({ treningi, stats }: Props) {
+export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const router = useRouter();
   const todayISO = useMemo(() => getLocalISO(), []);
   const todayDate = useMemo(() => parseISO(todayISO), [todayISO]);
@@ -253,7 +253,7 @@ export function KalendarzClient({ treningi, stats }: Props) {
                 <Printer className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                 <span className="hidden sm:inline">Eksport</span>
               </Link>
-              <UserAvatar />
+              {topBar}
             </div>
           </header>
 
