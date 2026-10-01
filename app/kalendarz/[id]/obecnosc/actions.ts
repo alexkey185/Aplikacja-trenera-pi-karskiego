@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -11,6 +12,14 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
     throw new Error('Brak aktywnej drużyny.');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // RATE LIMIT — max 200 zapisów obecności na godzinę per user
+  // ═══════════════════════════════════════════════════
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await enforceRateLimit(`user:${user.id}`, 'zapiszObecnosc', 200, 3600);
   }
 
   // Weryfikacja: trening należy do aktywnej drużyny

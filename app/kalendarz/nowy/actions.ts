@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { enforceRateLimit } from '@/lib/rate-limit';   // ← DODANE
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -19,6 +20,15 @@ export async function dodajTrening(formData: FormData) {
   if (!druzynaId) {
     throw new Error('Brak aktywnej drużyny.');
   }
+
+  // ═══════════════════════════════════════════════════
+  // ← RATE LIMIT — dodaj TUTAJ (po sprawdzeniu drużyny)
+  // ═══════════════════════════════════════════════════
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await enforceRateLimit(`user:${user.id}`, 'dodajTrening', 60, 3600);
+  }
+  // ═══════════════════════════════════════════════════
 
   const data = (formData.get('data') as string)?.trim();
   const godzina = (formData.get('godzina') as string)?.trim();
