@@ -96,8 +96,10 @@ export default async function Statystyki({
   searchParams: Promise<{ okres?: string; m?: string; sort?: string }>;
 }) {
   const params = await searchParams;
-  const okres = params.okres ?? '30dni';
-  const m = params.m;
+  const dzis = new Date();
+  const biezacyMiesiac = `${dzis.getFullYear()}-${pad2(dzis.getMonth() + 1)}`;
+  const okres = params.okres ?? 'month';
+  const m = params.m ?? (okres === 'month' ? biezacyMiesiac : undefined);
   const sort = params.sort ?? 'obecnosci';
 
   const supabase = await createClient();
