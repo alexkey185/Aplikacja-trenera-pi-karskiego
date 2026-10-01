@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usunKonto } from '@/app/profil/actions';
+import { usunKonto } from '@/app/(app)/profil/actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Trash2, Loader2, AlertTriangle } from 'lucide-react';
 

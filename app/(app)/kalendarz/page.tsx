@@ -12,21 +12,20 @@ export default async function KalendarzPage() {
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-// Ograniczamy do ±2 miesiące od dziś — dla nawigacji w kalendarzu
-const dzis = new Date();
-const od = new Date(dzis.getFullYear(), dzis.getMonth() - 2, 1);
-const do_ = new Date(dzis.getFullYear(), dzis.getMonth() + 3, 0);
+  const dzis = new Date();
+  const od = new Date(dzis.getFullYear(), dzis.getMonth() - 2, 1);
+  const do_ = new Date(dzis.getFullYear(), dzis.getMonth() + 3, 0);
 
-const toISO = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const toISO = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-const { data: treningi } = await supabase
-  .from('treningi')
-  .select('id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id')
-  .eq('druzyna_id', druzynaId)
-  .gte('data', toISO(od))
-  .lte('data', toISO(do_))
-  .order('data', { ascending: true });
+  const { data: treningi } = await supabase
+    .from('treningi')
+    .select('id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id')
+    .eq('druzyna_id', druzynaId)
+    .gte('data', toISO(od))
+    .lte('data', toISO(do_))
+    .order('data', { ascending: true });
 
   const treningiIds = (treningi ?? []).map((t) => t.id);
 
