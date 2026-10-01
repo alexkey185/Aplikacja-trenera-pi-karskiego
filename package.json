@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+        "test:e2e:cleanup": "node scripts/cleanup-test-data.mjs",
+        "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "start": "next start",
     "lint": "next lint"
   },
