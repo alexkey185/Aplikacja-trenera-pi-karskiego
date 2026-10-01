@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -14,32 +15,31 @@ export async function dodajZawodnika(formData: FormData) {
     throw new Error('Brak aktywnej drużyny. Utwórz najpierw drużynę.');
   }
 
-  // ═══════════════════════════════════════════════════
-  // RATE LIMIT — max 30 zawodników na godzinę per user
-  // ═══════════════════════════════════════════════════
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'dodajZawodnika', 30, 3600);
   }
 
-  const imie = (formData.get('imie') as string)?.trim();
-  const nazwisko = (formData.get('nazwisko') as string)?.trim();
-  const rocznikStr = (formData.get('rocznik') as string)?.trim();
-  const pozycja = (formData.get('pozycja') as string)?.trim() || null;
-  const numerStr = (formData.get('numer') as string)?.trim();
-  const kontakt = (formData.get('kontakt_rodzica') as string)?.trim() || null;
-  const notatki = (formData.get('notatki') as string)?.trim() || null;
-
-  if (!imie || !nazwisko) {
-    throw new Error('Imię i nazwisko są wymagane.');
-  }
+  // ═══════════════════════════════════════════════════
+  // WALIDACJA ZOD
+  // ═══════════════════════════════════════════════════
+  const parsed = parseFormData(dodajZawodnikaSchema, formData);
+  const {
+    imie,
+    nazwisko,
+    rocznik,
+    pozycja,
+    numer,
+    kontakt_rodzica: kontakt,
+    notatki,
+  } = parsed;
 
   const { error } = await supabase.from('zawodnicy').insert({
     imie,
     nazwisko,
-    rocznik: rocznikStr ? parseInt(rocznikStr, 10) : null,
+    rocznik,
     pozycja,
-    numer: numerStr ? parseInt(numerStr, 10) : null,
+    numer,
     kontakt_rodzica: kontakt,
     notatki,
     druzyna_id: druzynaId,

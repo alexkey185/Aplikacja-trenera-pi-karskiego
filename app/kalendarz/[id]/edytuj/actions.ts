@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { aktualizujTreningSchema, parseFormData } from '@/lib/schemas';
 import { revalidatePath } from 'next/cache';
 
 // ══════════════════════════════════════════════
@@ -19,16 +20,11 @@ export async function aktualizujTrening(
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  const data = (formData.get('data') as string)?.trim();
-  const godzina = (formData.get('godzina') as string)?.trim();
-  const miejsce = (formData.get('miejsce') as string)?.trim() || null;
-  const typ = (formData.get('typ') as string)?.trim() || 'trening';
-  const przeciwnik = (formData.get('przeciwnik') as string)?.trim() || null;
-  const notatki = (formData.get('notatki') as string)?.trim() || null;
-
-  if (!data || !godzina) {
-    throw new Error('Data i godzina są wymagane.');
-  }
+  // ═══════════════════════════════════════════════════
+  // WALIDACJA ZOD
+  // ═══════════════════════════════════════════════════
+  const parsed = parseFormData(aktualizujTreningSchema, formData);
+  const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed;
 
   const { data: trening, error: errFetch } = await supabase
     .from('treningi')
@@ -79,8 +75,6 @@ export async function aktualizujTrening(
 
 // ══════════════════════════════════════════════
 // USUWANIE TRENINGU — z opcją całej serii
-// Zwraca { success } lub { error }, bez redirect() —
-// klient sam nawiguje po sukcesie
 // ══════════════════════════════════════════════
 export async function usunTreningZakres(
   id: number,
@@ -110,7 +104,6 @@ export async function usunTreningZakres(
   let count = 0;
 
   if (scope === 'all' && trening.cykl_id) {
-    // Usuń wszystkie treningi z tego cyklu
     const { error, count: deletedCount } = await supabase
       .from('treningi')
       .delete({ count: 'exact' })
@@ -122,7 +115,6 @@ export async function usunTreningZakres(
     }
     count = deletedCount ?? 0;
   } else {
-    // Usuń tylko ten jeden
     const { error, count: deletedCount } = await supabase
       .from('treningi')
       .delete({ count: 'exact' })
@@ -144,8 +136,7 @@ export async function usunTreningZakres(
 }
 
 // ══════════════════════════════════════════════
-// STARA WERSJA — zachowana dla kompatybilności
-// (używa usunTrening z form action w UsunButton)
+// STARA WERSJA — dla kompatybilności
 // ══════════════════════════════════════════════
 export async function usunTrening(formData: FormData) {
   const idStr = formData.get('id') as string;

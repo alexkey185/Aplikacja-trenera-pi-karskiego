@@ -1,36 +1,46 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 export async function aktualizujZawodnika(id: number, formData: FormData) {
   const supabase = await createClient();
 
-  const imie = (formData.get('imie') as string)?.trim();
-  const nazwisko = (formData.get('nazwisko') as string)?.trim();
-  const rocznikStr = (formData.get('rocznik') as string)?.trim();
-  const pozycja = (formData.get('pozycja') as string)?.trim() || null;
-  const numerStr = (formData.get('numer') as string)?.trim();
-  const kontakt = (formData.get('kontakt_rodzica') as string)?.trim() || null;
-  const notatki = (formData.get('notatki') as string)?.trim() || null;
-
-  if (!imie || !nazwisko) {
-    throw new Error('Imię i nazwisko są wymagane.');
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny.');
   }
+
+  // ═══════════════════════════════════════════════════
+  // WALIDACJA ZOD — ten sam schema co przy dodawaniu
+  // ═══════════════════════════════════════════════════
+  const parsed = parseFormData(dodajZawodnikaSchema, formData);
+  const {
+    imie,
+    nazwisko,
+    rocznik,
+    pozycja,
+    numer,
+    kontakt_rodzica: kontakt,
+    notatki,
+  } = parsed;
 
   const { error } = await supabase
     .from('zawodnicy')
     .update({
       imie,
       nazwisko,
-      rocznik: rocznikStr ? parseInt(rocznikStr, 10) : null,
+      rocznik,
       pozycja,
-      numer: numerStr ? parseInt(numerStr, 10) : null,
+      numer,
       kontakt_rodzica: kontakt,
       notatki,
     })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('druzyna_id', druzynaId);
 
   if (error) {
     throw new Error(error.message);
@@ -49,18 +59,49 @@ export async function usunZawodnika(formData: FormData) {
     throw new Error('Nieprawidłowe ID zawodnika.');
   }
 
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    throw new Error('Brak aktywnej drużyny.');
+  }
+
   const supabase = await createClient();
 
-  // Najpierw usuń powiązane obecności
-  await supabase.from('obecnosc').delete().eq('zawodnik_id', id);
+  const { data: zawodnik, error: errFetch } = await supabase
+    .from('zawodnicy')
+    .select('id')
+    .eq('id', id)
+    .eq('druzyna_id', druzynaId)
+    .single();
 
-  // Potem usuń samego zawodnika
-  const { error } = await supabase.from('zawodnicy').delete().eq('id', id);
+  if (errFetch || !zawodnik) {
+    throw new Error('Nie znaleziono zawodnika w aktywnej drużynie.');
+  }
+
+  const { error: errObecnosc } = await supabase
+    .from('obecnosc')
+    .delete()
+    .eq('zawodnik_id', id);
+
+  if (errObecnosc) {
+    console.error('Błąd usuwania obecności:', errObecnosc.message);
+  }
+
+  const { error, count } = await supabase
+    .from('zawodnicy')
+    .delete({ count: 'exact' })
+    .eq('id', id)
+    .eq('druzyna_id', druzynaId);
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(`Nie udało się usunąć: ${error.message}`);
+  }
+
+  if (!count || count === 0) {
+    throw new Error('Nie usunięto żadnego wiersza (RLS zablokował?).');
   }
 
   revalidatePath('/kadra');
+  revalidatePath('/kalendarz');
+  revalidatePath('/statystyki');
   redirect('/kadra');
 }

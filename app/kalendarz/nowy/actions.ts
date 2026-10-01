@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
-import { enforceRateLimit } from '@/lib/rate-limit';   // ← DODANE
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { dodajTreningSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -21,27 +22,26 @@ export async function dodajTrening(formData: FormData) {
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  // ═══════════════════════════════════════════════════
-  // ← RATE LIMIT — dodaj TUTAJ (po sprawdzeniu drużyny)
-  // ═══════════════════════════════════════════════════
+  // Rate limit
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'dodajTrening', 60, 3600);
   }
+
   // ═══════════════════════════════════════════════════
-
-  const data = (formData.get('data') as string)?.trim();
-  const godzina = (formData.get('godzina') as string)?.trim();
-  const miejsce = (formData.get('miejsce') as string)?.trim() || null;
-  const typ = (formData.get('typ') as string)?.trim() || 'trening';
-  const przeciwnik = (formData.get('przeciwnik') as string)?.trim() || null;
-  const notatki = (formData.get('notatki') as string)?.trim() || null;
-  const cykl = (formData.get('cykl') as string)?.trim() || 'nie_powtarzaj';
-  const dataDo = (formData.get('data_do') as string)?.trim();
-
-  if (!data || !godzina) {
-    throw new Error('Data i godzina są wymagane.');
-  }
+  // WALIDACJA ZOD — zamiast 10 linii ręcznego parsowania
+  // ═══════════════════════════════════════════════════
+  const parsed = parseFormData(dodajTreningSchema, formData);
+  const {
+    data,
+    godzina,
+    miejsce,
+    typ,
+    przeciwnik,
+    notatki,
+    cykl,
+    data_do: dataDo,
+  } = parsed;
 
   const cyklDostepny = typ === 'trening' && cykl !== 'nie_powtarzaj';
 
@@ -50,6 +50,7 @@ export async function dodajTrening(formData: FormData) {
   if (!cyklDostepny) {
     dates.push(data);
   } else {
+    // Zod już zagwarantował że dataDo istnieje (przez refine)
     if (!dataDo) {
       throw new Error('Wybierz datę końcową.');
     }
