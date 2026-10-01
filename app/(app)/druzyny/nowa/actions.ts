@@ -19,10 +19,8 @@ export async function dodajDruzyna(formData: FormData) {
     throw new Error('Musisz być zalogowany.');
   }
 
-  // Rate limit: max 10 nowych drużyn / godzinę
   await enforceRateLimit(`user:${user.id}`, 'dodajDruzyna', 10, 3600);
 
-  // Walidacja Zod
   const parsed = parseFormData(dodajDruzynaSchema, formData);
   const { nazwa, rocznik, kolor } = parsed;
 
@@ -41,7 +39,6 @@ export async function dodajDruzyna(formData: FormData) {
     throw new Error(error?.message ?? 'Nie udało się utworzyć drużyny.');
   }
 
-  // Ustaw nową drużynę jako aktywną
   const cookieStore = await cookies();
   cookieStore.set(ACTIVE_DRUZYNA_COOKIE, nowa.id, {
     httpOnly: true,
@@ -52,5 +49,5 @@ export async function dodajDruzyna(formData: FormData) {
   });
 
   revalidatePath('/', 'layout');
-  redirect('/druzyny');
+  redirect('/druzyny?toast=druzyna_dodana');
 }

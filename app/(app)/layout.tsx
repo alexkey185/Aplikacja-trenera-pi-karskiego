@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { ToastListener } from '@/components/ToastListener';
 
 export default function AppLayout({
   children,
@@ -7,6 +8,8 @@ export default function AppLayout({
 }) {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+      <ToastListener />
+
       {/* Tło — mobile */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image

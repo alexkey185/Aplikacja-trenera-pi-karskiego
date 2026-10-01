@@ -20,9 +20,6 @@ export async function dodajZawodnika(formData: FormData) {
     await enforceRateLimit(`user:${user.id}`, 'dodajZawodnika', 30, 3600);
   }
 
-  // ═══════════════════════════════════════════════════
-  // WALIDACJA ZOD
-  // ═══════════════════════════════════════════════════
   const parsed = parseFormData(dodajZawodnikaSchema, formData);
   const {
     imie,
@@ -50,5 +47,5 @@ export async function dodajZawodnika(formData: FormData) {
   }
 
   revalidatePath('/kadra');
-  redirect('/kadra');
+  redirect('/kadra?toast=zawodnik_dodany');
 }

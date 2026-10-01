@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
+import { Toaster } from 'sonner';
 import { BottomNav } from '@/components/BottomNav';
 import { ContentWrapper } from '@/components/ContentWrapper';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
@@ -72,6 +73,25 @@ export default function RootLayout({
         <ContentWrapper>{children}</ContentWrapper>
         <BottomNav />
         <ServiceWorkerRegister />
+
+        {/* Toaster — powiadomienia w całej aplikacji */}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          duration={3500}
+          toastOptions={{
+            style: {
+              background: 'rgba(15, 23, 42, 0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white',
+              backdropFilter: 'blur(16px)',
+              borderRadius: '16px',
+              padding: '14px 16px',
+              boxShadow: '0 20px 60px -15px rgba(0,0,0,0.6)',
+            },
+          }}
+        />
       </body>
     </html>
   );

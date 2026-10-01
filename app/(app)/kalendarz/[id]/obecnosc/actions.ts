@@ -14,15 +14,11 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  // ═══════════════════════════════════════════════════
-  // RATE LIMIT — max 200 zapisów obecności na godzinę per user
-  // ═══════════════════════════════════════════════════
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'zapiszObecnosc', 200, 3600);
   }
 
-  // Weryfikacja: trening należy do aktywnej drużyny
   const { data: trening, error: errT } = await supabase
     .from('treningi')
     .select('id')
@@ -34,7 +30,6 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
     throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
   }
 
-  // Pobierz listę zawodników z tej drużyny (żeby odfiltrować próby zapisu cudzych)
   const { data: zawodnicyDruzyny } = await supabase
     .from('zawodnicy')
     .select('id')
@@ -77,5 +72,5 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
   revalidatePath(`/kalendarz/${treningId}/obecnosc`);
   revalidatePath('/dashboard');
   revalidatePath('/statystyki');
-  redirect('/kalendarz');
+  redirect('/kalendarz?toast=obecnosc_zapisana');
 }

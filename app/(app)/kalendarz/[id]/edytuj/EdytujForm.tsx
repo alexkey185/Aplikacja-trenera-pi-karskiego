@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { aktualizujTrening } from './actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
@@ -61,15 +62,29 @@ export function EdytujForm({ trening }: { trening: Trening }) {
   const submitWithScope = async (scope: 'single' | 'all', fd: FormData) => {
     setSaving(true);
     try {
-      await aktualizujTrening(trening.id, scope, fd);
+      const result = await aktualizujTrening(trening.id, scope, fd);
       setShowScopeModal(false);
       setFormData(null);
+
+      // ═══════════════════════════════════════════════════
+      // TOAST — po sukcesie
+      // ═══════════════════════════════════════════════════
+      if (result.scope === 'all') {
+        toast.success('Cała seria zapisana', {
+          description: 'Zaktualizowano wszystkie treningi z cyklu',
+        });
+      } else {
+        toast.success('Trening zapisany');
+      }
+
       router.push('/kalendarz');
       router.refresh();
     } catch (err) {
       console.error(err);
       setSaving(false);
-      alert('Błąd zapisu: ' + (err instanceof Error ? err.message : 'nieznany'));
+      toast.error('Nie udało się zapisać', {
+        description: err instanceof Error ? err.message : 'Nieznany błąd',
+      });
     }
   };
 

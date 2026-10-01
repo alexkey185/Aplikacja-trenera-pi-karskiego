@@ -8,9 +8,6 @@ import { ACTIVE_DRUZYNA_COOKIE } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
 
-// ══════════════════════════════════════════════
-// AKTUALIZACJA DRUŻYNY
-// ══════════════════════════════════════════════
 export async function aktualizujDruzyna(id: string, formData: FormData) {
   const supabase = await createClient();
 
@@ -22,20 +19,14 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
     throw new Error('Musisz być zalogowany.');
   }
 
-  // Rate limit: max 20 edycji / godzinę
   await enforceRateLimit(`user:${user.id}`, 'aktualizujDruzyna', 20, 3600);
 
-  // Walidacja Zod
   const parsed = parseFormData(dodajDruzynaSchema, formData);
   const { nazwa, rocznik, kolor } = parsed;
 
   const { error } = await supabase
     .from('druzyny')
-    .update({
-      nazwa,
-      rocznik,
-      kolor,
-    })
+    .update({ nazwa, rocznik, kolor })
     .eq('id', id);
 
   if (error) {
@@ -44,12 +35,9 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
 
   revalidatePath('/', 'layout');
   revalidatePath('/druzyny');
-  redirect('/druzyny');
+  redirect('/druzyny?toast=druzyna_zapisana');
 }
 
-// ══════════════════════════════════════════════
-// USUWANIE DRUŻYNY
-// ══════════════════════════════════════════════
 export async function usunDruzyna(formData: FormData) {
   const id = formData.get('id') as string;
 
@@ -67,10 +55,8 @@ export async function usunDruzyna(formData: FormData) {
     throw new Error('Musisz być zalogowany.');
   }
 
-  // Rate limit: max 5 usunięć / godzinę (żeby nie skasować całego konta przez pomyłkę)
   await enforceRateLimit(`user:${user.id}`, 'usunDruzyna', 5, 3600);
 
-  // Sprawdź czy drużyna istnieje i należy do usera (RLS i tak to wymusi)
   const { data: druzyna, error: errFetch } = await supabase
     .from('druzyny')
     .select('id')
@@ -81,14 +67,12 @@ export async function usunDruzyna(formData: FormData) {
     throw new Error('Nie znaleziono drużyny.');
   }
 
-  // Usuń drużynę (kaskadowo usuwa zawodników, treningi i obecności)
   const { error } = await supabase.from('druzyny').delete().eq('id', id);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // Jeśli usunięta drużyna była aktywna — ustaw inną
   const cookieStore = await cookies();
   const activeId = cookieStore.get(ACTIVE_DRUZYNA_COOKIE)?.value;
 
@@ -114,5 +98,5 @@ export async function usunDruzyna(formData: FormData) {
 
   revalidatePath('/', 'layout');
   revalidatePath('/druzyny');
-  redirect('/druzyny');
+  redirect('/druzyny?toast=druzyna_usunieta');
 }

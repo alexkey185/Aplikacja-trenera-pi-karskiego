@@ -14,9 +14,6 @@ export async function aktualizujZawodnika(id: number, formData: FormData) {
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  // ═══════════════════════════════════════════════════
-  // WALIDACJA ZOD — ten sam schema co przy dodawaniu
-  // ═══════════════════════════════════════════════════
   const parsed = parseFormData(dodajZawodnikaSchema, formData);
   const {
     imie,
@@ -48,7 +45,7 @@ export async function aktualizujZawodnika(id: number, formData: FormData) {
 
   revalidatePath('/kadra');
   revalidatePath(`/zawodnicy/${id}`);
-  redirect(`/zawodnicy/${id}`);
+  redirect(`/zawodnicy/${id}?toast=zawodnik_zapisany`);
 }
 
 export async function usunZawodnika(formData: FormData) {
@@ -97,11 +94,11 @@ export async function usunZawodnika(formData: FormData) {
   }
 
   if (!count || count === 0) {
-    throw new Error('Nie usunięto żadnego wiersza (RLS zablokował?).');
+    throw new Error('Nie usunięto żadnego wiersza.');
   }
 
   revalidatePath('/kadra');
   revalidatePath('/kalendarz');
   revalidatePath('/statystyki');
-  redirect('/kadra');
+  redirect('/kadra?toast=zawodnik_usuniety');
 }

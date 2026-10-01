@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { usunTreningZakres } from './actions';
 import { Trash2, Calendar, Repeat } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -25,10 +26,25 @@ export function DeleteButton({
     setOpen(false);
     startTransition(async () => {
       const result = await usunTreningZakres(id, finalScope);
+
       if ('error' in result) {
-        alert('Błąd: ' + result.error);
+        toast.error('Nie udało się usunąć', {
+          description: result.error,
+        });
         return;
       }
+
+      // ═══════════════════════════════════════════════════
+      // TOAST — zależnie od tego co usunięto
+      // ═══════════════════════════════════════════════════
+      if (finalScope === 'all' && result.count > 1) {
+        toast.success('Cała seria usunięta', {
+          description: `Usunięto ${result.count} treningów z cyklu`,
+        });
+      } else {
+        toast.success('Trening usunięty');
+      }
+
       router.push('/kalendarz');
       router.refresh();
     });

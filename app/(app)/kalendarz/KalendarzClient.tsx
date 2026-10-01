@@ -17,6 +17,7 @@ import {
 import { przeniesTrening } from './actions';
 import { usunTreningZakres } from './[id]/edytuj/actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { toast } from 'sonner';
 
 type Trening = {
   id: number;
@@ -383,10 +384,23 @@ function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null 
     setOpen(false);
     startTransition(async () => {
       const result = await usunTreningZakres(id, finalScope);
+
       if ('error' in result) {
-        alert('Błąd: ' + result.error);
+        toast.error('Nie udało się usunąć', {
+          description: result.error,
+        });
         return;
       }
+
+      // TOAST — zależnie od tego co usunięto
+      if (finalScope === 'all' && result.count > 1) {
+        toast.success('Cała seria usunięta', {
+          description: `Usunięto ${result.count} treningów z cyklu`,
+        });
+      } else {
+        toast.success('Trening usunięty');
+      }
+
       router.refresh();
     });
   };

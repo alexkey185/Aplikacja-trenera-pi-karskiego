@@ -22,15 +22,11 @@ export async function dodajTrening(formData: FormData) {
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  // Rate limit
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'dodajTrening', 60, 3600);
   }
 
-  // ═══════════════════════════════════════════════════
-  // WALIDACJA ZOD — zamiast 10 linii ręcznego parsowania
-  // ═══════════════════════════════════════════════════
   const parsed = parseFormData(dodajTreningSchema, formData);
   const {
     data,
@@ -44,13 +40,11 @@ export async function dodajTrening(formData: FormData) {
   } = parsed;
 
   const cyklDostepny = typ === 'trening' && cykl !== 'nie_powtarzaj';
-
   const dates: string[] = [];
 
   if (!cyklDostepny) {
     dates.push(data);
   } else {
-    // Zod już zagwarantował że dataDo istnieje (przez refine)
     if (!dataDo) {
       throw new Error('Wybierz datę końcową.');
     }
@@ -105,5 +99,5 @@ export async function dodajTrening(formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');
   revalidatePath('/statystyki');
-  redirect('/kalendarz');
+  redirect('/kalendarz?toast=trening_dodany');
 }
