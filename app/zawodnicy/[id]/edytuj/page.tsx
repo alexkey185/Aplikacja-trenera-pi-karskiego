@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-
+import { Select } from '@/components/Select';
 import { createClient } from '@/lib/supabase/server';
 import { aktualizujZawodnika } from './actions';
+
 import { DeleteButton } from './DeleteButton';
 import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil } from 'lucide-react';
 
@@ -65,15 +66,19 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
               </Field>
             </div>
 
-            <Field icon={Trophy} label="Pozycja">
-              <select name="pozycja" defaultValue={zawodnik.pozycja ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2 [&>option]:bg-slate-800">
-                <option value="">— wybierz —</option>
-                <option value="Bramkarz">🧤 Bramkarz</option>
-                <option value="Obrońca">🛡️ Obrońca</option>
-                <option value="Pomocnik">⚙️ Pomocnik</option>
-                <option value="Napastnik">⚡ Napastnik</option>
-              </select>
-            </Field>
+<Field icon={Trophy} label="Pozycja">
+  <Select
+    name="pozycja"
+    defaultValue={zawodnik.pozycja ?? ''}
+    options={[
+      { value: '', label: '— wybierz —' },
+      { value: 'Bramkarz', label: '🧤 Bramkarz' },
+      { value: 'Obrońca', label: '🛡️ Obrońca' },
+      { value: 'Pomocnik', label: '⚙️ Pomocnik' },
+      { value: 'Napastnik', label: '⚡ Napastnik' },
+    ]}
+  />
+</Field>
 
             <Field icon={Phone} label="Kontakt do rodzica">
               <input name="kontakt_rodzica" type="tel" defaultValue={zawodnik.kontakt_rodzica ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2" />

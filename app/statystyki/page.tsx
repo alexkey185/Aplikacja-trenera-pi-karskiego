@@ -112,10 +112,18 @@ export default async function Statystyki({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  const { data: wszystkieTreningi } = await supabase
-    .from('treningi')
-    .select('id, data, typ')
-    .eq('druzyna_id', druzynaId);
+// Max ostatnie 12 miesięcy (potrzebne na wykres 6 miesięcy + margines)
+const odRok = new Date();
+odRok.setMonth(odRok.getMonth() - 12);
+
+const toISOStat = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const { data: wszystkieTreningi } = await supabase
+  .from('treningi')
+  .select('id, data, typ')
+  .eq('druzyna_id', druzynaId)
+  .gte('data', toISOStat(odRok));
 
   const wszystkieIds = (wszystkieTreningi ?? []).map((t) => t.id);
 

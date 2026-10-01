@@ -28,8 +28,33 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
   const { data: zawodnik, error: errZ } = await supabase.from('zawodnicy').select('*').eq('id', idNum).single();
   if (errZ || !zawodnik) notFound();
 
-  const { data: wpisy } = await supabase.from('obecnosc').select('status, trening_id').eq('zawodnik_id', idNum);
-  const { data: treningi } = await supabase.from('treningi').select('id, data, godzina, typ, przeciwnik');
+// Historia ostatnich 12 miesięcy
+const odRokZ = new Date();
+odRokZ.setMonth(odRokZ.getMonth() - 12);
+
+const toISOZ = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const { data: treningiOstatnie } = await supabase
+  .from('treningi')
+  .select('id')
+  .gte('data', toISOZ(odRokZ));
+
+const treningiIdsOstatnie = (treningiOstatnie ?? []).map((t) => t.id);
+
+const { data: wpisy } =
+  treningiIdsOstatnie.length > 0
+    ? await supabase
+        .from('obecnosc')
+        .select('status, trening_id')
+        .eq('zawodnik_id', idNum)
+        .in('trening_id', treningiIdsOstatnie)
+    : { data: [] };
+
+const { data: treningi } = await supabase
+  .from('treningi')
+  .select('id, data, godzina, typ, przeciwnik')
+  .gte('data', toISOZ(odRokZ));
 
   const treningMap = new Map<number, any>();
   (treningi ?? []).forEach((t) => treningMap.set(t.id, t));

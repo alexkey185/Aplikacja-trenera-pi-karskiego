@@ -6,9 +6,6 @@ import { revalidatePath } from 'next/cache';
 
 // ══════════════════════════════════════════════
 // AKTUALIZACJA TRENINGU — single lub cała seria
-// Zwraca { success: true } zamiast redirect() —
-// dzięki temu klient sam decyduje o nawigacji
-// i nie ma problemu z NEXT_REDIRECT w try/catch
 // ══════════════════════════════════════════════
 export async function aktualizujTrening(
   id: number,
@@ -33,7 +30,6 @@ export async function aktualizujTrening(
     throw new Error('Data i godzina są wymagane.');
   }
 
-  // Pobierz obecny trening żeby znać cykl_id — tylko z aktywnej drużyny
   const { data: trening, error: errFetch } = await supabase
     .from('treningi')
     .select('id, cykl_id')
@@ -45,9 +41,6 @@ export async function aktualizujTrening(
     throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
   }
 
-  // ══════════════════════════════════════════════
-  // Edycja pojedynczego wydarzenia
-  // ══════════════════════════════════════════════
   if (scope === 'single' || !trening.cykl_id) {
     const { error } = await supabase
       .from('treningi')
@@ -58,17 +51,10 @@ export async function aktualizujTrening(
     if (error) {
       throw new Error(error.message);
     }
-  }
-  // ══════════════════════════════════════════════
-  // Edycja całej serii cyklicznej
-  // — aktualizujemy wszystkie treningi z tym samym cykl_id
-  // — NIE zmieniamy daty (każdy ma swoją)
-  // ══════════════════════════════════════════════
-  else {
+  } else {
     const { error } = await supabase
       .from('treningi')
       .update({
-        // data NIE jest zmieniana dla serii
         godzina,
         miejsce,
         typ,
@@ -92,7 +78,74 @@ export async function aktualizujTrening(
 }
 
 // ══════════════════════════════════════════════
-// USUWANIE — używa redirect z form action
+// USUWANIE TRENINGU — z opcją całej serii
+// Zwraca { success } lub { error }, bez redirect() —
+// klient sam nawiguje po sukcesie
+// ══════════════════════════════════════════════
+export async function usunTreningZakres(
+  id: number,
+  scope: 'single' | 'all'
+): Promise<{ success: true; count: number } | { error: string }> {
+  if (!id || isNaN(id)) {
+    return { error: 'Nieprawidłowe ID.' };
+  }
+
+  const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) {
+    return { error: 'Brak aktywnej drużyny.' };
+  }
+
+  const { data: trening, error: errFetch } = await supabase
+    .from('treningi')
+    .select('id, cykl_id')
+    .eq('id', id)
+    .eq('druzyna_id', druzynaId)
+    .single();
+
+  if (errFetch || !trening) {
+    return { error: 'Nie znaleziono treningu.' };
+  }
+
+  let count = 0;
+
+  if (scope === 'all' && trening.cykl_id) {
+    // Usuń wszystkie treningi z tego cyklu
+    const { error, count: deletedCount } = await supabase
+      .from('treningi')
+      .delete({ count: 'exact' })
+      .eq('cykl_id', trening.cykl_id)
+      .eq('druzyna_id', druzynaId);
+
+    if (error) {
+      return { error: error.message };
+    }
+    count = deletedCount ?? 0;
+  } else {
+    // Usuń tylko ten jeden
+    const { error, count: deletedCount } = await supabase
+      .from('treningi')
+      .delete({ count: 'exact' })
+      .eq('id', id)
+      .eq('druzyna_id', druzynaId);
+
+    if (error) {
+      return { error: error.message };
+    }
+    count = deletedCount ?? 0;
+  }
+
+  revalidatePath('/kalendarz');
+  revalidatePath('/dashboard');
+  revalidatePath('/kalendarz/eksport');
+  revalidatePath('/statystyki');
+
+  return { success: true, count };
+}
+
+// ══════════════════════════════════════════════
+// STARA WERSJA — zachowana dla kompatybilności
+// (używa usunTrening z form action w UsunButton)
 // ══════════════════════════════════════════════
 export async function usunTrening(formData: FormData) {
   const idStr = formData.get('id') as string;

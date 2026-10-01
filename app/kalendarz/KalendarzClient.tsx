@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,7 +15,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
-import { usunTrening } from './[id]/edytuj/actions';
+import { usunTreningZakres } from './[id]/edytuj/actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type Trening = {
@@ -26,6 +26,7 @@ type Trening = {
   przeciwnik: string | null;
   miejsce: string | null;
   notatki: string | null;
+  cykl_id: string | null;
 };
 
 type StatsMap = Record<number, { obecni: number; nieobecni: number; total: number }>;
@@ -379,16 +380,91 @@ function CompactStat({ icon, color, bg, border, label, value }: { icon: string; 
   );
 }
 
-function DeleteEventButton({ id }: { id: number }) {
+function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null }) {
   const [open, setOpen] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+  const [scope, setScope] = useState<'single' | 'all'>('single');
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const isCyclic = !!cyklId;
+
+  const handleDelete = () => {
+    const finalScope = isCyclic ? scope : 'single';
+    setOpen(false);
+    startTransition(async () => {
+      const result = await usunTreningZakres(id, finalScope);
+      if ('error' in result) {
+        alert('Błąd: ' + result.error);
+        return;
+      }
+      router.refresh();
+    });
+  };
+
   return (
     <>
-      <form ref={formRef} action={usunTrening} className="hidden"><input type="hidden" name="id" value={id} /></form>
-      <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all" title="Usuń wydarzenie">
+      <button
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
+        disabled={isPending}
+        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all disabled:opacity-50"
+        title="Usuń wydarzenie"
+      >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
-      <ConfirmDialog open={open} title="Usunąć to wydarzenie?" message={<>Usuną się też wszystkie wpisy obecności dla tego treningu.<br /><br /><span style={{ color: '#f87171' }}>Tej operacji nie można cofnąć.</span></>} confirmLabel="Usuń" variant="danger" onCancel={() => setOpen(false)} onConfirm={() => { formRef.current?.requestSubmit(); setOpen(false); }} />
+
+      <ConfirmDialog
+        open={open}
+        title={isCyclic ? 'Usunąć z serii?' : 'Usunąć to wydarzenie?'}
+        variant="danger"
+        confirmLabel={isPending ? 'Usuwanie...' : isCyclic && scope === 'all' ? 'Usuń serię' : 'Usuń'}
+        loading={isPending}
+        onCancel={() => setOpen(false)}
+        onConfirm={handleDelete}
+        message={
+          isCyclic ? (
+            <div className="space-y-3">
+              <p className="text-sm">
+                Ten trening jest częścią <span className="font-bold text-white">cyklu</span>. Co chcesz usunąć?
+              </p>
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setScope('single')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    scope === 'single'
+                      ? 'bg-blue-500/15 border-blue-400/60 ring-1 ring-blue-400/30'
+                      : 'bg-white/5 border-white/10 hover:border-white/30'
+                  }`}
+                >
+                  <div className="text-xs font-bold text-white mb-1">📅 Tylko ten dzień</div>
+                  <div className="text-[10px] text-white/60 leading-tight">Usuwa wybrany trening</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScope('all')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    scope === 'all'
+                      ? 'bg-purple-500/15 border-purple-400/60 ring-1 ring-purple-400/30'
+                      : 'bg-white/5 border-white/10 hover:border-white/30'
+                  }`}
+                >
+                  <div className="text-xs font-bold text-white mb-1">🔁 Cała seria</div>
+                  <div className="text-[10px] text-white/60 leading-tight">Usuwa wszystkie z cyklu</div>
+                </button>
+              </div>
+              <div className="bg-red-500/10 border border-red-400/30 rounded-lg p-2 text-xs text-red-200">
+                ⚠️ Zostaną usunięte też wpisy obecności. <strong>Tej operacji nie można cofnąć.</strong>
+              </div>
+            </div>
+          ) : (
+            <>
+              Usuną się też wszystkie wpisy obecności dla tego treningu.
+              <br /><br />
+              <span style={{ color: '#f87171' }}>Tej operacji nie można cofnąć.</span>
+            </>
+          )
+        }
+      />
     </>
   );
 }
@@ -464,7 +540,8 @@ function EventCard({ trening, stats, onDragStart, isDragging, highlighted = fals
             <Pencil className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="pointer-events-auto"><DeleteEventButton id={trening.id} /></div>
+        <div className="pointer-events-auto"><DeleteEventButton id={trening.id} cyklId={trening.cykl_id} />
+        </div>
         <ChevronRight className={`w-4 h-4 transition-all flex-shrink-0 ${highlighted ? 'text-green-400' : 'text-white/40'}`} />
       </div>
     </div>

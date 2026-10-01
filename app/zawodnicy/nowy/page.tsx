@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { dodajZawodnika } from './actions';
+import { Select } from '@/components/Select';
 import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Users } from 'lucide-react';
 
 export default function NowyZawodnik() {
@@ -52,16 +53,19 @@ export default function NowyZawodnik() {
                 <input name="numer" type="number" placeholder="7" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
               </Field>
             </div>
-
-            <Field icon={Trophy} label="Pozycja">
-              <select name="pozycja" className="w-full bg-transparent border-0 outline-none text-white py-2 [&>option]:bg-slate-800">
-                <option value="">— wybierz —</option>
-                <option value="Bramkarz">🧤 Bramkarz</option>
-                <option value="Obrońca">🛡️ Obrońca</option>
-                <option value="Pomocnik">⚙️ Pomocnik</option>
-                <option value="Napastnik">⚡ Napastnik</option>
-              </select>
-            </Field>
+<Field icon={Trophy} label="Pozycja">
+  <Select
+    name="pozycja"
+    defaultValue=""
+    options={[
+      { value: '', label: '— wybierz —' },
+      { value: 'Bramkarz', label: '🧤 Bramkarz' },
+      { value: 'Obrońca', label: '🛡️ Obrońca' },
+      { value: 'Pomocnik', label: '⚙️ Pomocnik' },
+      { value: 'Napastnik', label: '⚡ Napastnik' },
+    ]}
+  />
+</Field>
 
             <Field icon={Phone} label="Kontakt do rodzica">
               <input name="kontakt_rodzica" type="tel" placeholder="600 100 200" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />

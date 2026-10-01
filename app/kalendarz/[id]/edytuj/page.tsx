@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { EdytujForm } from './EdytujForm';
+import { DeleteButton } from './DeleteButton';
 import { ArrowLeft, Pencil } from 'lucide-react';
 
 export default async function EdytujTrening({
@@ -82,6 +83,11 @@ export default async function EdytujTrening({
           </header>
 
           <EdytujForm trening={trening} />
+
+          {/* Przycisk usuwania — z opcją całej serii dla cyklicznych */}
+          <div className="mt-4 flex justify-end">
+            <DeleteButton id={trening.id} cyklId={trening.cykl_id} />
+          </div>
         </div>
       </div>
     </main>

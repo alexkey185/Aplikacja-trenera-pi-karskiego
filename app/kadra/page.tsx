@@ -48,7 +48,9 @@ export default async function Kadra({
     .eq('druzyna_id', druzynaId);
 
   if (q) {
-    query = query.or(`imie.ilike.%${q}%,nazwisko.ilike.%${q}%`);
+    // Escapowanie znaków specjalnych PostgREST — chroni przed manipulacją filtrem
+    const safe = q.replace(/[,()%]/g, '\\$&');
+    query = query.or(`imie.ilike.%${safe}%,nazwisko.ilike.%${safe}%`);
   }
 
   const { data: zawodnicy, error } = await query;

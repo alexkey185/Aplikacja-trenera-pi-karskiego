@@ -60,12 +60,22 @@ export default async function Dashboard({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  const { data: treningi } = await supabase
-    .from('treningi')
-    .select('id, data, godzina, typ, przeciwnik, miejsce')
-    .eq('druzyna_id', druzynaId)
-    .order('data', { ascending: true })
-    .order('godzina', { ascending: true });
+// Tydzień + 1 miesiąc wstecz + 1 miesiąc do przodu (na nawigację i "Nadchodzące")
+const dzisD = new Date();
+const odD = new Date(dzisD.getFullYear(), dzisD.getMonth() - 1, 1);
+const doD = new Date(dzisD.getFullYear(), dzisD.getMonth() + 2, 0);
+
+const toISODash = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const { data: treningi } = await supabase
+  .from('treningi')
+  .select('id, data, godzina, typ, przeciwnik, miejsce')
+  .eq('druzyna_id', druzynaId)
+  .gte('data', toISODash(odD))
+  .lte('data', toISODash(doD))
+  .order('data', { ascending: true })
+  .order('godzina', { ascending: true });
 
   const treningiIds = (treningi ?? []).map((t) => t.id);
 
