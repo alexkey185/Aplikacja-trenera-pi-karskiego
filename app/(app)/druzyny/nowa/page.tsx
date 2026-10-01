@@ -3,6 +3,9 @@ import { dodajDruzyna } from './actions';
 import { TopBar } from '@/components/TopBar';
 import { ArrowLeft, Users, Hash, Palette, Save, Check } from 'lucide-react';
 
+// Wymuś dynamiczne renderowanie — strona używa cookies w TopBar
+export const dynamic = 'force-dynamic';
+
 const KOLORY = [
   { value: 'green', bg: 'bg-green-500', ring: 'peer-checked:ring-green-400' },
   { value: 'blue', bg: 'bg-blue-500', ring: 'peer-checked:ring-blue-400' },
