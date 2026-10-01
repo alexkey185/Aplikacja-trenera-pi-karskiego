@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { enforceRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { aktualizujTreningSchema, parseFormData } from '@/lib/schemas';
 import { revalidatePath } from 'next/cache';
 
@@ -20,9 +21,13 @@ export async function aktualizujTrening(
     throw new Error('Brak aktywnej drużyny.');
   }
 
-  // ═══════════════════════════════════════════════════
-  // WALIDACJA ZOD
-  // ═══════════════════════════════════════════════════
+  // Rate limit: max 100 edycji treningów / godzinę
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await enforceRateLimit(`user:${user.id}`, 'aktualizujTrening', 100, 3600);
+  }
+
+  // Walidacja Zod
   const parsed = parseFormData(aktualizujTreningSchema, formData);
   const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed;
 
@@ -75,6 +80,7 @@ export async function aktualizujTrening(
 
 // ══════════════════════════════════════════════
 // USUWANIE TRENINGU — z opcją całej serii
+// Zwraca { success } lub { error }, bez throw
 // ══════════════════════════════════════════════
 export async function usunTreningZakres(
   id: number,
@@ -88,6 +94,23 @@ export async function usunTreningZakres(
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
     return { error: 'Brak aktywnej drużyny.' };
+  }
+
+  // Rate limit: max 50 usunięć / godzinę
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const rl = await checkRateLimit(
+      `user:${user.id}`,
+      'usunTreningZakres',
+      50,
+      3600
+    );
+    if (!rl.allowed) {
+      const minuty = Math.ceil(rl.retryAfter / 60);
+      return {
+        error: `Za dużo operacji. Spróbuj ponownie za ${minuty} min.`,
+      };
+    }
   }
 
   const { data: trening, error: errFetch } = await supabase

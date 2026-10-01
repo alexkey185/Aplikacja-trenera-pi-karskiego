@@ -5,36 +5,11 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { ACTIVE_DRUZYNA_COOKIE } from '@/lib/druzyny';
-
-const DOZWOLONE_KOLORY = [
-  'green',
-  'blue',
-  'purple',
-  'orange',
-  'red',
-  'yellow',
-  'pink',
-  'slate',
-];
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
 
 export async function dodajDruzyna(formData: FormData) {
   const supabase = await createClient();
-
-  const nazwa = (formData.get('nazwa') as string)?.trim();
-  const rocznikStr = (formData.get('rocznik') as string)?.trim();
-  const kolor = (formData.get('kolor') as string)?.trim() || 'green';
-
-  if (!nazwa) {
-    throw new Error('Nazwa drużyny jest wymagana.');
-  }
-
-  if (nazwa.length > 80) {
-    throw new Error('Nazwa nie może być dłuższa niż 80 znaków.');
-  }
-
-  if (!DOZWOLONE_KOLORY.includes(kolor)) {
-    throw new Error('Nieprawidłowy kolor.');
-  }
 
   const {
     data: { user },
@@ -44,12 +19,19 @@ export async function dodajDruzyna(formData: FormData) {
     throw new Error('Musisz być zalogowany.');
   }
 
+  // Rate limit: max 10 nowych drużyn / godzinę
+  await enforceRateLimit(`user:${user.id}`, 'dodajDruzyna', 10, 3600);
+
+  // Walidacja Zod
+  const parsed = parseFormData(dodajDruzynaSchema, formData);
+  const { nazwa, rocznik, kolor } = parsed;
+
   const { data: nowa, error } = await supabase
     .from('druzyny')
     .insert({
       user_id: user.id,
       nazwa,
-      rocznik: rocznikStr ? parseInt(rocznikStr, 10) : null,
+      rocznik,
       kolor,
     })
     .select('id')

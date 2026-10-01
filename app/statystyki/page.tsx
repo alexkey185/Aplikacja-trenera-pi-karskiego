@@ -112,18 +112,15 @@ export default async function Statystyki({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-// Max ostatnie 12 miesięcy (potrzebne na wykres 6 miesięcy + margines)
-const odRok = new Date();
-odRok.setMonth(odRok.getMonth() - 12);
+  // Max ostatnie 12 miesięcy
+  const odRok = new Date();
+  odRok.setMonth(odRok.getMonth() - 12);
 
-const toISOStat = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-const { data: wszystkieTreningi } = await supabase
-  .from('treningi')
-  .select('id, data, typ')
-  .eq('druzyna_id', druzynaId)
-  .gte('data', toISOStat(odRok));
+  const { data: wszystkieTreningi } = await supabase
+    .from('treningi')
+    .select('id, data, typ')
+    .eq('druzyna_id', druzynaId)
+    .gte('data', toISO(odRok));
 
   const wszystkieIds = (wszystkieTreningi ?? []).map((t) => t.id);
 
@@ -149,6 +146,7 @@ const { data: wszystkieTreningi } = await supabase
 
   const zakres = getZakres(okres, m);
 
+  // ═══ FIX: tylko treningi z datą <= dziś ═══
   const treningiZakres = (wszystkieTreningi ?? []).filter(
     (t) => t.data >= zakres.od && t.data <= zakres.do
   );
@@ -208,6 +206,7 @@ const { data: wszystkieTreningi } = await supabase
 
   const koniecZakresu = new Date(zakres.do + 'T00:00:00');
   const miesiaceWykres = ostatnie6Miesiecy(koniecZakresu).map(({ iso, label }) => {
+    // ═══ FIX: tylko treningi z datą <= dziś ═══
     const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
       t.data.startsWith(iso)
     );
@@ -228,7 +227,8 @@ const { data: wszystkieTreningi } = await supabase
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
 
   const miesiaceDropdown = unikalneMiesiace.map((mm) => {
-    const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
+    // ═══ FIX: tylko treningi z datą <= dziś ═══
+        const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
       t.data.startsWith(mm)
     );
     const idsMies = new Set(treningiMies.map((t) => t.id));
@@ -297,9 +297,8 @@ const { data: wszystkieTreningi } = await supabase
             <TopBar />
           </header>
 
-          {/* ═══ FILTR OKRESU ═══ */}
+          {/* FILTR OKRESU */}
           <div className="mb-5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 md:p-4 relative z-30">
-            {/* MOBILE — dropdown */}
             <div className="lg:hidden">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
@@ -315,7 +314,6 @@ const { data: wszystkieTreningi } = await supabase
               />
             </div>
 
-            {/* DESKTOP — 5 przycisków + dropdown miesięcy */}
             <div className="hidden lg:flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2 flex-shrink-0">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
@@ -360,7 +358,7 @@ const { data: wszystkieTreningi } = await supabase
             </div>
           </div>
 
-          {/* ═══ ALERT ═══ */}
+          {/* ALERT */}
           {maLuki && (
             <div className="mb-5 bg-amber-500/10 border border-amber-400/40 rounded-2xl p-4 md:p-5 animate-fadeIn shadow-lg shadow-amber-500/10 relative z-0">
               <div className="flex items-start gap-3">
@@ -405,7 +403,7 @@ const { data: wszystkieTreningi } = await supabase
             </div>
           )}
 
-          {/* ═══ KPI ═══ */}
+          {/* KPI */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-2.5 mb-4">
             <div className="rounded-xl lg:rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 bg-gradient-to-br from-green-500/20 to-green-700/10 border border-green-400/30 shadow-sm shadow-black/20">
               <div className="flex items-center gap-1.5 mb-1">
@@ -477,7 +475,7 @@ const { data: wszystkieTreningi } = await supabase
             </div>
           </div>
 
-          {/* ═══ GŁÓWNY GRID ═══ */}
+          {/* GŁÓWNY GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2 space-y-5">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl shadow-black/60">
@@ -668,7 +666,7 @@ const { data: wszystkieTreningi } = await supabase
               </div>
             </div>
 
-            {/* ═══ PRAWA KOLUMNA — RANKING (bez medali) ═══ */}
+            {/* PRAWA KOLUMNA */}
             <div className="lg:col-span-1 space-y-5">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-2xl shadow-black/60">
                 <div className="flex items-center gap-2 mb-1">

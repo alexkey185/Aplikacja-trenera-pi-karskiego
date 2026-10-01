@@ -50,11 +50,7 @@ export default async function Obecnosc({
     initialStatus[o.zawodnik_id] = o.status;
   });
 
-  // ──────────────────────────────────────────────
-  // LOGIKA A + C:
-  // Znajdź poprzedni trening tego samego typu w TEJ SAMEJ drużynie
-  // (wcześniejsza data) i skopiuj jego statusy obecności jako fallback.
-  // ──────────────────────────────────────────────
+  // Poprzedni trening tego samego typu w tej samej drużynie
   const { data: previousTrening } = await supabase
     .from('treningi')
     .select('id')
