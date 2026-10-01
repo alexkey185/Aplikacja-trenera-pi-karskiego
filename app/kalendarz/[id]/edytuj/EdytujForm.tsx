@@ -15,6 +15,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { TimePicker } from '@/components/TimePicker';
+import { DatePicker } from '@/components/DatePicker';
+import { Select } from '@/components/Select';
 
 type Trening = {
   id: number;
@@ -37,21 +39,17 @@ export function EdytujForm({ trening }: { trening: Trening }) {
 
   const isCyclic = !!trening.cykl_id;
 
-  // Link do Google Maps — generowany dynamicznie z aktualnej wartości pola
   const mapsUrl = miejsce.trim()
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(miejsce.trim())}`
     : null;
 
-  // ══════════════════════════════════════════════
-  // Submit — jeśli cykliczny → modal, jeśli nie → zapis od razu
-  // ══════════════════════════════════════════════
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
 
     if (isCyclic) {
       setFormData(fd);
-      setPendingScope('single'); // domyślnie "tylko ten dzień"
+      setPendingScope('single');
       setShowScopeModal(true);
       return;
     }
@@ -59,9 +57,6 @@ export function EdytujForm({ trening }: { trening: Trening }) {
     void submitWithScope('single', fd);
   };
 
-  // ══════════════════════════════════════════════
-  // Wykonaj zapis
-  // ══════════════════════════════════════════════
   const submitWithScope = async (scope: 'single' | 'all', fd: FormData) => {
     setSaving(true);
     try {
@@ -88,7 +83,6 @@ export function EdytujForm({ trening }: { trening: Trening }) {
         onSubmit={handleSubmit}
         className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60"
       >
-        {/* Banner dla cyklicznych */}
         {isCyclic && (
           <div className="bg-purple-500/10 border border-purple-400/30 rounded-2xl p-3 flex items-start gap-2 text-xs text-purple-200">
             <Repeat className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -101,31 +95,24 @@ export function EdytujForm({ trening }: { trening: Trening }) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field icon={CalendarIcon} label="Data" required>
-            <input
-              name="data"
-              type="date"
-              required
-              defaultValue={trening.data}
-              className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
-            />
+            <DatePicker name="data" defaultValue={trening.data} required />
           </Field>
           <Field icon={Clock} label="Godzina" required>
-  <TimePicker name="godzina" defaultValue={trening.godzina} />
-</Field>
+            <TimePicker name="godzina" defaultValue={trening.godzina} />
+          </Field>
         </div>
 
         <Field icon={Trophy} label="Typ wydarzenia" required>
-          <select
+          <Select
             name="typ"
-            required
             defaultValue={trening.typ}
-            className="w-full bg-transparent border-0 outline-none text-white py-2 [&>option]:bg-slate-800"
-          >
-            <option value="trening">🟦 Trening</option>
-            <option value="mecz">🏆 Mecz</option>
-            <option value="sparing">🔥 Sparing</option>
-            <option value="turniej">🎯 Turniej</option>
-          </select>
+            options={[
+              { value: 'trening', label: '🟦 Trening' },
+              { value: 'mecz', label: '🏆 Mecz' },
+              { value: 'sparing', label: '🔥 Sparing' },
+              { value: 'turniej', label: '🎯 Turniej' },
+            ]}
+          />
         </Field>
 
         <Field icon={MapPin} label="Miejsce">
@@ -179,9 +166,6 @@ export function EdytujForm({ trening }: { trening: Trening }) {
         </button>
       </form>
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* MODAL: wybór zakresu zmian */}
-      {/* ═══════════════════════════════════════════ */}
       <ConfirmDialog
         open={showScopeModal}
         title="Zmienić całą serię?"

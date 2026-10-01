@@ -73,6 +73,11 @@ function formatMiesiac(iso: string): string {
   return nazwa.charAt(0).toUpperCase() + nazwa.slice(1);
 }
 
+function formatDataKrotka(iso: string): string {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' });
+}
+
 function formatZakres(od: string, do_: string): string {
   const d1 = new Date(od + 'T00:00:00');
   const d2 = new Date(do_ + 'T00:00:00');
@@ -97,10 +102,10 @@ export default async function Statystyki({
 }) {
   const params = await searchParams;
   const dzis = new Date();
+  const dzisISO = toISO(dzis);
   const biezacyMiesiac = `${dzis.getFullYear()}-${pad2(dzis.getMonth() + 1)}`;
   const okres = params.okres ?? 'month';
   const m = params.m ?? (okres === 'month' ? biezacyMiesiac : undefined);
-  const sort = params.sort ?? 'obecnosci';
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
@@ -148,7 +153,16 @@ export default async function Statystyki({
   const totalZawodnicy = (zawodnicy ?? []).length;
   const totalWpisy = obecnosciZakres.length;
 
-  // ── Rozbicie statusów (tylko obecny/nieobecny w UI) ──
+  const treningiZWpisami = treningiZakres.filter((t) =>
+    obecnosciZakres.some((o) => o.trening_id === t.id)
+  ).length;
+
+  const treningiBezWpisow = treningiZakres.filter(
+    (t) =>
+      t.data < dzisISO &&
+      !obecnosciZakres.some((o) => o.trening_id === t.id)
+  );
+
   const obecniRazem = obecnosciZakres.filter(
     (o) => o.status === 'obecny' || o.status === 'spozniony'
   ).length;
@@ -156,7 +170,7 @@ export default async function Statystyki({
   const procentOgolem =
     totalWpisy > 0 ? Math.round((obecniRazem / totalWpisy) * 100) : 0;
 
-  // ── Ranking ──
+  // ── Ranking — zawsze sortowany po liczbie obecności ──
   const ranking = (zawodnicy ?? [])
     .map((z) => {
       const wpisy = obecnosciZakres.filter((o) => o.zawodnik_id === z.id);
@@ -164,20 +178,20 @@ export default async function Statystyki({
         (w) => w.status === 'obecny' || w.status === 'spozniony'
       ).length;
       const procent = wpisy.length > 0 ? Math.round((obecn / wpisy.length) * 100) : 0;
-      return { ...z, obecnosci: obecn, wpisy: wpisy.length, procent };
+      return {
+        ...z,
+        obecnosci: obecn,
+        wpisy: wpisy.length,
+        procent,
+        brakuje: treningiZWpisami - wpisy.length,
+      };
     })
     .filter((r) => r.wpisy > 0);
 
   const rankingSort = [...ranking].sort((a, b) => {
-    if (sort === 'procent') {
-      if (b.procent !== a.procent) return b.procent - a.procent;
-      return b.obecnosci - a.obecnosci;
-    }
-    if (sort === 'nazwisko') {
-      return a.nazwisko.localeCompare(b.nazwisko, 'pl');
-    }
     if (b.obecnosci !== a.obecnosci) return b.obecnosci - a.obecnosci;
-    return b.procent - a.procent;
+    if (b.procent !== a.procent) return b.procent - a.procent;
+    return a.nazwisko.localeCompare(b.nazwisko, 'pl');
   });
 
   const doPoprawy = ranking
@@ -233,15 +247,6 @@ export default async function Statystyki({
     const p = new URLSearchParams();
     p.set('okres', o);
     if (mm) p.set('m', mm);
-    if (sort !== 'obecnosci') p.set('sort', sort);
-    return `/statystyki?${p.toString()}`;
-  };
-
-  const sortUrl = (s: string) => {
-    const p = new URLSearchParams();
-    p.set('okres', okres);
-    if (m) p.set('m', m);
-    if (s !== 'obecnosci') p.set('sort', s);
     return `/statystyki?${p.toString()}`;
   };
 
@@ -253,6 +258,7 @@ export default async function Statystyki({
   ];
 
   const liczbaDoPoprawy = doPoprawy.length;
+  const maLuki = treningiBezWpisow.length > 0;
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
@@ -287,7 +293,7 @@ export default async function Statystyki({
           </header>
 
           {/* FILTR OKRESU */}
-          <div className="mb-5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 md:p-4">
+          <div className="mb-5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 md:p-4 relative z-30">
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2 flex-shrink-0">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
@@ -314,11 +320,11 @@ export default async function Statystyki({
                   );
                 })}
 
-<MiesiacDropdown
-  miesiace={miesiaceDropdown}
-  aktywny={zakres.typ === 'month' ? m ?? null : null}
-  sort={sort}
-/>
+                <MiesiacDropdown
+                  miesiace={miesiaceDropdown}
+                  aktywny={zakres.typ === 'month' ? m ?? null : null}
+                  sort="obecnosci"
+                />
               </div>
 
               <div className="ml-auto flex items-center gap-2 text-xs text-white/50">
@@ -332,67 +338,119 @@ export default async function Statystyki({
             </div>
           </div>
 
-          {/* 4 KPI */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5">
-            <div className="rounded-2xl p-5 bg-gradient-to-br from-green-500/20 to-green-700/10 border border-green-400/30 shadow-lg shadow-black/30">
-              <div className="w-10 h-10 rounded-xl bg-green-500/20 border border-green-400/40 flex items-center justify-center mb-3">
-                <TrendingUp className="w-5 h-5 text-green-400" strokeWidth={2.5} />
+          {/* ALERT */}
+          {maLuki && (
+            <div className="mb-5 bg-amber-500/10 border border-amber-400/40 rounded-2xl p-4 md:p-5 animate-fadeIn shadow-lg shadow-amber-500/10 relative z-0">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" strokeWidth={2.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-amber-200 text-sm md:text-base">
+                    {treningiBezWpisow.length === 1
+                      ? '1 trening bez zapisanej obecności'
+                      : `${treningiBezWpisow.length} treningi bez zapisanej obecności`}
+                  </div>
+                  <div className="text-xs md:text-sm text-amber-200/70 mt-1 leading-relaxed">
+                    W okresie <strong className="text-amber-200">{zakres.label}</strong>{' '}
+                    masz zaległe treningi bez zapisanej obecności. Uzupełnij je,
+                    żeby statystyki były dokładne.
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {treningiBezWpisow.slice(0, 3).map((t) => (
+                      <Link
+                        key={t.id}
+                        href={`/kalendarz/${t.id}/obecnosc`}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 hover:border-amber-400/60 text-amber-200 text-xs font-semibold transition-all"
+                      >
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        {formatDataKrotka(t.data)}
+                        <span className="text-amber-400 font-bold">
+                          Uzupełnij →
+                        </span>
+                      </Link>
+                    ))}
+                    {treningiBezWpisow.length > 3 && (
+                      <div className="inline-flex items-center px-3 py-2 text-xs text-amber-300/70">
+                        +{treningiBezWpisow.length - 3}{' '}
+                        {treningiBezWpisow.length - 3 === 1 ? 'inny' : 'innych'}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="text-4xl md:text-5xl font-black text-white leading-none">
+            </div>
+          )}
+
+          {/* 4 KARTY KPI — KOMPAKTOWE */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-green-500/20 to-green-700/10 border border-green-400/30 shadow-sm shadow-black/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-5 h-5 rounded-md bg-green-500/20 border border-green-400/40 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-3 h-3 text-green-400" strokeWidth={2.5} />
+                </div>
+                <div className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">
+                  Frekwencja
+                </div>
+              </div>
+              <div className="text-lg md:text-xl font-black text-white leading-none">
                 {procentOgolem}
-                <span className="text-2xl text-white/60">%</span>
+                <span className="text-sm text-white/60">%</span>
               </div>
-              <div className="text-xs md:text-sm font-bold text-white/80 mt-2 uppercase tracking-wider">
-                Frekwencja
-              </div>
-              <div className="text-[10px] md:text-xs text-white/50 mt-1 leading-tight">
-                {zakres.label} ·{' '}
-                <span className="text-white/70">{totalWpisy} wpisów</span>
+              <div className="text-[9px] text-white/50 mt-0.5 leading-tight truncate">
+                {totalWpisy} wpisów
               </div>
             </div>
 
-            <div className="rounded-2xl p-5 bg-gradient-to-br from-blue-500/20 to-blue-700/10 border border-blue-400/30 shadow-lg shadow-black/30">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center mb-3">
-                <CalendarIcon className="w-5 h-5 text-blue-400" strokeWidth={2.5} />
+            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-blue-500/20 to-blue-700/10 border border-blue-400/30 shadow-sm shadow-black/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-5 h-5 rounded-md bg-blue-500/20 border border-blue-400/40 flex items-center justify-center flex-shrink-0">
+                  <CalendarIcon className="w-3 h-3 text-blue-400" strokeWidth={2.5} />
+                </div>
+                <div className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">
+                  Treningi
+                </div>
               </div>
-              <div className="text-4xl md:text-5xl font-black text-white leading-none">
+              <div className="text-lg md:text-xl font-black text-white leading-none">
                 {totalTreningi}
               </div>
-              <div className="text-xs md:text-sm font-bold text-white/80 mt-2 uppercase tracking-wider">
-                Treningi
-              </div>
-              <div className="text-[10px] md:text-xs text-white/50 mt-1 leading-tight">
+              <div className="text-[9px] text-white/50 mt-0.5 leading-tight truncate">
                 {zakres.label}
               </div>
             </div>
 
-            <div className="rounded-2xl p-5 bg-gradient-to-br from-purple-500/20 to-purple-700/10 border border-purple-400/30 shadow-lg shadow-black/30">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center mb-3">
-                <Users className="w-5 h-5 text-purple-400" strokeWidth={2.5} />
+            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-purple-500/20 to-purple-700/10 border border-purple-400/30 shadow-sm shadow-black/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-5 h-5 rounded-md bg-purple-500/20 border border-purple-400/40 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-3 h-3 text-purple-400" strokeWidth={2.5} />
+                </div>
+                <div className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">
+                  Zawodnicy
+                </div>
               </div>
-              <div className="text-4xl md:text-5xl font-black text-white leading-none">
+              <div className="text-lg md:text-xl font-black text-white leading-none">
                 {totalZawodnicy}
               </div>
-              <div className="text-xs md:text-sm font-bold text-white/80 mt-2 uppercase tracking-wider">
-                Zawodnicy
-              </div>
-              <div className="text-[10px] md:text-xs text-white/50 mt-1 leading-tight">
+              <div className="text-[9px] text-white/50 mt-0.5 leading-tight truncate">
                 W drużynie
               </div>
             </div>
 
-            <div className="rounded-2xl p-5 bg-gradient-to-br from-red-500/20 to-red-700/10 border border-red-400/30 shadow-lg shadow-black/30">
-              <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-400/40 flex items-center justify-center mb-3">
-                <AlertTriangle className="w-5 h-5 text-red-400" strokeWidth={2.5} />
+            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-red-500/20 to-red-700/10 border border-red-400/30 shadow-sm shadow-black/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-5 h-5 rounded-md bg-red-500/20 border border-red-400/40 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-3 h-3 text-red-400" strokeWidth={2.5} />
+                </div>
+                <div className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">
+                  Do poprawy
+                </div>
               </div>
-              <div className="text-4xl md:text-5xl font-black text-white leading-none">
+              <div className="text-lg md:text-xl font-black text-white leading-none">
                 {liczbaDoPoprawy}
               </div>
-              <div className="text-xs md:text-sm font-bold text-white/80 mt-2 uppercase tracking-wider">
-                Do poprawy
-              </div>
-              <div className="text-[10px] md:text-xs text-white/50 mt-1 leading-tight">
-                Frekwencja poniżej 70%
+              <div className="text-[9px] text-white/50 mt-0.5 leading-tight truncate">
+                Frekwencja &lt; 70%
               </div>
             </div>
           </div>
@@ -435,9 +493,7 @@ export default async function Statystyki({
                         </span>
                         <div
                           className={`flex-1 border-t ${
-                            v === 0
-                              ? 'border-white/10'
-                              : 'border-dashed border-white/5'
+                            v === 0 ? 'border-white/10' : 'border-dashed border-white/5'
                           }`}
                         />
                       </div>
@@ -466,9 +522,7 @@ export default async function Statystyki({
                                 ? 'bg-gradient-to-t from-green-700 to-green-400 shadow-lg shadow-green-500/50 ring-2 ring-green-400/60'
                                 : 'bg-gradient-to-t from-green-700 to-green-400 shadow-lg shadow-green-500/30'
                             }`}
-                            style={
-                              isEmpty ? undefined : { height: `${mm.procent}%` }
-                            }
+                            style={isEmpty ? undefined : { height: `${mm.procent}%` }}
                           />
                           <div
                             className={`absolute bottom-0 text-[10px] font-semibold uppercase tracking-wider ${
@@ -515,7 +569,7 @@ export default async function Statystyki({
                 </div>
               </div>
 
-              {/* Rozkład obecności — tylko 2 kategorie */}
+              {/* Rozkład obecności */}
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl shadow-black/60">
                 <div className="flex items-center gap-2 mb-1">
                   <BarChart3 className="w-4 h-4 text-blue-400" strokeWidth={2.5} />
@@ -525,7 +579,8 @@ export default async function Statystyki({
                 </div>
                 <p className="text-xs text-white/50 mb-5">
                   Wszystkie wpisy z <strong className="text-white/70">{zakres.label}</strong>{' '}
-                  ({totalWpisy} wpisów z {totalTreningi} treningów)
+                  ({totalWpisy} wpisów z {treningiZWpisami}{' '}
+                  {treningiZWpisami === 1 ? 'treningu' : 'treningów'})
                 </p>
 
                 {totalWpisy === 0 ? (
@@ -539,14 +594,7 @@ export default async function Statystyki({
                   <div className="flex items-center gap-6 md:gap-8 flex-wrap">
                     <div className="relative flex-shrink-0">
                       <svg width="160" height="160" viewBox="0 0 160 160">
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r="65"
-                          fill="none"
-                          stroke="rgba(148, 163, 184, 0.15)"
-                          strokeWidth="22"
-                        />
+                        <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(148, 163, 184, 0.15)" strokeWidth="22" />
                         <circle
                           cx="80"
                           cy="80"
@@ -600,59 +648,20 @@ export default async function Statystyki({
               </div>
             </div>
 
-            {/* PRAWA KOLUMNA */}
+            {/* PRAWA KOLUMNA — RANKING */}
             <div className="lg:col-span-1 space-y-5">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-2xl shadow-black/60">
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Trophy className="w-4 h-4 text-yellow-400" strokeWidth={2.5} />
-                      <h3 className="text-xs md:text-sm font-bold text-white/80 uppercase tracking-widest">
-                        Ranking zawodników
-                      </h3>
-                    </div>
-                    <p className="text-xs text-white/50">
-                      {zakres.label} · {ranking.length}{' '}
-                      {ranking.length === 1 ? 'zawodnik' : 'zawodników'}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Trophy className="w-4 h-4 text-yellow-400" strokeWidth={2.5} />
+                  <h3 className="text-xs md:text-sm font-bold text-white/80 uppercase tracking-widest">
+                    Ranking zawodników
+                  </h3>
                 </div>
-
-                <div className="flex items-center gap-2 mb-4 flex-wrap">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-white/40">
-                    Sortuj:
-                  </span>
-                  <Link
-                    href={sortUrl('obecnosci')}
-                    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-                      sort === 'obecnosci'
-                        ? 'bg-green-500/15 border-green-400/50 text-green-400'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
-                    }`}
-                  >
-                    Liczba obecności
-                  </Link>
-                  <Link
-                    href={sortUrl('procent')}
-                    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-                      sort === 'procent'
-                        ? 'bg-green-500/15 border-green-400/50 text-green-400'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
-                    }`}
-                  >
-                    Frekwencja
-                  </Link>
-                  <Link
-                    href={sortUrl('nazwisko')}
-                    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
-                      sort === 'nazwisko'
-                        ? 'bg-green-500/15 border-green-400/50 text-green-400'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
-                    }`}
-                  >
-                    Nazwisko
-                  </Link>
-                </div>
+                <p className="text-xs text-white/50 mb-4">
+                  {zakres.label} · {ranking.length}{' '}
+                  {ranking.length === 1 ? 'zawodnik' : 'zawodników'} · sortowanie
+                  po liczbie obecności
+                </p>
 
                 {rankingSort.length === 0 ? (
                   <div className="text-center py-8 text-sm text-white/40">
@@ -694,8 +703,14 @@ export default async function Statystyki({
                               {r.imie} {r.nazwisko}
                             </div>
                             <div className="text-[10px] text-white/50">
-                              {r.obecnosci} z {r.wpisy}{' '}
-                              {r.wpisy === 1 ? 'treningu' : 'treningów'}
+                              {r.obecnosci} z {treningiZWpisami}{' '}
+                              {treningiZWpisami === 1 ? 'treningu' : 'treningów'}
+                              {r.brakuje > 0 && (
+                                <span className="text-amber-400 font-semibold">
+                                  {' '}
+                                  · brak {r.brakuje}
+                                </span>
+                              )}
                             </div>
                           </Link>
                           <div className="text-right flex-shrink-0">
@@ -745,8 +760,8 @@ export default async function Statystyki({
                               {r.imie} {r.nazwisko}
                             </div>
                             <div className="text-[10px] text-white/50">
-                              {r.obecnosci} z {r.wpisy}{' '}
-                              {r.wpisy === 1 ? 'treningu' : 'treningów'}
+                              {r.obecnosci} z {treningiZWpisami}{' '}
+                              {treningiZWpisami === 1 ? 'treningu' : 'treningów'}
                             </div>
                           </Link>
                           <div className={`text-sm font-black ${colorClass}`}>

@@ -13,6 +13,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { TimePicker } from '@/components/TimePicker';
+import { DatePicker } from '@/components/DatePicker';
+import { Select } from '@/components/Select';
 
 export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
   const dzis = defaultData ?? new Date().toLocaleDateString('sv-SE');
@@ -30,7 +32,6 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
 
   const cyklDostepny = typ === 'trening';
 
-  // Link do Google Maps — generowany z aktualnej wartości pola
   const mapsUrl = miejsce.trim()
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(miejsce.trim())}`
     : null;
@@ -83,38 +84,28 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
     >
       <div className="grid grid-cols-2 gap-4">
         <Field icon={CalendarIcon} label="Data" required>
-          <input
-            name="data"
-            type="date"
-            required
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
-          />
+          <DatePicker name="data" value={data} onChange={setData} />
         </Field>
-       <Field icon={Clock} label="Godzina" required>
-  <TimePicker name="godzina" defaultValue="18:00" />
-</Field>
+        <Field icon={Clock} label="Godzina" required>
+          <TimePicker name="godzina" defaultValue="18:00" />
+        </Field>
       </div>
 
       <Field icon={Trophy} label="Typ wydarzenia" required>
-        <select
+        <Select
           name="typ"
-          required
           value={typ}
-          onChange={(e) => {
-            setTyp(e.target.value);
-            if (e.target.value !== 'trening') {
-              setCykl('nie_powtarzaj');
-            }
+          onChange={(v) => {
+            setTyp(v);
+            if (v !== 'trening') setCykl('nie_powtarzaj');
           }}
-          className="w-full bg-transparent border-0 outline-none text-white py-2 [&>option]:bg-slate-800"
-        >
-          <option value="trening">🟦 Trening</option>
-          <option value="mecz">🏆 Mecz</option>
-          <option value="sparing">🔥 Sparing</option>
-          <option value="turniej">🎯 Turniej</option>
-        </select>
+          options={[
+            { value: 'trening', label: '🟦 Trening' },
+            { value: 'mecz', label: '🏆 Mecz' },
+            { value: 'sparing', label: '🔥 Sparing' },
+            { value: 'turniej', label: '🎯 Turniej' },
+          ]}
+        />
       </Field>
 
       <Field icon={MapPin} label="Miejsce">
@@ -171,28 +162,25 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
           </div>
 
           <Field icon={Repeat} label="Powtarzaj">
-            <select
+            <Select
               name="cykl"
               value={cykl}
-              onChange={(e) => setCykl(e.target.value)}
-              className="w-full bg-transparent border-0 outline-none text-white py-2 [&>option]:bg-slate-800"
-            >
-              <option value="nie_powtarzaj">Nie powtarzaj (jednorazowo)</option>
-              <option value="co_tydzien">Co tydzień</option>
-              <option value="co_2_tygodnie">Co 2 tygodnie</option>
-            </select>
+              onChange={setCykl}
+              options={[
+                { value: 'nie_powtarzaj', label: 'Nie powtarzaj (jednorazowo)' },
+                { value: 'co_tydzien', label: 'Co tydzień' },
+                { value: 'co_2_tygodnie', label: 'Co 2 tygodnie' },
+              ]}
+            />
           </Field>
 
           {cykl !== 'nie_powtarzaj' && (
             <Field icon={CalendarIcon} label="Do kiedy" required>
-              <input
+              <DatePicker
                 name="data_do"
-                type="date"
-                required
                 value={dataDo}
-                onChange={(e) => setDataDo(e.target.value)}
-                min={data}
-                className="w-full bg-transparent border-0 outline-none text-white py-2 [color-scheme:dark]"
+                onChange={setDataDo}
+                required
               />
             </Field>
           )}
