@@ -29,6 +29,6 @@ test.describe('Obecność', () => {
     // Sprawdź że jest lista zawodników lub „Brak zawodników"
     const maListe = await page.locator('button[title="Obecny"]').count();
     const brakZawodnikow = await page.locator('text=Brak zawodników').count();
-    expect(maListe + brakZawodników).toBeGreaterThan(0);
+    expect(maListe + brakZawodnikow).toBeGreaterThan(0);
   });
 });
