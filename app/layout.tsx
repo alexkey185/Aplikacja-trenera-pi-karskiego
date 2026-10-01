@@ -1,11 +1,8 @@
 import Image from 'next/image';
+import { Suspense } from 'react';
 import { ToastListener } from '@/components/ToastListener';
 
-// ═══════════════════════════════════════════════════
 // Wymuś dynamiczne renderowanie dla wszystkich stron w grupie (app)
-// — używają cookies (TopBar → getActiveDruzynaId) oraz są per-user
-// — bez tego Vercel + Turbopack próbuje je prerenderować i się wywala
-// ═══════════════════════════════════════════════════
 export const dynamic = 'force-dynamic';
 
 export default function AppLayout({
@@ -15,7 +12,10 @@ export default function AppLayout({
 }) {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      <ToastListener />
+      {/* ToastListener używa useSearchParams — wymaga Suspense */}
+      <Suspense fallback={null}>
+        <ToastListener />
+      </Suspense>
 
       {/* Tło — mobile */}
       <div className="fixed inset-0 z-0 md:hidden">
