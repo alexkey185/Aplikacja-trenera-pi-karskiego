@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Select } from '@/components/Select';
+
 import { createClient } from '@/lib/supabase/server';
 import { aktualizujZawodnika } from './actions';
-
 import { DeleteButton } from './DeleteButton';
+import { Select } from '@/components/Select';
+import { FormField } from '@/components/FormField';
 import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil } from 'lucide-react';
 
 export default async function EdytujZawodnika({ params }: { params: Promise<{ id: string }> }) {
@@ -49,44 +50,44 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
 
           <form action={aktualizujZawodnika.bind(null, idNum)} className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field icon={User} label="Imię" required>
+              <FormField icon={User} label="Imię" required>
                 <input name="imie" required defaultValue={zawodnik.imie} className="w-full bg-transparent border-0 outline-none text-white py-2" />
-              </Field>
-              <Field icon={User} label="Nazwisko" required>
+              </FormField>
+              <FormField icon={User} label="Nazwisko" required>
                 <input name="nazwisko" required defaultValue={zawodnik.nazwisko} className="w-full bg-transparent border-0 outline-none text-white py-2" />
-              </Field>
+              </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field icon={Trophy} label="Rocznik">
+              <FormField icon={Trophy} label="Rocznik">
                 <input name="rocznik" type="number" defaultValue={zawodnik.rocznik ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2" />
-              </Field>
-              <Field icon={Hash} label="Numer">
+              </FormField>
+              <FormField icon={Hash} label="Numer">
                 <input name="numer" type="number" defaultValue={zawodnik.numer ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2" />
-              </Field>
+              </FormField>
             </div>
 
-<Field icon={Trophy} label="Pozycja">
-  <Select
-    name="pozycja"
-    defaultValue={zawodnik.pozycja ?? ''}
-    options={[
-      { value: '', label: '— wybierz —' },
-      { value: 'Bramkarz', label: '🧤 Bramkarz' },
-      { value: 'Obrońca', label: '🛡️ Obrońca' },
-      { value: 'Pomocnik', label: '⚙️ Pomocnik' },
-      { value: 'Napastnik', label: '⚡ Napastnik' },
-    ]}
-  />
-</Field>
+            <FormField icon={Trophy} label="Pozycja">
+              <Select
+                name="pozycja"
+                defaultValue={zawodnik.pozycja ?? ''}
+                options={[
+                  { value: '', label: '— wybierz —' },
+                  { value: 'Bramkarz', label: '🧤 Bramkarz' },
+                  { value: 'Obrońca', label: '🛡️ Obrońca' },
+                  { value: 'Pomocnik', label: '⚙️ Pomocnik' },
+                  { value: 'Napastnik', label: '⚡ Napastnik' },
+                ]}
+              />
+            </FormField>
 
-            <Field icon={Phone} label="Kontakt do rodzica">
+            <FormField icon={Phone} label="Kontakt do rodzica">
               <input name="kontakt_rodzica" type="tel" defaultValue={zawodnik.kontakt_rodzica ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2" />
-            </Field>
+            </FormField>
 
-            <Field icon={FileText} label="Notatki">
+            <FormField icon={FileText} label="Notatki">
               <textarea name="notatki" rows={3} defaultValue={zawodnik.notatki ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2 resize-none" />
-            </Field>
+            </FormField>
 
             <div className="flex gap-3 pt-2">
               <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5">
@@ -99,22 +100,5 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
         </div>
       </div>
     </main>
-  );
-}
-
-function Field({ icon: Icon, label, required, children }: { icon: any; label: string; required?: boolean; children: React.ReactNode }) {
-  return (
-    <label className="block group">
-      <div className="flex items-center gap-2 mb-1.5">
-        <Icon className="w-3.5 h-3.5 text-white/50 group-focus-within:text-green-400 transition-colors" />
-        <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-          {label}
-          {required && <span className="text-green-400 ml-1">*</span>}
-        </span>
-      </div>
-      <div className="bg-white/5 border border-white/15 focus-within:border-green-400/60 focus-within:bg-white/10 rounded-xl px-3 transition-all">
-        {children}
-      </div>
-    </label>
   );
 }

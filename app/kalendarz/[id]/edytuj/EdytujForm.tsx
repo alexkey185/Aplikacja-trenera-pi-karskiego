@@ -17,6 +17,7 @@ import {
 import { TimePicker } from '@/components/TimePicker';
 import { DatePicker } from '@/components/DatePicker';
 import { Select } from '@/components/Select';
+import { FormField } from '@/components/FormField';
 
 type Trening = {
   id: number;
@@ -94,15 +95,15 @@ export function EdytujForm({ trening }: { trening: Trening }) {
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <Field icon={CalendarIcon} label="Data" required>
+          <FormField icon={CalendarIcon} label="Data" required>
             <DatePicker name="data" defaultValue={trening.data} required />
-          </Field>
-          <Field icon={Clock} label="Godzina" required>
+          </FormField>
+          <FormField icon={Clock} label="Godzina" required>
             <TimePicker name="godzina" defaultValue={trening.godzina} />
-          </Field>
+          </FormField>
         </div>
 
-        <Field icon={Trophy} label="Typ wydarzenia" required>
+        <FormField icon={Trophy} label="Typ wydarzenia" required>
           <Select
             name="typ"
             defaultValue={trening.typ}
@@ -113,9 +114,9 @@ export function EdytujForm({ trening }: { trening: Trening }) {
               { value: 'turniej', label: '🎯 Turniej' },
             ]}
           />
-        </Field>
+        </FormField>
 
-        <Field icon={MapPin} label="Miejsce">
+        <FormField icon={MapPin} label="Miejsce">
           <div className="flex items-center gap-1.5 w-full">
             <input
               name="miejsce"
@@ -137,24 +138,24 @@ export function EdytujForm({ trening }: { trening: Trening }) {
               </a>
             )}
           </div>
-        </Field>
+        </FormField>
 
-        <Field icon={Trophy} label="Przeciwnik">
+        <FormField icon={Trophy} label="Przeciwnik">
           <input
             name="przeciwnik"
             defaultValue={trening.przeciwnik ?? ''}
             className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2"
           />
-        </Field>
+        </FormField>
 
-        <Field icon={FileText} label="Notatki">
+        <FormField icon={FileText} label="Notatki">
           <textarea
             name="notatki"
             rows={3}
             defaultValue={trening.notatki ?? ''}
             className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none"
           />
-        </Field>
+        </FormField>
 
         <button
           type="submit"
@@ -229,32 +230,5 @@ export function EdytujForm({ trening }: { trening: Trening }) {
         onConfirm={handleModalConfirm}
       />
     </>
-  );
-}
-
-function Field({
-  icon: Icon,
-  label,
-  required,
-  children,
-}: {
-  icon: any;
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block group">
-      <div className="flex items-center gap-2 mb-1.5">
-        <Icon className="w-3.5 h-3.5 text-white/50 group-focus-within:text-green-400 transition-colors" />
-        <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-          {label}
-          {required && <span className="text-green-400 ml-1">*</span>}
-        </span>
-      </div>
-      <div className="bg-white/5 border border-white/15 focus-within:border-green-400/60 focus-within:bg-white/10 rounded-xl px-3 transition-all">
-        {children}
-      </div>
-    </label>
   );
 }

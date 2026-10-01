@@ -15,6 +15,7 @@ import {
 import { TimePicker } from '@/components/TimePicker';
 import { DatePicker } from '@/components/DatePicker';
 import { Select } from '@/components/Select';
+import { FormField } from '@/components/FormField';
 
 export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
   const dzis = defaultData ?? new Date().toLocaleDateString('sv-SE');
@@ -83,15 +84,15 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
       className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60"
     >
       <div className="grid grid-cols-2 gap-4">
-        <Field icon={CalendarIcon} label="Data" required>
+        <FormField icon={CalendarIcon} label="Data" required>
           <DatePicker name="data" value={data} onChange={setData} />
-        </Field>
-        <Field icon={Clock} label="Godzina" required>
+        </FormField>
+        <FormField icon={Clock} label="Godzina" required>
           <TimePicker name="godzina" defaultValue="18:00" />
-        </Field>
+        </FormField>
       </div>
 
-      <Field icon={Trophy} label="Typ wydarzenia" required>
+      <FormField icon={Trophy} label="Typ wydarzenia" required>
         <Select
           name="typ"
           value={typ}
@@ -106,9 +107,9 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
             { value: 'turniej', label: '🎯 Turniej' },
           ]}
         />
-      </Field>
+      </FormField>
 
-      <Field icon={MapPin} label="Miejsce">
+      <FormField icon={MapPin} label="Miejsce">
         <div className="flex items-center gap-1.5 w-full">
           <input
             name="miejsce"
@@ -130,24 +131,24 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
             </a>
           )}
         </div>
-      </Field>
+      </FormField>
 
-      <Field icon={Trophy} label="Przeciwnik (dla meczu/sparingu)">
+      <FormField icon={Trophy} label="Przeciwnik (dla meczu/sparingu)">
         <input
           name="przeciwnik"
           placeholder="np. Orzeł Warszawa"
           className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2"
         />
-      </Field>
+      </FormField>
 
-      <Field icon={FileText} label="Notatki">
+      <FormField icon={FileText} label="Notatki">
         <textarea
           name="notatki"
           rows={3}
           placeholder="np. Zbiórka 17:30"
           className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none"
         />
-      </Field>
+      </FormField>
 
       {cyklDostepny && (
         <div className="pt-5 border-t border-white/10 space-y-4">
@@ -161,7 +162,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
             </span>
           </div>
 
-          <Field icon={Repeat} label="Powtarzaj">
+          <FormField icon={Repeat} label="Powtarzaj">
             <Select
               name="cykl"
               value={cykl}
@@ -172,17 +173,17 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
                 { value: 'co_2_tygodnie', label: 'Co 2 tygodnie' },
               ]}
             />
-          </Field>
+          </FormField>
 
           {cykl !== 'nie_powtarzaj' && (
-            <Field icon={CalendarIcon} label="Do kiedy" required>
+            <FormField icon={CalendarIcon} label="Do kiedy" required>
               <DatePicker
                 name="data_do"
                 value={dataDo}
                 onChange={setDataDo}
                 required
               />
-            </Field>
+            </FormField>
           )}
 
           {info && (
@@ -208,32 +209,5 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
         Zapisz wydarzenie
       </button>
     </form>
-  );
-}
-
-function Field({
-  icon: Icon,
-  label,
-  required,
-  children,
-}: {
-  icon: any;
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block group">
-      <div className="flex items-center gap-2 mb-1.5">
-        <Icon className="w-3.5 h-3.5 text-white/50 group-focus-within:text-green-400 transition-colors" />
-        <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-          {label}
-          {required && <span className="text-green-400 ml-1">*</span>}
-        </span>
-      </div>
-      <div className="bg-white/5 border border-white/15 focus-within:border-green-400/60 focus-within:bg-white/10 rounded-xl px-3 transition-all">
-        {children}
-      </div>
-    </label>
   );
 }

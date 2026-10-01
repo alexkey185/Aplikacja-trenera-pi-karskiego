@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { dodajDruzyna } from './actions';
 import { TopBar } from '@/components/TopBar';
+import { FormField } from '@/components/FormField';
 import { ArrowLeft, Users, Hash, Palette, Save, Check } from 'lucide-react';
 
 const KOLORY = [
