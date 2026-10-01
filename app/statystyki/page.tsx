@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
 import { MiesiacDropdown } from '@/components/MiesiacDropdown';
+import { OkresDropdown } from '@/components/OkresDropdown';
 import {
   ArrowLeft,
   BarChart3,
@@ -98,7 +99,7 @@ function ostatnie6Miesiecy(koniec: Date) {
 export default async function Statystyki({
   searchParams,
 }: {
-  searchParams: Promise<{ okres?: string; m?: string; sort?: string }>;
+  searchParams: Promise<{ okres?: string; m?: string }>;
 }) {
   const params = await searchParams;
   const dzis = new Date();
@@ -170,7 +171,6 @@ export default async function Statystyki({
   const procentOgolem =
     totalWpisy > 0 ? Math.round((obecniRazem / totalWpisy) * 100) : 0;
 
-  // ── Ranking — zawsze sortowany po liczbie obecności ──
   const ranking = (zawodnicy ?? [])
     .map((z) => {
       const wpisy = obecnosciZakres.filter((o) => o.zawodnik_id === z.id);
@@ -198,7 +198,6 @@ export default async function Statystyki({
     .filter((r) => r.procent < 70)
     .sort((a, b) => a.procent - b.procent);
 
-  // ── Wykres 6 miesięcy ──
   const koniecZakresu = new Date(zakres.do + 'T00:00:00');
   const miesiaceWykres = ostatnie6Miesiecy(koniecZakresu).map(({ iso, label }) => {
     const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
@@ -220,7 +219,6 @@ export default async function Statystyki({
     .filter((mm) => mm.procent !== null)
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
 
-  // ── Dane do dropdownu miesięcy ──
   const miesiaceDropdown = unikalneMiesiace.map((mm) => {
     const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
       t.data.startsWith(mm)
@@ -242,7 +240,6 @@ export default async function Statystyki({
     };
   });
 
-  // ── URL helpery ──
   const okresUrl = (o: string, mm?: string) => {
     const p = new URLSearchParams();
     p.set('okres', o);
@@ -292,9 +289,26 @@ export default async function Statystyki({
             <TopBar />
           </header>
 
-          {/* FILTR OKRESU */}
+          {/* ═══ FILTR OKRESU ═══ */}
           <div className="mb-5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-3 md:p-4 relative z-30">
-            <div className="flex items-center gap-3 flex-wrap">
+            {/* MOBILE — dropdown */}
+            <div className="lg:hidden">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarIcon className="w-4 h-4 text-white/50" />
+                <span className="text-xs font-bold text-white/60 uppercase tracking-widest">
+                  Okres
+                </span>
+              </div>
+              <OkresDropdown
+                presety={PRESETY}
+                miesiace={miesiaceDropdown}
+                aktywnyPreset={zakres.typ === 'month' ? null : zakres.typ}
+                aktywnyMiesiac={zakres.typ === 'month' ? m ?? null : null}
+              />
+            </div>
+
+            {/* DESKTOP — 5 przycisków + dropdown miesięcy */}
+            <div className="hidden lg:flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2 flex-shrink-0">
                 <CalendarIcon className="w-4 h-4 text-white/50" />
                 <span className="text-xs font-bold text-white/60 uppercase tracking-widest">
@@ -338,7 +352,7 @@ export default async function Statystyki({
             </div>
           </div>
 
-          {/* ALERT */}
+          {/* ═══ ALERT ═══ */}
           {maLuki && (
             <div className="mb-5 bg-amber-500/10 border border-amber-400/40 rounded-2xl p-4 md:p-5 animate-fadeIn shadow-lg shadow-amber-500/10 relative z-0">
               <div className="flex items-start gap-3">
@@ -383,9 +397,9 @@ export default async function Statystyki({
             </div>
           )}
 
-          {/* 4 KARTY KPI — KOMPAKTOWE */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
-            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-green-500/20 to-green-700/10 border border-green-400/30 shadow-sm shadow-black/20">
+          {/* ═══ KPI ═══ */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-2.5 mb-4">
+            <div className="rounded-xl lg:rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 bg-gradient-to-br from-green-500/20 to-green-700/10 border border-green-400/30 shadow-sm shadow-black/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 rounded-md bg-green-500/20 border border-green-400/40 flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="w-3 h-3 text-green-400" strokeWidth={2.5} />
@@ -403,7 +417,7 @@ export default async function Statystyki({
               </div>
             </div>
 
-            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-blue-500/20 to-blue-700/10 border border-blue-400/30 shadow-sm shadow-black/20">
+            <div className="rounded-xl lg:rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 bg-gradient-to-br from-blue-500/20 to-blue-700/10 border border-blue-400/30 shadow-sm shadow-black/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 rounded-md bg-blue-500/20 border border-blue-400/40 flex items-center justify-center flex-shrink-0">
                   <CalendarIcon className="w-3 h-3 text-blue-400" strokeWidth={2.5} />
@@ -420,7 +434,7 @@ export default async function Statystyki({
               </div>
             </div>
 
-            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-purple-500/20 to-purple-700/10 border border-purple-400/30 shadow-sm shadow-black/20">
+            <div className="rounded-xl lg:rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 bg-gradient-to-br from-purple-500/20 to-purple-700/10 border border-purple-400/30 shadow-sm shadow-black/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 rounded-md bg-purple-500/20 border border-purple-400/40 flex items-center justify-center flex-shrink-0">
                   <Users className="w-3 h-3 text-purple-400" strokeWidth={2.5} />
@@ -437,7 +451,7 @@ export default async function Statystyki({
               </div>
             </div>
 
-            <div className="rounded-lg px-3 py-2.5 bg-gradient-to-br from-red-500/20 to-red-700/10 border border-red-400/30 shadow-sm shadow-black/20">
+            <div className="rounded-xl lg:rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 bg-gradient-to-br from-red-500/20 to-red-700/10 border border-red-400/30 shadow-sm shadow-black/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 rounded-md bg-red-500/20 border border-red-400/40 flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="w-3 h-3 text-red-400" strokeWidth={2.5} />
@@ -455,10 +469,9 @@ export default async function Statystyki({
             </div>
           </div>
 
-          {/* GŁÓWNY GRID */}
+          {/* ═══ GŁÓWNY GRID ═══ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2 space-y-5">
-              {/* Wykres 6 miesięcy */}
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl shadow-black/60">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
@@ -569,7 +582,6 @@ export default async function Statystyki({
                 </div>
               </div>
 
-              {/* Rozkład obecności */}
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl shadow-black/60">
                 <div className="flex items-center gap-2 mb-1">
                   <BarChart3 className="w-4 h-4 text-blue-400" strokeWidth={2.5} />
@@ -648,7 +660,6 @@ export default async function Statystyki({
               </div>
             </div>
 
-            {/* PRAWA KOLUMNA — RANKING */}
             <div className="lg:col-span-1 space-y-5">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-2xl shadow-black/60">
                 <div className="flex items-center gap-2 mb-1">
