@@ -256,3 +256,17 @@ button:active:not(:disabled), a:active {
   transform: scale(1.06);
   z-index: 3;
 }
+/* ══════════════════════════════════════════════ */
+/* Ukryj natywne spinnery w polach number        */
+/* ══════════════════════════════════════════════ */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
