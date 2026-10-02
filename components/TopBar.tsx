@@ -1,9 +1,13 @@
-import { getDruzyny, getActiveDruzynaId } from '@/lib/druzyny';
-import { createClient } from '@/lib/supabase/server';
+import { getDruzyny, getActiveDruzynaId, getZawodnicyCounts } from '@/lib/druzyny';
 import { DruzynaSwitcher } from './DruzynaSwitcher';
 import { UserAvatar } from './UserAvatar';
 
 export async function TopBar() {
+  // ═══════════════════════════════════════════════════
+  // Te trzy wywołania są darmowe jeśli w tym samym
+  // render pass zawołał je już layout albo page —
+  // cache() z React dedupuje.
+  // ═══════════════════════════════════════════════════
   const druzyny = await getDruzyny();
   const activeId = await getActiveDruzynaId();
 
@@ -16,17 +20,7 @@ export async function TopBar() {
     );
   }
 
-  const supabase = await createClient();
-  const { data: zawodnicy } = await supabase
-    .from('zawodnicy')
-    .select('druzyna_id');
-
-  const zawodnicyCount: Record<string, number> = {};
-  (zawodnicy ?? []).forEach((z) => {
-    if (z.druzyna_id) {
-      zawodnicyCount[z.druzyna_id] = (zawodnicyCount[z.druzyna_id] ?? 0) + 1;
-    }
-  });
+  const zawodnicyCount = await getZawodnicyCounts();
 
   return (
     <div className="flex items-center gap-2 flex-shrink-0">
