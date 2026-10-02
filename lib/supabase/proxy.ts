@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Ścieżki publiczne — dostępne bez logowania
-const PUBLIC_PATHS = ['/', '/login', '/prywatnosc', '/regulamin'];
+const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin'];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => {
@@ -24,36 +24,13 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(
-          cookiesToSet: {
-            name: string;
-            value: string;
-            options?: Record<string, unknown>;
-          }[],
-        ) {
-          cookiesToSet.forEach(
-            ({
-              name,
-              value,
-            }: {
-              name: string;
-              value: string;
-              options?: Record<string, unknown>;
-            }) => request.cookies.set(name, value),
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(
-            ({
-              name,
-              value,
-              options,
-            }: {
-              name: string;
-              value: string;
-              options?: Record<string, unknown>;
-            }) => supabaseResponse.cookies.set(name, value, options),
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
@@ -71,7 +48,24 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicPath(pathname) && !pathname.startsWith('/auth')) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
-    return NextResponse.redirect(url);
+
+    const redirectResponse = NextResponse.redirect(url);
+
+    // ═══════════════════════════════════════════════════════
+    // KRYTYCZNE: skopiuj cookies z supabaseResponse do redirectu
+    //
+    // Supabase przy każdym żądaniu odświeża token sesji i ustawia
+    // nowe cookies w `supabaseResponse.cookies`. Ale `NextResponse.redirect()`
+    // tworzy NOWY obiekt z pustymi cookies — te odświeżone przepadają.
+    //
+    // Efekt bez tego fixu: user „losowo" wylogowuje się przy nawigacji
+    // (bo token się nie odświeżył w przeglądarce).
+    // ═══════════════════════════════════════════════════════
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+
+    return redirectResponse;
   }
 
   return supabaseResponse;
