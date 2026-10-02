@@ -14,6 +14,29 @@ import {
   Check,
 } from 'lucide-react';
 
+// ═══════════════════════════════════════════════════════════
+// Polskie komunikaty błędów Supabase
+// ═══════════════════════════════════════════════════════════
+function translateSignUpError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('user already registered') || lower.includes('already been registered')) {
+    return 'Konto z tym emailem już istnieje. Zaloguj się';
+  }
+  if (lower.includes('password should be') || lower.includes('password is too short')) {
+    return 'Hasło jest za krótkie (min. 8 znaków)';
+  }
+  if (lower.includes('invalid email') || lower.includes('email_address_invalid')) {
+    return 'Adres email jest nieprawidłowy';
+  }
+  if (lower.includes('too many requests') || lower.includes('rate limit')) {
+    return 'Zbyt wiele prób. Spróbuj ponownie za chwilę';
+  }
+  if (lower.includes('network') || lower.includes('fetch')) {
+    return 'Błąd połączenia. Sprawdź internet';
+  }
+  return message;
+}
+
 export function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,8 +68,9 @@ export function SignUpForm() {
 
     if (!password) {
       errors.password = 'Wpisz hasło';
-    } else if (password.length < 6) {
-      errors.password = 'Hasło musi mieć minimum 6 znaków';
+    } else if (password.length < 8) {
+      // Zsynchronizowane z Supabase minimum (8 znaków)
+      errors.password = 'Hasło musi mieć minimum 8 znaków';
     }
 
     if (!repeatPassword) {
@@ -72,6 +96,12 @@ export function SignUpForm() {
     const supabase = createClient();
     setIsLoading(true);
 
+    // Bezpiecznik: jeśli nawigacja nie zadziała w 10s — odblokuj
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+      setError('Tworzenie konta trwa zbyt długo. Spróbuj odświeżyć stronę.');
+    }, 10000);
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -80,11 +110,16 @@ export function SignUpForm() {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },
       });
+
       if (error) throw error;
+
+      // SUKCES: NIE czyścimy safetyTimer i NIE wywołujemy setIsLoading(false)
       router.push('/auth/sign-up-success');
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Wystąpił błąd');
-    } finally {
+      router.refresh();
+    } catch (err) {
+      clearTimeout(safetyTimer);
+      const message = err instanceof Error ? translateSignUpError(err.message) : 'Wystąpił błąd';
+      setError(message);
       setIsLoading(false);
     }
   };
@@ -107,12 +142,15 @@ export function SignUpForm() {
         <form onSubmit={handleSignUp} noValidate className="space-y-4">
           {/* Email */}
           <div>
-            <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+            <label htmlFor="signup-email" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Mail className="w-3.5 h-3.5 text-green-400" />
               Email
             </label>
             <input
+              id="signup-email"
+              name="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -121,6 +159,8 @@ export function SignUpForm() {
                 }
               }}
               placeholder="trener@example.com"
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? 'signup-email-error' : undefined}
               className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
                 fieldErrors.email
                   ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
@@ -128,7 +168,7 @@ export function SignUpForm() {
               }`}
             />
             {fieldErrors.email && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="signup-email-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.email}</span>
               </div>
@@ -137,12 +177,15 @@ export function SignUpForm() {
 
           {/* Hasło */}
           <div>
-            <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+            <label htmlFor="signup-password" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Lock className="w-3.5 h-3.5 text-green-400" />
               Hasło
             </label>
             <input
+              id="signup-password"
+              name="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -150,7 +193,9 @@ export function SignUpForm() {
                   setFieldErrors((fe) => ({ ...fe, password: undefined }));
                 }
               }}
-              placeholder="Minimum 6 znaków"
+              placeholder="Minimum 8 znaków"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? 'signup-password-error' : undefined}
               className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
                 fieldErrors.password
                   ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
@@ -158,7 +203,7 @@ export function SignUpForm() {
               }`}
             />
             {fieldErrors.password && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="signup-password-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.password}</span>
               </div>
@@ -167,12 +212,15 @@ export function SignUpForm() {
 
           {/* Powtórz hasło */}
           <div>
-            <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+            <label htmlFor="signup-repeat-password" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Lock className="w-3.5 h-3.5 text-green-400" />
               Powtórz hasło
             </label>
             <input
+              id="signup-repeat-password"
+              name="repeat-password"
               type="password"
+              autoComplete="new-password"
               value={repeatPassword}
               onChange={(e) => {
                 setRepeatPassword(e.target.value);
@@ -181,6 +229,8 @@ export function SignUpForm() {
                 }
               }}
               placeholder="Powtórz hasło"
+              aria-invalid={!!fieldErrors.repeatPassword}
+              aria-describedby={fieldErrors.repeatPassword ? 'signup-repeat-error' : undefined}
               className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
                 fieldErrors.repeatPassword
                   ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
@@ -188,7 +238,7 @@ export function SignUpForm() {
               }`}
             />
             {fieldErrors.repeatPassword && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="signup-repeat-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.repeatPassword}</span>
               </div>
@@ -198,17 +248,20 @@ export function SignUpForm() {
           {/* Checkbox akceptacji */}
           <div className="pt-1">
             <div className="flex items-start gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setAcceptedTerms(!acceptedTerms);
-                  if (fieldErrors.terms) {
-                    setFieldErrors((fe) => ({ ...fe, terms: undefined }));
-                  }
-                }}
-                className="relative flex-shrink-0 mt-0.5"
-                aria-label="Zaakceptuj regulamin"
-              >
+              <label className="relative flex-shrink-0 mt-0.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    if (fieldErrors.terms) {
+                      setFieldErrors((fe) => ({ ...fe, terms: undefined }));
+                    }
+                  }}
+                  className="peer sr-only"
+                  aria-invalid={!!fieldErrors.terms}
+                  aria-describedby={fieldErrors.terms ? 'signup-terms-error' : undefined}
+                />
                 <div
                   className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     acceptedTerms
@@ -222,7 +275,7 @@ export function SignUpForm() {
                     <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                   )}
                 </div>
-              </button>
+              </label>
               <span className="text-xs text-white/60 leading-relaxed">
                 Akceptuję{' '}
                 <Link
@@ -243,7 +296,7 @@ export function SignUpForm() {
               </span>
             </div>
             {fieldErrors.terms && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="signup-terms-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.terms}</span>
               </div>
@@ -252,7 +305,7 @@ export function SignUpForm() {
 
           {/* Global error (z Supabase) */}
           {error && (
-            <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
+            <div role="alert" className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>

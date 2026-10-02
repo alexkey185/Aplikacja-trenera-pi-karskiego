@@ -13,6 +13,26 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 
+// ═══════════════════════════════════════════════════════════
+// Polskie komunikaty błędów Supabase (mapowanie error.code)
+// ═══════════════════════════════════════════════════════════
+function translateAuthError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials')) {
+    return 'Nieprawidłowy email lub hasło';
+  }
+  if (lower.includes('email not confirmed') || lower.includes('email_not_confirmed')) {
+    return 'Najpierw potwierdź swój email (sprawdź skrzynkę)';
+  }
+  if (lower.includes('too many requests') || lower.includes('rate limit')) {
+    return 'Zbyt wiele prób logowania. Spróbuj ponownie za chwilę';
+  }
+  if (lower.includes('network') || lower.includes('fetch')) {
+    return 'Błąd połączenia. Sprawdź internet';
+  }
+  return message;
+}
+
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,16 +70,37 @@ export function LoginForm() {
     const supabase = createClient();
     setIsLoading(true);
 
+    // ═══════════════════════════════════════════════════════
+    // BEZPIECZNIK: jeśli nawigacja po sukcesie nie zadziała
+    // w 10 sekund, odblokuj przycisk (użytkownik nie zostanie
+    // „uwięziony" w stanie loading).
+    // ═══════════════════════════════════════════════════════
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+      setError('Przekierowanie trwa zbyt długo. Spróbuj odświeżyć stronę.');
+    }, 10000);
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (error) throw error;
+
+      // ═══════════════════════════════════════════════════════
+      // SUKCES: NIE czyścimy safetyTimer i NIE wywołujemy
+      // setIsLoading(false) — komponent odmontuje się po
+      // przekierowaniu, a przycisk pozostanie zablokowany do
+      // końca (zapobiega podwójnemu klikowi w trakcie nawigacji).
+      // ═══════════════════════════════════════════════════════
       router.push('/dashboard');
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Wystąpił błąd');
-    } finally {
+      router.refresh();
+    } catch (err) {
+      // BŁĄD: czyścimy bezpiecznik, pokazujemy komunikat, odblokowujemy przycisk
+      clearTimeout(safetyTimer);
+      const message = err instanceof Error ? translateAuthError(err.message) : 'Wystąpił błąd';
+      setError(message);
       setIsLoading(false);
     }
   };
@@ -82,12 +123,15 @@ export function LoginForm() {
         <form onSubmit={handleLogin} noValidate className="space-y-4">
           {/* Email */}
           <div>
-            <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+            <label htmlFor="login-email" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
               <Mail className="w-3.5 h-3.5 text-green-400" />
               Email
             </label>
             <input
+              id="login-email"
+              name="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -96,6 +140,8 @@ export function LoginForm() {
                 }
               }}
               placeholder="trener@example.com"
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
               className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
                 fieldErrors.email
                   ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
@@ -103,7 +149,7 @@ export function LoginForm() {
               }`}
             />
             {fieldErrors.email && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="login-email-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.email}</span>
               </div>
@@ -113,7 +159,7 @@ export function LoginForm() {
           {/* Hasło */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider">
+              <label htmlFor="login-password" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider">
                 <Lock className="w-3.5 h-3.5 text-green-400" />
                 Hasło
               </label>
@@ -125,7 +171,10 @@ export function LoginForm() {
               </Link>
             </div>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -134,6 +183,8 @@ export function LoginForm() {
                 }
               }}
               placeholder="Wpisz hasło"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
               className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
                 fieldErrors.password
                   ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
@@ -141,7 +192,7 @@ export function LoginForm() {
               }`}
             />
             {fieldErrors.password && (
-              <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+              <div id="login-password-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{fieldErrors.password}</span>
               </div>
@@ -150,7 +201,7 @@ export function LoginForm() {
 
           {/* Global error (z Supabase) */}
           {error && (
-            <div className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
+            <div role="alert" className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>

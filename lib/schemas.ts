@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ═══════════════════════════════════════════════════
-// HELPERY
+// HELPERY — pola opcjonalne
 // ═══════════════════════════════════════════════════
 
 const optionalString = (max: number) =>
@@ -25,13 +25,58 @@ const optionalNumber = (min: number, max: number) =>
       message: `Wartość musi być między ${min} a ${max}`,
     });
 
+// ═══════════════════════════════════════════════════
+// DATA — walidacja formatu + realnego istnienia
+//
+// Regex sprawdza tylko format (YYYY-MM-DD), ale przepuszcza
+// nieistniejące daty (31 lutego, 32 stycznia, miesiąc 13).
+// Refine sprawdza round-trip przez Date — jeśli JS normalizuje
+// datę (31 lutego → 3 marca), znaczy że była nieprawidłowa.
+// ═══════════════════════════════════════════════════
+
 const isoDate = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)');
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)')
+  .refine(
+    (val) => {
+      const [y, m, d] = val.split('-').map(Number);
+
+      // Rok w sensownym zakresie (np. 1900-2100)
+      if (y < 1900 || y > 2100) return false;
+
+      // Miesiąc 1-12
+      if (m < 1 || m > 12) return false;
+
+      // Dzień 1-31 (dalsza weryfikacja przez round-trip niżej)
+      if (d < 1 || d > 31) return false;
+
+      // Round-trip: czy Date zwraca dokładnie to samo?
+      const date = new Date(y, m - 1, d);
+      return (
+        date.getFullYear() === y &&
+        date.getMonth() === m - 1 &&
+        date.getDate() === d
+      );
+    },
+    { message: 'Nieprawidłowa data (np. 31 lutego nie istnieje)' }
+  );
+
+// ═══════════════════════════════════════════════════
+// GODZINA — walidacja formatu + realnego zakresu
+//
+// Regex przepuszcza 25:99, 99:99. Refine pilnuje 0-23 : 0-59.
+// ═══════════════════════════════════════════════════
 
 const isoTime = z
   .string()
-  .regex(/^\d{2}:\d{2}$/, 'Nieprawidłowy format godziny (HH:MM)');
+  .regex(/^\d{2}:\d{2}$/, 'Nieprawidłowy format godziny (HH:MM)')
+  .refine(
+    (val) => {
+      const [h, m] = val.split(':').map(Number);
+      return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+    },
+    { message: 'Nieprawidłowa godzina (zakres 00:00-23:59)' }
+  );
 
 // ═══════════════════════════════════════════════════
 // TRENINGI
