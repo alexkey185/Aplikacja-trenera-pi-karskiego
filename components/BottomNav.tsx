@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -56,7 +56,6 @@ function shouldHideNav(pathname: string): boolean {
 
 export function BottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [imie, setImie] = useState<string | null>(null);
   const [nazwisko, setNazwisko] = useState<string | null>(null);
@@ -92,13 +91,25 @@ export function BottomNav() {
       });
   }, [pathname, hidden]);
 
-  async function handleLogout() {
-    setLogoutLoading(true);
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/auth/login');
-    router.refresh();
-  }
+async function handleLogout() {
+  setLogoutLoading(true);
+  const supabase = createClient();
+  await supabase.auth.signOut();
+
+  // ═══════════════════════════════════════════════════════
+  // HARD REDIRECT — pełne przeładowanie strony.
+  //
+  // Dlaczego nie router.push + router.refresh:
+  //   - router.push nie zabija stanu komponentów klienta
+  //   - router.refresh re-renderuje server components, ale klient
+  //     trzyma stary stan (np. logoutLoading = true, otwarty modal)
+  //   - W praktyce user widzi modal ze spinnerem po przekierowaniu
+  //
+  // window.location.href robi hard reload — wszystkie stany czyszczone,
+  // cały JS ładowany od nowa. Standard dla logout.
+  // ═══════════════════════════════════════════════════════
+  window.location.href = '/auth/login';
+}
 
   if (hidden) {
     return null;
