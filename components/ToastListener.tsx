@@ -44,13 +44,29 @@ export function ToastListener() {
   const pathname = usePathname();
 
   // Guard przed podwójnym odpaleniem w React Strict Mode
+  // Resetowany gdy URL nie ma już ?toast=...
   const ostatniKlucz = useRef<string | null>(null);
 
   useEffect(() => {
     const key = searchParams.get('toast');
-    if (!key) return;
 
-    // Jeśli ten sam klucz już pokazaliśmy (Strict Mode podwaja efekt) → pomiń
+    // ═══════════════════════════════════════════════════
+    // Brak toastu w URL → zresetuj guard.
+    //
+    // To jest kluczowe: wcześniej reset odbywał się przez setTimeout
+    // z cleanup-em, ale cleanup kasował timer zanim się wykonał.
+    // Efekt: ten sam toast pokazywał się tylko raz na sesję.
+    //
+    // Teraz reset następuje naturalnie — po router.replace() URL
+    // nie ma już ?toast=..., więc searchParams się zmieni, efekt
+    // re-runuje z key === null i czyści ref.
+    // ═══════════════════════════════════════════════════
+    if (!key) {
+      ostatniKlucz.current = null;
+      return;
+    }
+
+    // Ten sam klucz już pokazany (Strict Mode dubluje efekt) → pomiń
     if (ostatniKlucz.current === key) return;
     ostatniKlucz.current = key;
 
@@ -68,13 +84,6 @@ export function ToastListener() {
     const qs = params.toString();
     const newUrl = qs ? `${pathname}?${qs}` : pathname;
     router.replace(newUrl, { scroll: false });
-
-    // Reset guard po krótkiej chwili (żeby ten sam toast mógł pokazać się później)
-    const timer = setTimeout(() => {
-      ostatniKlucz.current = null;
-    }, 500);
-
-    return () => clearTimeout(timer);
   }, [searchParams, pathname, router]);
 
   return null;

@@ -119,6 +119,15 @@ export function ConfirmDialog({
   const style = VARIANT_STYLES[variant];
   const Icon = style.Icon;
 
+  // ═══════════════════════════════════════════════════
+  // AutoFocus: przy danger → Cancel, reszta → Confirm.
+  //
+  // Dlaczego: przy usuwaniu (Enter potwierdza) user może
+  // przypadkowo wcisnąć Enter po wpisaniu czegoś i skasować
+  // dane. Bezpieczniej żeby focus był na Cancel.
+  // ═══════════════════════════════════════════════════
+  const focusOnCancel = variant === 'danger';
+
   return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn"
@@ -157,7 +166,8 @@ export function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+            autoFocus={focusOnCancel && !loading}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {cancelLabel}
           </button>
@@ -165,8 +175,8 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            autoFocus={!loading}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-br ${style.button} text-white font-semibold text-sm transition-all active:scale-95 shadow-lg ${style.buttonShadow} disabled:opacity-70 disabled:cursor-wait disabled:active:scale-100`}
+            autoFocus={!focusOnCancel && !loading}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-br ${style.button} text-white font-semibold text-sm transition-all active:scale-95 shadow-lg ${style.buttonShadow} disabled:opacity-70 disabled:cursor-wait disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40`}
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {confirmLabel}

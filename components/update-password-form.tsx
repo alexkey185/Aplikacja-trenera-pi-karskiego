@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Lock, Save, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -11,7 +10,6 @@ import { updatePasswordSchema, zodToFieldErrors } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
 
 export function UpdatePasswordForm() {
-  const router = useRouter();
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,10 +39,22 @@ export function UpdatePasswordForm() {
 
       if (error) throw error;
 
-      // Sukces: unieważnij inne sesje (best-effort) + wyloguj
-      await supabase.auth.signOut({ scope: 'others' });
-      router.push('/auth/login');
-      router.refresh();
+      // ═══════════════════════════════════════════════════
+      // Sukces: pełne wylogowanie + hard redirect na login.
+      //
+      // Dlaczego nie signOut({ scope: 'others' }):
+      //   — scope: 'others' wylogowuje tylko INNE sesje, bieżąca
+      //     zostaje aktywna. User ląduje na /auth/login, ale
+      //     login/page.tsx widzi zalogowanego usera i robi
+      //     redirect('/dashboard') — wygląda jakby wylogowanie
+      //     nie zadziałało.
+      //
+      // Dlaczego window.location.href zamiast router.push:
+      //   — hard reload czyści cały stan klienta (loading, cache SW)
+      //   — standard dla operacji logout
+      // ═══════════════════════════════════════════════════
+      await supabase.auth.signOut();
+      window.location.href = '/auth/login';
     } catch (err) {
       setError(getErrorMessage(err));
       setIsLoading(false);

@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { BottomNav } from '@/components/BottomNav';
 import { ContentWrapper } from '@/components/ContentWrapper';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import './globals.css';
 
 const defaultUrl = process.env.VERCEL_URL
@@ -53,11 +54,21 @@ const geistSans = Geist({
   subsets: ['latin'],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // ═══════════════════════════════════════════════════
+  // Aktywna drużyna — potrzebna do badge „Dzisiaj" w BottomNav.
+  // Bez tego badge sumował treningi ze wszystkich drużyn usera.
+  //
+  // getActiveDruzynaId() robi jedno zapytanie do DB (getDruzyny),
+  // więc root layout jest teraz async + dynamic. Dla apki za loginem
+  // to i tak nieuniknione — wszystkie podstrony używają cookies().
+  // ═══════════════════════════════════════════════════
+  const druzynaId = await getActiveDruzynaId();
+
   return (
     <html lang="pl" suppressHydrationWarning>
       <head>
@@ -71,7 +82,7 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} antialiased`}>
         <ContentWrapper>{children}</ContentWrapper>
-        <BottomNav />
+        <BottomNav druzynaId={druzynaId} />
         <ServiceWorkerRegister />
 
         <Toaster

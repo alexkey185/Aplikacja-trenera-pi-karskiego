@@ -54,7 +54,14 @@ function shouldHideNav(pathname: string): boolean {
   });
 }
 
-export function BottomNav() {
+// Lokalna data w strefie Europe/Warsaw — o 23:00 UTC pokazałoby „jutro"
+function getDzisISO(): string {
+  return new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Warsaw',
+  });
+}
+
+export function BottomNav({ druzynaId }: { druzynaId?: string | null }) {
   const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [imie, setImie] = useState<string | null>(null);
@@ -77,39 +84,57 @@ export function BottomNav() {
     });
   }, [pathname, hidden]);
 
+  // ═══════════════════════════════════════════════════
+  // Badge „Dzisiaj" — liczy TYLKO treningi aktywnej drużyny.
+  //
+  // Wcześniej brakowało .eq('druzyna_id', ...) → badge sumował
+  // treningi ze wszystkich drużyn usera. RLS to przepuszczał
+  // (wszystkie drużyny są jego), ale liczba była błędna.
+  //
+  // Fix strefy czasowej: toISOString() zwraca UTC, o 23:00
+  // czasu polskiego pokazywałoby jutrzejszą datę. sv-SE zwraca
+  // YYYY-MM-DD w podanej strefie.
+  // ═══════════════════════════════════════════════════
   useEffect(() => {
     if (hidden) return;
 
+    // Brak aktywnej drużyny → 0, nie pytamy bazy
+    if (!druzynaId) {
+      setDzisiajCount(0);
+      return;
+    }
+
     const supabase = createClient();
-    const dzis = new Date().toISOString().split('T')[0];
+    const dzis = getDzisISO();
     supabase
       .from('treningi')
       .select('id')
       .eq('data', dzis)
+      .eq('druzyna_id', druzynaId)
       .then(({ data }) => {
         setDzisiajCount(data?.length ?? 0);
       });
-  }, [pathname, hidden]);
+  }, [pathname, hidden, druzynaId]);
 
-async function handleLogout() {
-  setLogoutLoading(true);
-  const supabase = createClient();
-  await supabase.auth.signOut();
+  async function handleLogout() {
+    setLogoutLoading(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
 
-  // ═══════════════════════════════════════════════════════
-  // HARD REDIRECT — pełne przeładowanie strony.
-  //
-  // Dlaczego nie router.push + router.refresh:
-  //   - router.push nie zabija stanu komponentów klienta
-  //   - router.refresh re-renderuje server components, ale klient
-  //     trzyma stary stan (np. logoutLoading = true, otwarty modal)
-  //   - W praktyce user widzi modal ze spinnerem po przekierowaniu
-  //
-  // window.location.href robi hard reload — wszystkie stany czyszczone,
-  // cały JS ładowany od nowa. Standard dla logout.
-  // ═══════════════════════════════════════════════════════
-  window.location.href = '/auth/login';
-}
+    // ═══════════════════════════════════════════════════════
+    // HARD REDIRECT — pełne przeładowanie strony.
+    //
+    // Dlaczego nie router.push + router.refresh:
+    //   - router.push nie zabija stanu komponentów klienta
+    //   - router.refresh re-renderuje server components, ale klient
+    //     trzyma stary stan (np. logoutLoading = true, otwarty modal)
+    //   - W praktyce user widzi modal ze spinnerem po przekierowaniu
+    //
+    // window.location.href robi hard reload — wszystkie stany czyszczone,
+    // cały JS ładowany od nowa. Standard dla logout.
+    // ═══════════════════════════════════════════════════════
+    window.location.href = '/auth/login';
+  }
 
   if (hidden) {
     return null;
