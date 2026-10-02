@@ -1,22 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import {
-  Mail,
-  Lock,
-  UserPlus,
-  Loader2,
-  AlertCircle,
-  ArrowLeft,
-  Check,
-} from 'lucide-react';
+import { Mail, Lock, UserPlus, AlertCircle, ArrowLeft, Check } from 'lucide-react';
+import { AuthField } from '@/components/AuthField';
+import { SubmitButton } from '@/components/SubmitButton';
+import { signUpSchema, zodToFieldErrors } from '@/lib/schemas';
 
-// ═══════════════════════════════════════════════════════════
-// Polskie komunikaty błędów Supabase
-// ═══════════════════════════════════════════════════════════
 function translateSignUpError(message: string): string {
   const lower = message.toLowerCase();
   if (lower.includes('user already registered') || lower.includes('already been registered')) {
@@ -47,56 +39,33 @@ export function SignUpForm() {
     email?: string;
     password?: string;
     repeatPassword?: string;
-    terms?: string;
+    acceptedTerms?: string;
   }>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const validate = () => {
-    const errors: {
-      email?: string;
-      password?: string;
-      repeatPassword?: string;
-      terms?: string;
-    } = {};
-
-    if (!email.trim()) {
-      errors.email = 'Wpisz swój adres e-mail';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Adres e-mail jest nieprawidłowy';
-    }
-
-    if (!password) {
-      errors.password = 'Wpisz hasło';
-    } else if (password.length < 8) {
-      // Zsynchronizowane z Supabase minimum (8 znaków)
-      errors.password = 'Hasło musi mieć minimum 8 znaków';
-    }
-
-    if (!repeatPassword) {
-      errors.repeatPassword = 'Powtórz hasło';
-    } else if (password !== repeatPassword) {
-      errors.repeatPassword = 'Hasła nie są identyczne';
-    }
-
-    if (!acceptedTerms) {
-      errors.terms = 'Musisz zaakceptować Regulamin i Politykę prywatności';
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  const supabase = useMemo(() => createClient(), []);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validate()) return;
+    // ═══ Walidacja przez wspólny schemat ═══
+    const result = signUpSchema.safeParse({
+      email,
+      password,
+      repeatPassword,
+      acceptedTerms,
+    });
 
-    const supabase = createClient();
+    if (!result.success) {
+      setFieldErrors(zodToFieldErrors(result.error));
+      return;
+    }
+    setFieldErrors({});
+
     setIsLoading(true);
 
-    // Bezpiecznik: jeśli nawigacja nie zadziała w 10s — odblokuj
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
       setError('Tworzenie konta trwa zbyt długo. Spróbuj odświeżyć stronę.');
@@ -113,7 +82,6 @@ export function SignUpForm() {
 
       if (error) throw error;
 
-      // SUKCES: NIE czyścimy safetyTimer i NIE wywołujemy setIsLoading(false)
       router.push('/auth/sign-up-success');
       router.refresh();
     } catch (err) {
@@ -140,110 +108,53 @@ export function SignUpForm() {
         </div>
 
         <form onSubmit={handleSignUp} noValidate className="space-y-4">
-          {/* Email */}
-          <div>
-            <label htmlFor="signup-email" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
-              <Mail className="w-3.5 h-3.5 text-green-400" />
-              Email
-            </label>
-            <input
-              id="signup-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (fieldErrors.email) {
-                  setFieldErrors((fe) => ({ ...fe, email: undefined }));
-                }
-              }}
-              placeholder="trener@example.com"
-              aria-invalid={!!fieldErrors.email}
-              aria-describedby={fieldErrors.email ? 'signup-email-error' : undefined}
-              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
-                fieldErrors.email
-                  ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
-                  : 'border-white/15 focus:border-green-400/60 focus:bg-white/10'
-              }`}
-            />
-            {fieldErrors.email && (
-              <div id="signup-email-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
-                <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                <span>{fieldErrors.email}</span>
-              </div>
-            )}
-          </div>
+          <AuthField
+            icon={Mail}
+            label="Email"
+            name="email"
+            id="signup-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(v) => {
+              setEmail(v);
+              if (fieldErrors.email) setFieldErrors((fe) => ({ ...fe, email: undefined }));
+            }}
+            placeholder="trener@example.com"
+            error={fieldErrors.email}
+          />
 
-          {/* Hasło */}
-          <div>
-            <label htmlFor="signup-password" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
-              <Lock className="w-3.5 h-3.5 text-green-400" />
-              Hasło
-            </label>
-            <input
-              id="signup-password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (fieldErrors.password) {
-                  setFieldErrors((fe) => ({ ...fe, password: undefined }));
-                }
-              }}
-              placeholder="Minimum 8 znaków"
-              aria-invalid={!!fieldErrors.password}
-              aria-describedby={fieldErrors.password ? 'signup-password-error' : undefined}
-              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
-                fieldErrors.password
-                  ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
-                  : 'border-white/15 focus:border-green-400/60 focus:bg-white/10'
-              }`}
-            />
-            {fieldErrors.password && (
-              <div id="signup-password-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
-                <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                <span>{fieldErrors.password}</span>
-              </div>
-            )}
-          </div>
+          <AuthField
+            icon={Lock}
+            label="Hasło"
+            name="password"
+            id="signup-password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(v) => {
+              setPassword(v);
+              if (fieldErrors.password) setFieldErrors((fe) => ({ ...fe, password: undefined }));
+            }}
+            placeholder="Minimum 8 znaków"
+            error={fieldErrors.password}
+          />
 
-          {/* Powtórz hasło */}
-          <div>
-            <label htmlFor="signup-repeat-password" className="flex items-center gap-2 text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">
-              <Lock className="w-3.5 h-3.5 text-green-400" />
-              Powtórz hasło
-            </label>
-            <input
-              id="signup-repeat-password"
-              name="repeat-password"
-              type="password"
-              autoComplete="new-password"
-              value={repeatPassword}
-              onChange={(e) => {
-                setRepeatPassword(e.target.value);
-                if (fieldErrors.repeatPassword) {
-                  setFieldErrors((fe) => ({ ...fe, repeatPassword: undefined }));
-                }
-              }}
-              placeholder="Powtórz hasło"
-              aria-invalid={!!fieldErrors.repeatPassword}
-              aria-describedby={fieldErrors.repeatPassword ? 'signup-repeat-error' : undefined}
-              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
-                fieldErrors.repeatPassword
-                  ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
-                  : 'border-white/15 focus:border-green-400/60 focus:bg-white/10'
-              }`}
-            />
-            {fieldErrors.repeatPassword && (
-              <div id="signup-repeat-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
-                <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                <span>{fieldErrors.repeatPassword}</span>
-              </div>
-            )}
-          </div>
+          <AuthField
+            icon={Lock}
+            label="Powtórz hasło"
+            name="repeat-password"
+            id="signup-repeat-password"
+            type="password"
+            autoComplete="new-password"
+            value={repeatPassword}
+            onChange={(v) => {
+              setRepeatPassword(v);
+              if (fieldErrors.repeatPassword) setFieldErrors((fe) => ({ ...fe, repeatPassword: undefined }));
+            }}
+            placeholder="Powtórz hasło"
+            error={fieldErrors.repeatPassword}
+          />
 
           {/* Checkbox akceptacji */}
           <div className="pt-1">
@@ -254,19 +165,19 @@ export function SignUpForm() {
                   checked={acceptedTerms}
                   onChange={(e) => {
                     setAcceptedTerms(e.target.checked);
-                    if (fieldErrors.terms) {
-                      setFieldErrors((fe) => ({ ...fe, terms: undefined }));
+                    if (fieldErrors.acceptedTerms) {
+                      setFieldErrors((fe) => ({ ...fe, acceptedTerms: undefined }));
                     }
                   }}
                   className="peer sr-only"
-                  aria-invalid={!!fieldErrors.terms}
-                  aria-describedby={fieldErrors.terms ? 'signup-terms-error' : undefined}
+                  aria-invalid={!!fieldErrors.acceptedTerms}
+                  aria-describedby={fieldErrors.acceptedTerms ? 'signup-terms-error' : undefined}
                 />
                 <div
                   className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     acceptedTerms
                       ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 shadow-lg shadow-green-500/40'
-                      : fieldErrors.terms
+                      : fieldErrors.acceptedTerms
                       ? 'bg-red-500/10 border-red-400/70'
                       : 'bg-white/5 border-white/25 hover:border-white/40'
                   }`}
@@ -295,40 +206,34 @@ export function SignUpForm() {
                 zawodników zgodnie z przepisami RODO.
               </span>
             </div>
-            {fieldErrors.terms && (
-              <div id="signup-terms-error" role="alert" className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn">
+            {fieldErrors.acceptedTerms && (
+              <div
+                id="signup-terms-error"
+                role="alert"
+                className="flex items-center gap-1.5 mt-2 text-[11px] text-red-300 animate-fadeIn"
+              >
                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                <span>{fieldErrors.terms}</span>
+                <span>{fieldErrors.acceptedTerms}</span>
               </div>
             )}
           </div>
 
-          {/* Global error (z Supabase) */}
           {error && (
-            <div role="alert" className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn">
+            <div
+              role="alert"
+              className="bg-red-500/15 border border-red-400/40 rounded-xl p-3 flex items-start gap-2 text-xs text-red-200 animate-fadeIn"
+            >
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-wait disabled:hover:translate-y-0 disabled:hover:shadow-none mt-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Tworzenie konta...
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4" />
-                Zarejestruj się
-              </>
-            )}
-          </button>
+          <SubmitButton
+            icon={UserPlus}
+            label="Zarejestruj się"
+            loadingLabel="Tworzenie konta..."
+            loading={isLoading}
+          />
         </form>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">

@@ -192,3 +192,100 @@ export function parseFormData<T extends z.ZodTypeAny>(
 
   return result.data;
 }
+// ═══════════════════════════════════════════════════
+// AUTH — walidacja formularzy logowania/rejestracji
+// ═══════════════════════════════════════════════════
+
+/**
+ * Podstawowy schemat adresu email
+ */
+export const authEmailSchema = z
+  .string()
+  .trim()
+  .min(1, 'Wpisz swój adres e-mail')
+  .email('Adres e-mail jest nieprawidłowy');
+
+/**
+ * Hasło — minimum 8 znaków (musi być zgodne z ustawieniem Supabase),
+ * maksimum 72 znaki (limit bcrypt)
+ */
+export const authPasswordSchema = z
+  .string()
+  .min(1, 'Wpisz hasło')
+  .min(8, 'Hasło musi mieć minimum 8 znaków')
+  .max(72, 'Hasło może mieć maksymalnie 72 znaki');
+
+/**
+ * Login — email + hasło (bez limitu długości hasła — tylko sprawdzamy czy niepuste)
+ */
+export const loginSchema = z.object({
+  email: authEmailSchema,
+  password: z.string().min(1, 'Wpisz swoje hasło'),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
+
+/**
+ * Sign-up — email + hasło + powtórzenie + akceptacja regulaminu
+ */
+export const signUpSchema = z
+  .object({
+    email: authEmailSchema,
+    password: authPasswordSchema,
+    repeatPassword: z.string().min(1, 'Powtórz hasło'),
+    acceptedTerms: z.boolean().refine((v) => v === true, {
+      message: 'Musisz zaakceptować Regulamin i Politykę prywatności',
+    }),
+  })
+  .refine((data) => data.password === data.repeatPassword, {
+    message: 'Hasła nie są identyczne',
+    path: ['repeatPassword'],
+  });
+
+export type SignUpInput = z.infer<typeof signUpSchema>;
+
+/**
+ * Forgot password — tylko email
+ */
+export const forgotPasswordSchema = z.object({
+  email: authEmailSchema,
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+/**
+ * Update password — nowe hasło + powtórzenie
+ */
+export const updatePasswordSchema = z
+  .object({
+    password: authPasswordSchema,
+    repeatPassword: z.string().min(1, 'Powtórz hasło'),
+  })
+  .refine((data) => data.password === data.repeatPassword, {
+    message: 'Hasła nie są identyczne',
+    path: ['repeatPassword'],
+  });
+
+export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
+
+/**
+ * Helper — zamienia ZodError na mapę błędów per pole.
+ *
+ * Użycie:
+ *   const result = signUpSchema.safeParse(data);
+ *   if (!result.success) {
+ *     setFieldErrors(zodToFieldErrors(result.error));
+ *   }
+ */
+export function zodToFieldErrors(
+  error: z.ZodError
+): Record<string, string | undefined> {
+  const out: Record<string, string | undefined> = {};
+  for (const issue of error.issues) {
+    const key = String(issue.path[0] ?? '');
+    if (key && !out[key]) {
+      out[key] = issue.message;
+    }
+  }
+  return out;
+}
