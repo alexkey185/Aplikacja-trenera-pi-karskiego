@@ -16,6 +16,10 @@ type Zawodnik = {
   notatki: string | null;
 };
 
+type ZawodnikZObecnoscia = Zawodnik & {
+  obecnosc: { zawodnik_id: number; status: string }[] | null;
+};
+
 type SortKey = 'alpha' | 'rocznik' | 'frekwencja' | 'numer';
 
 const SORT_LABELS: Record<SortKey, string> = {
@@ -41,9 +45,18 @@ export default async function Kadra({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
+  // ═══════════════════════════════════════════════════════════
+  // JEDNO zapytanie — zawodnicy z zagnieżdżoną obecnością.
+  //
+  // Było: 2 zapytania (zawodnicy, potem osobno obecnosc .in(ids))
+  // Jest: 1 zapytanie (PostgREST robi LEFT JOIN, RLS per tabela)
+  // ═══════════════════════════════════════════════════════════
   let query = supabase
     .from('zawodnicy')
-    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+    .select(`
+      id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki,
+      obecnosc (zawodnik_id, status)
+    `)
     .eq('druzyna_id', druzynaId);
 
   if (q) {
@@ -51,25 +64,31 @@ export default async function Kadra({
     query = query.or(`imie.ilike.%${safe}%,nazwisko.ilike.%${safe}%`);
   }
 
-  const { data: zawodnicy, error } = await query;
+  const { data: rawZawodnicy, error } = await query;
+  const lista = (rawZawodnicy ?? []) as ZawodnikZObecnoscia[];
 
-  const zawodnicyIds = (zawodnicy ?? []).map((z) => z.id);
-
-  const { data: obecnosci } =
-    zawodnicyIds.length > 0
-      ? await supabase
-          .from('obecnosc')
-          .select('zawodnik_id, status')
-          .in('zawodnik_id', zawodnicyIds)
-      : { data: [] };
-
+  // Frekwencja per zawodnik — spłaszczamy z zagnieżdżonej tablicy
   const frekwencjaMap = new Map<number, { obecni: number; total: number }>();
-  (obecnosci ?? []).forEach((o) => {
-    const s = frekwencjaMap.get(o.zawodnik_id) ?? { obecni: 0, total: 0 };
-    s.total += 1;
-    if (o.status === 'obecny' || o.status === 'spozniony') s.obecni += 1;
-    frekwencjaMap.set(o.zawodnik_id, s);
+  lista.forEach((z) => {
+    const s = frekwencjaMap.get(z.id) ?? { obecni: 0, total: 0 };
+    for (const o of z.obecnosc ?? []) {
+      s.total += 1;
+      if (o.status === 'obecny' || o.status === 'spozniony') s.obecni += 1;
+    }
+    frekwencjaMap.set(z.id, s);
   });
+
+  // Strip `obecnosc` — do sortowania i renderu
+  const zawodnicy: Zawodnik[] = lista.map((z) => ({
+    id: z.id,
+    imie: z.imie,
+    nazwisko: z.nazwisko,
+    rocznik: z.rocznik,
+    pozycja: z.pozycja,
+    numer: z.numer,
+    kontakt_rodzica: z.kontakt_rodzica,
+    notatki: z.notatki,
+  }));
 
   const inicjaly = (imie: string, nazwisko: string) => {
     return `${imie.charAt(0)}${nazwisko.charAt(0)}`.toUpperCase();

@@ -96,6 +96,16 @@ function ostatnie6Miesiecy(koniec: Date) {
   return out;
 }
 
+// ═══════════════════════════════════════════════════════════
+// Typ surowego wiersza z bazy — trening z zagnieżdżoną obecnością
+// ═══════════════════════════════════════════════════════════
+type RawTrening = {
+  id: number;
+  data: string;
+  typ: string;
+  obecnosc: { trening_id: number; zawodnik_id: number; status: string }[] | null;
+};
+
 export default async function Statystyki({
   searchParams,
 }: {
@@ -115,27 +125,37 @@ export default async function Statystyki({
   const odRok = new Date();
   odRok.setMonth(odRok.getMonth() - 12);
 
-  const { data: wszystkieTreningi } = await supabase
+  // ═══════════════════════════════════════════════════════════
+  // JEDNO zapytanie — treningi z zagnieżdżoną obecnością.
+  //
+  // Było: 3 zapytania (treningi, zawodnicy, obecnosci .in(ids))
+  // Jest: 2 zapytania (treningi+obecnosc JOIN, osobno zawodnicy)
+  //
+  // Zawodnicy zostają osobno — potrzebujemy ich nawet gdy nie ma
+  // treningów w zakresie (np. nowy sezon bez wpisów).
+  // ═══════════════════════════════════════════════════════════
+  const { data: rawTreningi } = await supabase
     .from('treningi')
-    .select('id, data, typ')
+    .select(`
+      id, data, typ,
+      obecnosc (trening_id, zawodnik_id, status)
+    `)
     .eq('druzyna_id', druzynaId)
     .gte('data', toISO(odRok));
 
-  const wszystkieIds = (wszystkieTreningi ?? []).map((t) => t.id);
+  const rawList = (rawTreningi ?? []) as RawTrening[];
+
+  // Strip `obecnosc` z treningów — dalej w kodzie używamy tylko id/data/typ
+  const wszystkieTreningi = rawList.map(({ obecnosc: _o, ...t }) => t);
+
+  // Spłaszcz obecności — ten sam kontrakt co wcześniej
+  const wszystkieObecnosci = rawList.flatMap((t) => t.obecnosc ?? []);
 
   const { data: zawodnicy } = await supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, numer')
     .eq('druzyna_id', druzynaId)
     .order('nazwisko', { ascending: true });
-
-  const { data: wszystkieObecnosci } =
-    wszystkieIds.length > 0
-      ? await supabase
-          .from('obecnosc')
-          .select('trening_id, zawodnik_id, status')
-          .in('trening_id', wszystkieIds)
-      : { data: [] };
 
   const unikalneMiesiace = Array.from(
     new Set((wszystkieTreningi ?? []).map((t) => t.data.slice(0, 7)))
