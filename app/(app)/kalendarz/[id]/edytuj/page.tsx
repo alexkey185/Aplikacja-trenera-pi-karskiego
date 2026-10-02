@@ -19,9 +19,14 @@ export default async function EdytujTrening({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
+  // ═══════════════════════════════════════════════════════
+  // Konkretne kolumny zamiast '*' — lista dokładnie tego,
+  // co konsumuje EdytujForm (żeby zmiana schematu nie
+  // cicho nie psuła UI ani nie pomijała pól).
+  // ═══════════════════════════════════════════════════════
   const { data: trening, error } = await supabase
     .from('treningi')
-    .select('*')
+    .select('id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id')
     .eq('id', idNum)
     .eq('druzyna_id', druzynaId)
     .single();

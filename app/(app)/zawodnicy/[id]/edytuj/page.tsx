@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { aktualizujZawodnika } from './actions';
 import { DeleteButton } from './DeleteButton';
 import { Select } from '@/components/Select';
@@ -14,7 +14,19 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
-  const { data: zawodnik, error } = await supabase.from('zawodnicy').select('*').eq('id', idNum).single();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
+  // ═══════════════════════════════════════════════════════
+  // Konkretne kolumny — pomijamy `druzyna_id` i `created_at`,
+  // których formularz nie używa.
+  // ═══════════════════════════════════════════════════════
+  const { data: zawodnik, error } = await supabase
+    .from('zawodnicy')
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+    .eq('id', idNum)
+    .eq('druzyna_id', druzynaId)
+    .single();
   if (error || !zawodnik) notFound();
 
   return (

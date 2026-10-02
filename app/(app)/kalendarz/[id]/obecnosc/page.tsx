@@ -19,9 +19,12 @@ export default async function Obecnosc({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
+  // ═══════════════════════════════════════════════════════
+  // Konkretne kolumny zamiast '*'.
+  // ═══════════════════════════════════════════════════════
   const { data: trening, error: errT } = await supabase
     .from('treningi')
-    .select('*')
+    .select('id, data, godzina, typ, przeciwnik, miejsce')
     .eq('id', idNum)
     .eq('druzyna_id', druzynaId)
     .single();
@@ -33,9 +36,12 @@ export default async function Obecnosc({
     .eq('druzyna_id', druzynaId)
     .order('nazwisko', { ascending: true });
 
+  // ═══════════════════════════════════════════════════════
+  // Obecności — bierzemy tylko potrzebne kolumny.
+  // ═══════════════════════════════════════════════════════
   const { data: obecnosc } = await supabase
     .from('obecnosc')
-    .select('*')
+    .select('zawodnik_id, status')
     .eq('trening_id', idNum);
 
   const initialStatus: Record<number, string> = {};

@@ -17,41 +17,22 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════
-  // Zawodnik — musi należeć do AKTYWNEJ drużyny.
-  //
-  // Było: .eq('id', idNum).single() — RLS to przepuszczał
-  // (wszystkie drużyny są usera), ale dawało dostęp do
-  // zawodnika z innej drużyny usera niż aktywna.
+  // Konkretne kolumny — karta używa 8 z 10 pól, pomijamy
+  // `druzyna_id` i `created_at`.
   // ═══════════════════════════════════════════════════════
   const { data: zawodnik, error: errZ } = await supabase
     .from('zawodnicy')
-    .select('*')
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
     .eq('id', idNum)
     .eq('druzyna_id', druzynaId)
     .single();
   if (errZ || !zawodnik) notFound();
 
-  // ── Wpisy obecności tego zawodnika ──
   const { data: wpisy } = await supabase
     .from('obecnosc')
     .select('status, trening_id')
     .eq('zawodnik_id', idNum);
 
-  // ═══════════════════════════════════════════════════════
-  // Treningi — TYLKO z aktywnej drużyny, TYLKO te,
-  // do których zawodnik ma wpisy.
-  //
-  // Było: select('id, data, godzina, typ, przeciwnik') BEZ filtra
-  //       → wyciek treningów z innych drużyn usera.
-  //       Dodatkowo pobierał CAŁĄ historię drużyny (setki wierszy).
-  //
-  // Jest: .in('id', treningIds) + .eq('druzyna_id', druzynaId)
-  //       → tylko potrzebne treningi, obcięte do aktywnej drużyny.
-  //
-  // Uwaga: jeśli zawodnik był przenoszony między drużynami,
-  // stare wpisy wskazują na treningi spoza aktywnej drużyny —
-  // zostaną odfiltrowane (nie pojawią się w historii na tej karcie).
-  // ═══════════════════════════════════════════════════════
   const treningIds = Array.from(
     new Set((wpisy ?? []).map((w) => w.trening_id))
   );
