@@ -2,6 +2,7 @@ import { type EmailOtpType } from '@supabase/supabase-js';
 import { type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { ensureConsentRecord } from '@/lib/consents';
 
 // ═══════════════════════════════════════════════════════════
 // Dozwolone typy OTP
@@ -101,9 +102,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
+      // ═══════════════════════════════════════════════════
+      // Zapisz zgodę RODO z user_metadata (jeśli signup)
+      // — idempotentne, więc bezpieczne dla każdego typu OTP
+      // ═══════════════════════════════════════════════════
+      await ensureConsentRecord();
+
       redirect(next);
     }
-
     redirect(
       `/auth/error?error=${encodeURIComponent(
         error?.message ?? 'Weryfikacja nie powiodła się',

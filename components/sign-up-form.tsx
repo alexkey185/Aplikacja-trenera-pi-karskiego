@@ -72,11 +72,24 @@ export function SignUpForm() {
     }, 10000);
 
     try {
-      const { error } = await supabase.auth.signUp({
+            const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          // ═══════════════════════════════════════════════════
+          // Zapis zgody RODO do user_metadata
+          // — zostanie przeniesione do tabeli user_consents
+          //   po potwierdzeniu emaila (w auth/confirm/route.ts)
+          // ═══════════════════════════════════════════════════
+          data: {
+            accepted_terms: true,
+            terms_version: '1.0',
+            privacy_version: '1.0',
+            accepted_at: new Date().toISOString(),
+            signup_user_agent:
+              typeof navigator !== 'undefined' ? navigator.userAgent : null,
+          },
         },
       });
 
