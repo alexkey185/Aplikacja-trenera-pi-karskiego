@@ -8,23 +8,7 @@ import { Mail, Lock, LogIn, AlertCircle, ArrowLeft } from 'lucide-react';
 import { AuthField } from '@/components/AuthField';
 import { SubmitButton } from '@/components/SubmitButton';
 import { loginSchema, zodToFieldErrors } from '@/lib/schemas';
-
-function translateAuthError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials')) {
-    return 'Nieprawidłowy email lub hasło';
-  }
-  if (lower.includes('email not confirmed') || lower.includes('email_not_confirmed')) {
-    return 'Najpierw potwierdź swój email (sprawdź skrzynkę)';
-  }
-  if (lower.includes('too many requests') || lower.includes('rate limit')) {
-    return 'Zbyt wiele prób logowania. Spróbuj ponownie za chwilę';
-  }
-  if (lower.includes('network') || lower.includes('fetch')) {
-    return 'Błąd połączenia. Sprawdź internet';
-  }
-  return message;
-}
+import { getErrorMessage } from '@/lib/errors';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -43,7 +27,6 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
 
-    // ═══ Walidacja przez wspólny schemat ═══
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
       setFieldErrors(zodToFieldErrors(result.error));
@@ -70,8 +53,7 @@ export function LoginForm() {
       router.refresh();
     } catch (err) {
       clearTimeout(safetyTimer);
-      const message = err instanceof Error ? translateAuthError(err.message) : 'Wystąpił błąd';
-      setError(message);
+      setError(getErrorMessage(err));
       setIsLoading(false);
     }
   };

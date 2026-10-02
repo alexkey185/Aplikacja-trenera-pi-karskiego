@@ -8,26 +8,7 @@ import { Mail, Lock, UserPlus, AlertCircle, ArrowLeft, Check } from 'lucide-reac
 import { AuthField } from '@/components/AuthField';
 import { SubmitButton } from '@/components/SubmitButton';
 import { signUpSchema, zodToFieldErrors } from '@/lib/schemas';
-
-function translateSignUpError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('user already registered') || lower.includes('already been registered')) {
-    return 'Konto z tym emailem już istnieje. Zaloguj się';
-  }
-  if (lower.includes('password should be') || lower.includes('password is too short')) {
-    return 'Hasło jest za krótkie (min. 8 znaków)';
-  }
-  if (lower.includes('invalid email') || lower.includes('email_address_invalid')) {
-    return 'Adres email jest nieprawidłowy';
-  }
-  if (lower.includes('too many requests') || lower.includes('rate limit')) {
-    return 'Zbyt wiele prób. Spróbuj ponownie za chwilę';
-  }
-  if (lower.includes('network') || lower.includes('fetch')) {
-    return 'Błąd połączenia. Sprawdź internet';
-  }
-  return message;
-}
+import { getErrorMessage } from '@/lib/errors';
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -50,7 +31,6 @@ export function SignUpForm() {
     e.preventDefault();
     setError(null);
 
-    // ═══ Walidacja przez wspólny schemat ═══
     const result = signUpSchema.safeParse({
       email,
       password,
@@ -72,16 +52,11 @@ export function SignUpForm() {
     }, 10000);
 
     try {
-            const { error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
-          // ═══════════════════════════════════════════════════
-          // Zapis zgody RODO do user_metadata
-          // — zostanie przeniesione do tabeli user_consents
-          //   po potwierdzeniu emaila (w auth/confirm/route.ts)
-          // ═══════════════════════════════════════════════════
           data: {
             accepted_terms: true,
             terms_version: '1.0',
@@ -99,8 +74,7 @@ export function SignUpForm() {
       router.refresh();
     } catch (err) {
       clearTimeout(safetyTimer);
-      const message = err instanceof Error ? translateSignUpError(err.message) : 'Wystąpił błąd';
-      setError(message);
+      setError(getErrorMessage(err));
       setIsLoading(false);
     }
   };
@@ -169,7 +143,6 @@ export function SignUpForm() {
             error={fieldErrors.repeatPassword}
           />
 
-          {/* Checkbox akceptacji */}
           <div className="pt-1">
             <div className="flex items-start gap-3">
               <label className="relative flex-shrink-0 mt-0.5 cursor-pointer">

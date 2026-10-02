@@ -8,23 +8,7 @@ import { Lock, Save, AlertCircle, ArrowLeft } from 'lucide-react';
 import { AuthField } from '@/components/AuthField';
 import { SubmitButton } from '@/components/SubmitButton';
 import { updatePasswordSchema, zodToFieldErrors } from '@/lib/schemas';
-
-function translateUpdateError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('password should be') || lower.includes('password is too short')) {
-    return 'Hasło musi mieć minimum 8 znaków';
-  }
-  if (lower.includes('same password') || lower.includes('should be different')) {
-    return 'Nowe hasło musi się różnić od poprzedniego';
-  }
-  if (lower.includes('session') || lower.includes('not authenticated')) {
-    return 'Sesja wygasła. Poproś o nowy link do resetu';
-  }
-  if (lower.includes('network') || lower.includes('fetch')) {
-    return 'Błąd połączenia. Sprawdź internet';
-  }
-  return message;
-}
+import { getErrorMessage } from '@/lib/errors';
 
 export function UpdatePasswordForm() {
   const router = useRouter();
@@ -62,8 +46,7 @@ export function UpdatePasswordForm() {
       router.push('/auth/login');
       router.refresh();
     } catch (err) {
-      const message = err instanceof Error ? translateUpdateError(err.message) : 'Wystąpił błąd';
-      setError(message);
+      setError(getErrorMessage(err));
       setIsLoading(false);
     }
   };

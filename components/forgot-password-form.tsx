@@ -7,20 +7,7 @@ import { Mail, Send, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { AuthField } from '@/components/AuthField';
 import { SubmitButton } from '@/components/SubmitButton';
 import { forgotPasswordSchema, zodToFieldErrors } from '@/lib/schemas';
-
-function translateResetError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('rate limit') || lower.includes('too many requests')) {
-    return 'Zbyt wiele prób. Spróbuj ponownie za chwilę';
-  }
-  if (lower.includes('invalid email')) {
-    return 'Adres email jest nieprawidłowy';
-  }
-  if (lower.includes('network') || lower.includes('fetch')) {
-    return 'Błąd połączenia. Sprawdź internet';
-  }
-  return message;
-}
+import { getErrorMessage } from '@/lib/errors';
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -53,8 +40,7 @@ export function ForgotPasswordForm() {
 
       setSuccess(true);
     } catch (err) {
-      const message = err instanceof Error ? translateResetError(err.message) : 'Wystąpił błąd';
-      setError(message);
+      setError(getErrorMessage(err));
       setIsLoading(false);
     }
   };
