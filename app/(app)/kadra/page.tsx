@@ -173,10 +173,6 @@ export default async function Kadra({
       ) : (
         <ul className="space-y-1 md:space-y-2 list-none p-0 m-0">
           {posortowani.map((z: Zawodnik, i: number) => {
-            const s = frekwencjaMap.get(z.id);
-            const procent = s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
-            const procentKolor = procent >= 80 ? 'text-green-400' : procent >= 50 ? 'text-yellow-400' : 'text-red-400';
-            const pasekKolor = procent >= 80 ? 'bg-green-500' : procent >= 50 ? 'bg-yellow-500' : 'bg-red-500';
             return (
               <li key={z.id} className={`group animate-fadeIn stagger-${Math.min(i + 1, 8)}`}>
                 <Link href={`/zawodnicy/${z.id}`} className="flex items-center gap-2.5 md:gap-4 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg md:rounded-2xl px-2.5 md:px-4 py-2 md:py-3 hover:bg-slate-900 transition-all active:scale-[0.99]">
@@ -197,12 +193,6 @@ export default async function Kadra({
                     <div className="font-semibold text-white text-sm md:text-base truncate leading-tight">{z.imie} {z.nazwisko}</div>
                     <div className="text-[10px] md:text-xs text-white/40 leading-tight truncate md:mt-0.5">
                       {z.rocznik ?? '—'}{z.pozycja ? ` · ${z.pozycja}` : ''}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
-                    <span className={`text-[11px] md:text-sm font-bold ${procentKolor}`}>{procent}%</span>
-                    <div className="w-8 md:w-20 h-0.5 md:h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${pasekKolor}`} style={{ width: `${procent}%` }} />
                     </div>
                   </div>
                   <span className="text-white/30 text-base md:text-xl flex-shrink-0 leading-none">›</span>
