@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { DeleteButton } from './edytuj/DeleteButton';
 import {
   ArrowLeft, CheckCircle2, XCircle, FileText, Pencil, Phone, Calendar, Trophy, Target, TrendingUp, Activity, ChevronDown,
@@ -12,11 +13,56 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
-  const { data: zawodnik, error: errZ } = await supabase.from('zawodnicy').select('*').eq('id', idNum).single();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
+  // ═══════════════════════════════════════════════════════
+  // Zawodnik — musi należeć do AKTYWNEJ drużyny.
+  //
+  // Było: .eq('id', idNum).single() — RLS to przepuszczał
+  // (wszystkie drużyny są usera), ale dawało dostęp do
+  // zawodnika z innej drużyny usera niż aktywna.
+  // ═══════════════════════════════════════════════════════
+  const { data: zawodnik, error: errZ } = await supabase
+    .from('zawodnicy')
+    .select('*')
+    .eq('id', idNum)
+    .eq('druzyna_id', druzynaId)
+    .single();
   if (errZ || !zawodnik) notFound();
 
-  const { data: wpisy } = await supabase.from('obecnosc').select('status, trening_id').eq('zawodnik_id', idNum);
-  const { data: treningi } = await supabase.from('treningi').select('id, data, godzina, typ, przeciwnik');
+  // ── Wpisy obecności tego zawodnika ──
+  const { data: wpisy } = await supabase
+    .from('obecnosc')
+    .select('status, trening_id')
+    .eq('zawodnik_id', idNum);
+
+  // ═══════════════════════════════════════════════════════
+  // Treningi — TYLKO z aktywnej drużyny, TYLKO te,
+  // do których zawodnik ma wpisy.
+  //
+  // Było: select('id, data, godzina, typ, przeciwnik') BEZ filtra
+  //       → wyciek treningów z innych drużyn usera.
+  //       Dodatkowo pobierał CAŁĄ historię drużyny (setki wierszy).
+  //
+  // Jest: .in('id', treningIds) + .eq('druzyna_id', druzynaId)
+  //       → tylko potrzebne treningi, obcięte do aktywnej drużyny.
+  //
+  // Uwaga: jeśli zawodnik był przenoszony między drużynami,
+  // stare wpisy wskazują na treningi spoza aktywnej drużyny —
+  // zostaną odfiltrowane (nie pojawią się w historii na tej karcie).
+  // ═══════════════════════════════════════════════════════
+  const treningIds = Array.from(
+    new Set((wpisy ?? []).map((w) => w.trening_id))
+  );
+
+  const { data: treningi } = treningIds.length > 0
+    ? await supabase
+        .from('treningi')
+        .select('id, data, godzina, typ, przeciwnik')
+        .in('id', treningIds)
+        .eq('druzyna_id', druzynaId)
+    : { data: [] };
 
   const treningMap = new Map<number, any>();
   (treningi ?? []).forEach((t) => treningMap.set(t.id, t));
