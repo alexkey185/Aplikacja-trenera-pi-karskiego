@@ -22,6 +22,39 @@ const toISO = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(
 
 type Zakres = { od: string; do: string; label: string; typ: string };
 
+// ── Typy zwracane z RPC ──
+type RpcStats = {
+  total_treningi: number;
+  total_wpisy: number;
+  obecni_razem: number;
+  treningi_z_wpisami: number;
+  treningi_bez_wpisow: { id: number; data: string; typ: string }[];
+};
+
+type RpcRankingRow = {
+  id: number;
+  imie: string;
+  nazwisko: string;
+  numer: number | null;
+  wpisy: number;
+  obecnosci: number;
+  procent: number;
+};
+
+type RpcMiesiacRow = {
+  iso: string;
+  treningi: number;
+  wpisy: number;
+  obecni: number;
+  procent: number | null;
+};
+
+type RpcResult = {
+  stats: RpcStats;
+  ranking: RpcRankingRow[];
+  miesiace: RpcMiesiacRow[];
+};
+
 function getZakres(okres: string, m?: string): Zakres {
   const dzis = new Date();
   const rok = dzis.getFullYear();
@@ -64,7 +97,7 @@ function getZakres(okres: string, m?: string): Zakres {
     };
   }
 
-  return { od: '1900-01-01', do: '2100-12-31', label: 'Cały okres', typ: 'all' };
+  return { od: '1900-01-01', do: toISO(new Date()), label: 'Cały okres', typ: 'all' };
 }
 
 function formatMiesiac(iso: string): string {
@@ -72,6 +105,13 @@ function formatMiesiac(iso: string): string {
   const d = new Date(rr, mm - 1, 1);
   const nazwa = d.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
   return nazwa.charAt(0).toUpperCase() + nazwa.slice(1);
+}
+
+function formatKrotkaMiesiac(iso: string): string {
+  const [rr, mm] = iso.split('-').map(Number);
+  const d = new Date(rr, mm - 1, 1);
+  const label = d.toLocaleDateString('pl-PL', { month: 'short' }).replace('.', '');
+  return label.charAt(0).toUpperCase() + label.slice(1, 3);
 }
 
 function formatDataKrotka(iso: string): string {
@@ -85,27 +125,6 @@ function formatZakres(od: string, do_: string): string {
   return `${pad2(d1.getDate())}.${pad2(d1.getMonth() + 1)}.${d1.getFullYear()} — ${pad2(d2.getDate())}.${pad2(d2.getMonth() + 1)}.${d2.getFullYear()}`;
 }
 
-function ostatnie6Miesiecy(koniec: Date) {
-  const out: { iso: string; label: string }[] = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(koniec.getFullYear(), koniec.getMonth() - i, 1);
-    const iso = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
-    const label = d.toLocaleDateString('pl-PL', { month: 'short' }).replace('.', '');
-    out.push({ iso, label: label.charAt(0).toUpperCase() + label.slice(1, 3) });
-  }
-  return out;
-}
-
-// ═══════════════════════════════════════════════════════════
-// Typ surowego wiersza z bazy — trening z zagnieżdżoną obecnością
-// ═══════════════════════════════════════════════════════════
-type RawTrening = {
-  id: number;
-  data: string;
-  typ: string;
-  obecnosc: { trening_id: number; zawodnik_id: number; status: string }[] | null;
-};
-
 export default async function Statystyki({
   searchParams,
 }: {
@@ -113,7 +132,6 @@ export default async function Statystyki({
 }) {
   const params = await searchParams;
   const dzis = new Date();
-  const dzisISO = toISO(dzis);
   const biezacyMiesiac = `${dzis.getFullYear()}-${pad2(dzis.getMonth() + 1)}`;
   const okres = params.okres ?? 'month';
   const m = params.m ?? (okres === 'month' ? biezacyMiesiac : undefined);
@@ -122,145 +140,93 @@ export default async function Statystyki({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  const odRok = new Date();
-  odRok.setMonth(odRok.getMonth() - 12);
-
-  // ═══════════════════════════════════════════════════════════
-  // JEDNO zapytanie — treningi z zagnieżdżoną obecnością.
-  //
-  // Było: 3 zapytania (treningi, zawodnicy, obecnosci .in(ids))
-  // Jest: 2 zapytania (treningi+obecnosc JOIN, osobno zawodnicy)
-  //
-  // Zawodnicy zostają osobno — potrzebujemy ich nawet gdy nie ma
-  // treningów w zakresie (np. nowy sezon bez wpisów).
-  // ═══════════════════════════════════════════════════════════
-  const { data: rawTreningi } = await supabase
-    .from('treningi')
-    .select(`
-      id, data, typ,
-      obecnosc (trening_id, zawodnik_id, status)
-    `)
-    .eq('druzyna_id', druzynaId)
-    .gte('data', toISO(odRok));
-
-  const rawList = (rawTreningi ?? []) as RawTrening[];
-
-  // Strip `obecnosc` z treningów — dalej w kodzie używamy tylko id/data/typ
-  const wszystkieTreningi = rawList.map(({ obecnosc: _o, ...t }) => t);
-
-  // Spłaszcz obecności — ten sam kontrakt co wcześniej
-  const wszystkieObecnosci = rawList.flatMap((t) => t.obecnosc ?? []);
-
-  const { data: zawodnicy } = await supabase
-    .from('zawodnicy')
-    .select('id, imie, nazwisko, numer')
-    .eq('druzyna_id', druzynaId)
-    .order('nazwisko', { ascending: true });
-
-  const unikalneMiesiace = Array.from(
-    new Set((wszystkieTreningi ?? []).map((t) => t.data.slice(0, 7)))
-  )
-    .sort()
-    .reverse();
-
   const zakres = getZakres(okres, m);
 
-  const treningiZakres = (wszystkieTreningi ?? []).filter(
-    (t) => t.data >= zakres.od && t.data <= zakres.do
-  );
-  const idsZakres = new Set(treningiZakres.map((t) => t.id));
-
-  const obecnosciZakres = (wszystkieObecnosci ?? []).filter((o) =>
-    idsZakres.has(o.trening_id)
-  );
-
-  const totalTreningi = treningiZakres.length;
-  const totalZawodnicy = (zawodnicy ?? []).length;
-  const totalWpisy = obecnosciZakres.length;
-
-  const treningiZWpisami = treningiZakres.filter((t) =>
-    obecnosciZakres.some((o) => o.trening_id === t.id)
-  ).length;
-
-  const treningiBezWpisow = treningiZakres.filter(
-    (t) =>
-      t.data < dzisISO &&
-      !obecnosciZakres.some((o) => o.trening_id === t.id)
+  // ═══════════════════════════════════════════════════════════
+  // JEDNO RPC — cała agregacja w Postgresie.
+  // Było: 2 zapytania + O(n×m) w JS + ~5000 wierszy przez sieć
+  // Jest: 1 RPC + agregacja po stronie bazy, ~50 wierszy
+  // ═══════════════════════════════════════════════════════════
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    'get_statystyki_druzyny',
+    {
+      p_druzyna_id: druzynaId,
+      p_od: zakres.od,
+      p_do: zakres.do,
+      p_miesiace: 6,
+    }
   );
 
-  const obecniRazem = obecnosciZakres.filter(
-    (o) => o.status === 'obecny' || o.status === 'spozniony'
-  ).length;
+  if (rpcError) {
+    console.error('RPC get_statystyki_druzyny error:', rpcError);
+  }
+
+  // Fallback — pusta struktura gdy RPC zawiedzie
+  const emptyStats: RpcStats = {
+    total_treningi: 0,
+    total_wpisy: 0,
+    obecni_razem: 0,
+    treningi_z_wpisami: 0,
+    treningi_bez_wpisow: [],
+  };
+  const result = (rpcData ?? {
+    stats: emptyStats,
+    ranking: [],
+    miesiace: [],
+  }) as RpcResult;
+
+  const { stats, ranking, miesiace } = result;
+
+  // ═══ Wyprowadzone wartości ═══
+  const totalTreningi = stats.total_treningi;
+  const totalWpisy = stats.total_wpisy;
+  const obecniRazem = stats.obecni_razem;
   const nieobecniRazem = totalWpisy - obecniRazem;
   const procentOgolem =
     totalWpisy > 0 ? Math.round((obecniRazem / totalWpisy) * 100) : 0;
+  const treningiZWpisami = stats.treningi_z_wpisami;
+  const treningiBezWpisow = stats.treningi_bez_wpisow;
 
-  const ranking = (zawodnicy ?? [])
-    .map((z) => {
-      const wpisy = obecnosciZakres.filter((o) => o.zawodnik_id === z.id);
-      const obecn = wpisy.filter(
-        (w) => w.status === 'obecny' || w.status === 'spozniony'
-      ).length;
-      const procent = wpisy.length > 0 ? Math.round((obecn / wpisy.length) * 100) : 0;
-      return {
-        ...z,
-        obecnosci: obecn,
-        wpisy: wpisy.length,
-        procent,
-        brakuje: treningiZWpisami - wpisy.length,
-      };
-    })
-    .filter((r) => r.wpisy > 0);
+  const rankingZBraki = ranking.map((r) => ({
+    ...r,
+    brakuje: treningiZWpisami - r.wpisy,
+  }));
 
-  const rankingSort = [...ranking].sort((a, b) => {
-    if (b.obecnosci !== a.obecnosci) return b.obecnosci - a.obecnosci;
-    if (b.procent !== a.procent) return b.procent - a.procent;
-    return a.nazwisko.localeCompare(b.nazwisko, 'pl');
-  });
-
-  const doPoprawy = ranking
+  const doPoprawy = rankingZBraki
     .filter((r) => r.procent < 70)
     .sort((a, b) => a.procent - b.procent);
 
-  const koniecZakresu = new Date(zakres.do + 'T00:00:00');
-  const miesiaceWykres = ostatnie6Miesiecy(koniecZakresu).map(({ iso, label }) => {
-    const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
-      t.data.startsWith(iso)
-    );
-    const idsMies = new Set(treningiMies.map((t) => t.id));
-    const obMies = (wszystkieObecnosci ?? []).filter((o) =>
-      idsMies.has(o.trening_id)
-    );
-    const obecniMies = obMies.filter(
-      (o) => o.status === 'obecny' || o.status === 'spozniony'
-    ).length;
-    const procent =
-      obMies.length > 0 ? Math.round((obecniMies / obMies.length) * 100) : null;
-    return { iso, label, procent, treningi: treningiMies.length };
-  });
+  const liczbaDoPoprawy = doPoprawy.length;
+  const maLuki = treningiBezWpisow.length > 0;
+
+  // ── Wykres miesięcy — wzbogać label z ISO ──
+  const miesiaceWykres = miesiace.map((mm) => ({
+    ...mm,
+    label: formatKrotkaMiesiac(mm.iso),
+  }));
 
   const najlepszy = miesiaceWykres
     .filter((mm) => mm.procent !== null)
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
 
+  // ── Dropdown miesięcy — pobieramy tylko daty (bez obecności) ──
+  const { data: wszystkieDaty } = await supabase
+    .from('treningi')
+    .select('data')
+    .eq('druzyna_id', druzynaId)
+    .order('data', { ascending: false });
+
+  const unikalneMiesiace = Array.from(
+    new Set((wszystkieDaty ?? []).map((t) => t.data.slice(0, 7)))
+  );
+
   const miesiaceDropdown = unikalneMiesiace.map((mm) => {
-    const treningiMies = (wszystkieTreningi ?? []).filter((t) =>
-      t.data.startsWith(mm)
-    );
-    const idsMies = new Set(treningiMies.map((t) => t.id));
-    const obMies = (wszystkieObecnosci ?? []).filter((o) =>
-      idsMies.has(o.trening_id)
-    );
-    const obecniMies = obMies.filter(
-      (o) => o.status === 'obecny' || o.status === 'spozniony'
-    ).length;
-    const procent =
-      obMies.length > 0 ? Math.round((obecniMies / obMies.length) * 100) : 0;
+    const monthRow = miesiaceWykres.find((x) => x.iso === mm);
     return {
       iso: mm,
       label: formatMiesiac(mm),
-      treningi: treningiMies.length,
-      procent,
+      treningi: monthRow?.treningi ?? 0,
+      procent: monthRow?.procent ?? 0,
     };
   });
 
@@ -277,9 +243,6 @@ export default async function Statystyki({
     { key: 'sezon', label: 'Ten sezon' },
     { key: 'all', label: 'Cały okres' },
   ];
-
-  const liczbaDoPoprawy = doPoprawy.length;
-  const maLuki = treningiBezWpisow.length > 0;
 
   return (
     <div className="max-w-screen-2xl mx-auto">
@@ -449,10 +412,10 @@ export default async function Statystyki({
             </div>
           </div>
           <div className="text-lg md:text-xl font-black text-white leading-none">
-            {totalZawodnicy}
+            {rankingZBraki.length}
           </div>
           <div className="text-[9px] text-white/50 mt-0.5 leading-tight truncate">
-            W drużynie
+            z wpisami
           </div>
         </div>
 
@@ -673,18 +636,18 @@ export default async function Statystyki({
               </h3>
             </div>
             <p className="text-xs text-white/50 mb-4">
-              {zakres.label} · {ranking.length}{' '}
-              {ranking.length === 1 ? 'zawodnik' : 'zawodników'} · sortowanie
+              {zakres.label} · {rankingZBraki.length}{' '}
+              {rankingZBraki.length === 1 ? 'zawodnik' : 'zawodników'} · sortowanie
               po liczbie obecności
             </p>
 
-            {rankingSort.length === 0 ? (
+            {rankingZBraki.length === 0 ? (
               <div className="text-center py-8 text-sm text-white/40">
                 Brak danych w tym okresie
               </div>
             ) : (
               <ul className="space-y-1.5">
-                {rankingSort.map((r, i) => {
+                {rankingZBraki.map((r, i) => {
                   const colorClass =
                     r.procent >= 80
                       ? 'text-green-400'
