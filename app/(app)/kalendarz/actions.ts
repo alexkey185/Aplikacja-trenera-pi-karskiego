@@ -22,6 +22,7 @@ export async function przeniesTrening(
     return { error: error.message };
   }
 
+  revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   return { success: true };

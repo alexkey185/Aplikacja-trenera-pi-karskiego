@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Users,
@@ -54,67 +54,22 @@ function shouldHideNav(pathname: string): boolean {
   });
 }
 
-// Lokalna data w strefie Europe/Warsaw — o 23:00 UTC pokazałoby „jutro"
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Warsaw',
-  });
-}
-
-export function BottomNav({ druzynaId }: { druzynaId?: string | null }) {
+export function BottomNav({
+  dzisiajCount,
+  userEmail,
+  userImie,
+  userNazwisko,
+}: {
+  dzisiajCount: number;
+  userEmail: string | null;
+  userImie: string | null;
+  userNazwisko: string | null;
+}) {
   const pathname = usePathname();
-  const [email, setEmail] = useState<string | null>(null);
-  const [imie, setImie] = useState<string | null>(null);
-  const [nazwisko, setNazwisko] = useState<string | null>(null);
-  const [dzisiajCount, setDzisiajCount] = useState<number>(0);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   const hidden = shouldHideNav(pathname);
-
-  useEffect(() => {
-    if (hidden) return;
-
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user;
-      setEmail(u?.email ?? null);
-      setImie(u?.user_metadata?.imie ?? null);
-      setNazwisko(u?.user_metadata?.nazwisko ?? null);
-    });
-  }, [pathname, hidden]);
-
-  // ═══════════════════════════════════════════════════
-  // Badge „Dzisiaj" — liczy TYLKO treningi aktywnej drużyny.
-  //
-  // Wcześniej brakowało .eq('druzyna_id', ...) → badge sumował
-  // treningi ze wszystkich drużyn usera. RLS to przepuszczał
-  // (wszystkie drużyny są jego), ale liczba była błędna.
-  //
-  // Fix strefy czasowej: toISOString() zwraca UTC, o 23:00
-  // czasu polskiego pokazywałoby jutrzejszą datę. sv-SE zwraca
-  // YYYY-MM-DD w podanej strefie.
-  // ═══════════════════════════════════════════════════
-  useEffect(() => {
-    if (hidden) return;
-
-    // Brak aktywnej drużyny → 0, nie pytamy bazy
-    if (!druzynaId) {
-      setDzisiajCount(0);
-      return;
-    }
-
-    const supabase = createClient();
-    const dzis = getDzisISO();
-    supabase
-      .from('treningi')
-      .select('id')
-      .eq('data', dzis)
-      .eq('druzyna_id', druzynaId)
-      .then(({ data }) => {
-        setDzisiajCount(data?.length ?? 0);
-      });
-  }, [pathname, hidden, druzynaId]);
 
   async function handleLogout() {
     setLogoutLoading(true);
@@ -128,10 +83,8 @@ export function BottomNav({ druzynaId }: { druzynaId?: string | null }) {
     //   - router.push nie zabija stanu komponentów klienta
     //   - router.refresh re-renderuje server components, ale klient
     //     trzyma stary stan (np. logoutLoading = true, otwarty modal)
-    //   - W praktyce user widzi modal ze spinnerem po przekierowaniu
     //
-    // window.location.href robi hard reload — wszystkie stany czyszczone,
-    // cały JS ładowany od nowa. Standard dla logout.
+    // window.location.href robi hard reload — wszystkie stany czyszczone.
     // ═══════════════════════════════════════════════════════
     window.location.href = '/auth/login';
   }
@@ -140,8 +93,9 @@ export function BottomNav({ druzynaId }: { druzynaId?: string | null }) {
     return null;
   }
 
-  const pelneImie = imie && nazwisko ? `${imie} ${nazwisko}` : null;
-  const inicjal = (imie?.charAt(0) || email?.charAt(0) || '?').toUpperCase();
+  const pelneImie =
+    userImie && userNazwisko ? `${userImie} ${userNazwisko}` : null;
+  const inicjal = (userImie?.charAt(0) || userEmail?.charAt(0) || '?').toUpperCase();
   const wszystkieItems = sekcje.flatMap((s) => s.items);
 
   return (
@@ -219,7 +173,7 @@ export function BottomNav({ druzynaId }: { druzynaId?: string | null }) {
                 Zalogowany
               </div>
               <div className="text-xs text-white truncate">
-                {pelneImie ?? email ?? '...'}
+                {pelneImie ?? userEmail ?? '...'}
               </div>
             </div>
           </Link>

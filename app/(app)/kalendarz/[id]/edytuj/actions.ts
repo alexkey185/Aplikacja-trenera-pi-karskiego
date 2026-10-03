@@ -70,6 +70,7 @@ export async function aktualizujTrening(
     }
   }
 
+  revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');
@@ -150,6 +151,7 @@ export async function usunTreningZakres(
     count = deletedCount ?? 0;
   }
 
+  revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');
@@ -185,6 +187,7 @@ export async function usunTrening(formData: FormData) {
     throw new Error(error.message);
   }
 
+  revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');

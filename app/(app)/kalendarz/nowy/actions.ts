@@ -95,6 +95,12 @@ export async function dodajTrening(formData: FormData) {
     throw new Error(error.message);
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // revalidatePath('/', 'layout') — kluczowe dla badge „Dzisiaj"
+  // w BottomNav (desktop sidebar). Bez tego licznik nie odświeży
+  // się po dodaniu treningu na dziś.
+  // ═══════════════════════════════════════════════════════════
+  revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');
   revalidatePath('/kalendarz/eksport');
