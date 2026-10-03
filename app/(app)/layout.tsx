@@ -11,12 +11,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ToastListener />
       </Suspense>
 
-      {/* Tło — mobile */}
+      {/* Tło — mobile
+          priority: preload w <head> + eager loading.
+          Mobile dominuje w tej apce → priorytet dla LCP na telefonach.
+          Desktop wersja poniżej NIE ma priority (loading lazy) —
+          przedładowanie obu = marnowanie pasma na niewidocznym obrazie. */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.webp"
           alt=""
           fill
+          priority
           quality={75}
           sizes="100vw"
           className="object-cover object-center"
@@ -24,7 +29,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      {/* Tło — desktop */}
+      {/* Tło — desktop (loading lazy — IO odpala się od razu na desktopie) */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.webp"
@@ -37,11 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      {/* Overlay + blur
-          Blur TYLKO na desktopie (md+). Na mobile backdrop-filter
-          zabija FPS (kompozycja GPU w każdej klatce na starych
-          Androidach). Przyciemnienie (bg-slate-950/70) jest tanie —
-          to zwykła alpha, nie filtr. */}
+      {/* Overlay + blur — blur tylko na desktopie */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
       {/* Zawartość */}
