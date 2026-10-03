@@ -6,7 +6,6 @@ import { ContentWrapper } from '@/components/ContentWrapper';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
-import './globals.css';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
