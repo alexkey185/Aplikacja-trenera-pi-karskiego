@@ -11,11 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ToastListener />
       </Suspense>
 
-      {/* Tło — mobile
-          priority: preload w <head> + eager loading.
-          Mobile dominuje w tej apce → priorytet dla LCP na telefonach.
-          Desktop wersja poniżej NIE ma priority (loading lazy) —
-          przedładowanie obu = marnowanie pasma na niewidocznym obrazie. */}
+      {/* Tło — mobile */}
       <div className="fixed inset-0 z-0 md:hidden">
         <Image
           src="/talent-bg-mobile.webp"
@@ -29,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      {/* Tło — desktop (loading lazy — IO odpala się od razu na desktopie) */}
+      {/* Tło — desktop */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
           src="/talent-bg.webp"
