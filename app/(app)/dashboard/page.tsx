@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
+import { OnboardingChecklist } from '@/components/OnboardingChecklist';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -101,15 +102,39 @@ export default async function Dashboard({
 
   const lista = (treningi ?? []) as unknown as TreningZObecnoscia[];
 
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════
+  // Onboarding — sprawdź czy user ma komplet danych.
+  //
+  // hasDruzyna = zawsze true (bo inaczej redirect na /druzyny/nowa)
+  // hasZawodnicy = count z tabeli zawodnicy
+  // hasTreningi = count z tabeli treningi
+  //
+  // Dwa tanie `head: true` county — Postgres zwraca liczbę
+  // bez pobierania wierszy.
+  // ═══════════════════════════════════════════════════════
+  const [zawodnicyCountRes, treningiCountRes] = await Promise.all([
+    supabase
+      .from('zawodnicy')
+      .select('id', { count: 'exact', head: true })
+      .eq('druzyna_id', druzynaId),
+    supabase
+      .from('treningi')
+      .select('id', { count: 'exact', head: true })
+      .eq('druzyna_id', druzynaId),
+  ]);
+
+  const hasZawodnicy = (zawodnicyCountRes.count ?? 0) > 0;
+  const hasTreningi = (treningiCountRes.count ?? 0) > 0;
+
+  // ═══════════════════════════════════════════════════════
   // Spłaszcz obecności do jednej tablicy
   // — używane w sekcji „Frekwencja" i „Dzisiaj"
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════
   // Statystyki per trening (obecni / nieobecni)
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════
   const stats = new Map<number, { obecni: number; nieobecni: number }>();
   lista.forEach((t) => {
     let obecni = 0;
@@ -200,6 +225,13 @@ export default async function Dashboard({
           <TopBar />
         </div>
       </header>
+
+      {/* Onboarding — znika automatycznie gdy wszystkie kroki zrobione */}
+      <OnboardingChecklist
+        hasDruzyna={true}
+        hasZawodnicy={hasZawodnicy}
+        hasTreningi={hasTreningi}
+      />
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
