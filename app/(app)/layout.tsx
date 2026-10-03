@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Suspense } from 'react';
 import { ToastListener } from '@/components/ToastListener';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Zawartość */}
       <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">{children}</div>
+
+      {/* PWA install prompt — pokazuje się po 2 wizytach */}
+      <PWAInstallPrompt />
     </main>
   );
 }

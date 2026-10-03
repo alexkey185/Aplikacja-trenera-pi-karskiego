@@ -1,9 +1,11 @@
 {
-  "name": "Talent",
+  "name": "Talent — Aplikacja Trenera",
   "short_name": "Talent",
   "description": "Aplikacja dla trenerów piłki nożnej",
-  "start_url": "/",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0e1a",
   "theme_color": "#0a0e1a",
   "lang": "pl",
