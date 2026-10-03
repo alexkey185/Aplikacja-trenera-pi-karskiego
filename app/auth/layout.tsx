@@ -29,8 +29,8 @@ export default function AuthLayout({
         />
       </div>
 
-      {/* Overlay + blur */}
-      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
+      {/* Overlay + blur — blur tylko na desktopie */}
+      <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
       {/* Zawartość — wyśrodkowana */}
       <div className="relative z-20 min-h-screen w-full flex items-center justify-center p-4">

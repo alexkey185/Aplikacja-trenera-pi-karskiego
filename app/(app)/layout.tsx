@@ -37,8 +37,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      {/* Overlay + blur */}
-      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
+      {/* Overlay + blur
+          Blur TYLKO na desktopie (md+). Na mobile backdrop-filter
+          zabija FPS (kompozycja GPU w każdej klatce na starych
+          Androidach). Przyciemnienie (bg-slate-950/70) jest tanie —
+          to zwykła alpha, nie filtr. */}
+      <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
       {/* Zawartość */}
       <div className="relative z-20 p-4 md:p-6 lg:p-8 pb-28">{children}</div>
