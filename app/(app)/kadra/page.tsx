@@ -17,7 +17,7 @@ type Zawodnik = {
 };
 
 type ZawodnikZObecnoscia = Zawodnik & {
-  obecnosc: { zawodnik_id: number; status: string }[] | null;
+  obecnosc: { zawodnik_id: number; trening_id: number; status: string }[] | null;
 };
 
 type SortKey = 'alpha' | 'rocznik' | 'frekwencja' | 'numer';
@@ -28,6 +28,26 @@ const SORT_LABELS: Record<SortKey, string> = {
   frekwencja: 'Frekwencja',
   numer: 'Numer',
 };
+
+// ═══════════════════════════════════════════════════════
+// Kolor kropki obecności — spójny z resztą apki
+//   zielony  = obecny / spóźniony
+//   czerwony = nieobecny / usprawiedliwiony
+//   szary    = brak wpisu
+// ═══════════════════════════════════════════════════════
+function kolorKropki(status: string): string {
+  if (status === 'obecny' || status === 'spozniony') return 'bg-green-400';
+  if (status === 'nieobecny' || status === 'usprawiedliwiony') return 'bg-red-400';
+  return 'bg-white/15';
+}
+
+function labelStatusu(status: string): string {
+  if (status === 'obecny') return 'Obecny';
+  if (status === 'spozniony') return 'Spóźniony';
+  if (status === 'nieobecny') return 'Nieobecny';
+  if (status === 'usprawiedliwiony') return 'Usprawiedliwiony';
+  return 'Brak wpisu';
+}
 
 export default async function Kadra({
   searchParams,
@@ -46,16 +66,13 @@ export default async function Kadra({
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════════
-  // JEDNO zapytanie — zawodnicy z zagnieżdżoną obecnością.
-  //
-  // Było: 2 zapytania (zawodnicy, potem osobno obecnosc .in(ids))
-  // Jest: 1 zapytanie (PostgREST robi LEFT JOIN, RLS per tabela)
+  // Zawodnicy z zagnieżdżoną obecnością (1 zapytanie)
   // ═══════════════════════════════════════════════════════════
   let query = supabase
     .from('zawodnicy')
     .select(`
       id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki,
-      obecnosc (zawodnik_id, status)
+      obecnosc (zawodnik_id, trening_id, status)
     `)
     .eq('druzyna_id', druzynaId);
 
@@ -67,7 +84,38 @@ export default async function Kadra({
   const { data: rawZawodnicy, error } = await query;
   const lista = (rawZawodnicy ?? []) as ZawodnikZObecnoscia[];
 
-  // Frekwencja per zawodnik — spłaszczamy z zagnieżdżonej tablicy
+  // ═══════════════════════════════════════════════════════════
+  // Ostatnie 5 wydarzeń drużyny — potrzebne do kropek obecności.
+  // Sortowanie: po dacie, potem godzinie (żeby przy tym samym dniu
+  // najpóźniejsze wydarzenie było „pierwsze od lewej").
+  // ═══════════════════════════════════════════════════════════
+  const { data: ostatnieWydarzenia } = await supabase
+    .from('treningi')
+    .select('id, data, godzina, typ')
+    .eq('druzyna_id', druzynaId)
+    .order('data', { ascending: false })
+    .order('godzina', { ascending: false })
+    .limit(5);
+
+  const last5 = ostatnieWydarzenia ?? [];
+
+  // ═══════════════════════════════════════════════════════════
+  // Mapa: zawodnikId → [status dla last5[0], status dla last5[1], ...]
+  // Indeks 0 = najnowsze wydarzenie (od lewej).
+  // ═══════════════════════════════════════════════════════════
+  const dotsMap = new Map<number, string[]>();
+  lista.forEach((z) => {
+    const statusByTrening = new Map<number, string>();
+    for (const o of z.obecnosc ?? []) {
+      statusByTrening.set(o.trening_id, o.status);
+    }
+    dotsMap.set(
+      z.id,
+      last5.map((t) => statusByTrening.get(t.id) ?? 'brak')
+    );
+  });
+
+  // Frekwencja per zawodnik (dla sortowania)
   const frekwencjaMap = new Map<number, { obecni: number; total: number }>();
   lista.forEach((z) => {
     const s = frekwencjaMap.get(z.id) ?? { obecni: 0, total: 0 };
@@ -192,6 +240,7 @@ export default async function Kadra({
       ) : (
         <ul className="space-y-1 md:space-y-2 list-none p-0 m-0">
           {posortowani.map((z: Zawodnik, i: number) => {
+            const dots = dotsMap.get(z.id) ?? [];
             return (
               <li key={z.id} className={`group animate-fadeIn stagger-${Math.min(i + 1, 8)}`}>
                 <Link href={`/zawodnicy/${z.id}`} className="flex items-center gap-2.5 md:gap-4 bg-slate-900/80 backdrop-blur-md border border-white/10 hover:border-white/30 rounded-lg md:rounded-2xl px-2.5 md:px-4 py-2 md:py-3 hover:bg-slate-900 transition-all active:scale-[0.99]">
@@ -214,6 +263,41 @@ export default async function Kadra({
                       {z.rocznik ?? '—'}{z.pozycja ? ` · ${z.pozycja}` : ''}
                     </div>
                   </div>
+
+                  {/* ═══════════════════════════════════════════════════
+                      5 kropek — ostatnie 5 wydarzeń drużyny.
+                      Od lewej: najnowsze. Kolor:
+                        zielony  = obecny / spóźniony
+                        czerwony = nieobecny / usprawiedliwiony
+                        szary    = brak wpisu
+                      Ukryte na bardzo małych ekranach — brak miejsca,
+                      a i tak dane są widoczne na karcie zawodnika.
+                      ═══════════════════════════════════════════════════ */}
+                  {dots.length > 0 && (
+                    <div className="hidden sm:flex items-center gap-1 md:gap-1.5 flex-shrink-0">
+                      {dots.map((status, idx) => {
+                        const wydarzenie = last5[idx];
+                        const dataStr = wydarzenie
+                          ? new Date(wydarzenie.data + 'T00:00:00').toLocaleDateString('pl-PL', {
+                              day: '2-digit',
+                              month: '2-digit',
+                            })
+                          : '';
+                        const title = wydarzenie
+                          ? `${dataStr} · ${wydarzenie.typ} — ${labelStatusu(status)}`
+                          : labelStatusu(status);
+                        return (
+                          <span
+                            key={idx}
+                            title={title}
+                            aria-label={title}
+                            className={`block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${kolorKropki(status)} ring-1 ring-black/20`}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+
                   <span className="text-white/30 text-base md:text-xl flex-shrink-0 leading-none">›</span>
                 </Link>
               </li>

@@ -58,7 +58,7 @@ export default async function EdytujDruzyna({
           aria-hidden
         />
       </div>
-      <div className="fixed inset-0 z-10 bg-slate-950/70 backdrop-blur-sm" />
+      <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
       <div className="relative z-20 p-4 md:p-6 pb-28">
         <div className="max-w-2xl mx-auto">
