@@ -12,6 +12,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ══════════════════════════════════════════════ */
+/* PODSTAWY */
+/* ══════════════════════════════════════════════ */
 html {
   background: #0a0e1a;
 }
@@ -155,6 +158,9 @@ main {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
+/* ══════════════════════════════════════════════ */
+/* KOMPONENTY POMOCNICZE */
+/* ══════════════════════════════════════════════ */
 .glass {
   background: rgba(30, 41, 59, 0.5);
   backdrop-filter: blur(12px);
@@ -169,6 +175,14 @@ main {
   border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ══════════════════════════════════════════════ */
+/* INTERAKCJE */
+/* ══════════════════════════════════════════════ */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
   transition-duration: 200ms;
@@ -179,6 +193,9 @@ button:active:not(:disabled), a:active {
   transform: scale(0.97);
 }
 
+/* ══════════════════════════════════════════════ */
+/* SCROLLBAR */
+/* ══════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -195,11 +212,6 @@ button:active:not(:disabled), a:active {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
-}
-
-.h-dvh {
-  height: 100vh;
-  height: 100dvh;
 }
 
 /* ══════════════════════════════════════════════ */
@@ -256,8 +268,9 @@ button:active:not(:disabled), a:active {
   transform: scale(1.06);
   z-index: 3;
 }
+
 /* ══════════════════════════════════════════════ */
-/* Ukryj natywne spinnery w polach number        */
+/* UKRYJ NATYWNE SPINNERY W POLACH NUMBER */
 /* ══════════════════════════════════════════════ */
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
@@ -269,4 +282,33 @@ input[type='number']::-webkit-inner-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHROME AUTOFILL — nadpisanie jasnego tła
+   
+   Chrome ignoruje bg-white/5 na polach autofill, więc wymuszamy
+   ciemny background przez box-shadow inset + białe wypełnienie tekstu.
+   Trick: transition 5000s opóźnia zmianę background-color o ~80 minut,
+   co w praktyce = nigdy (Chrome nie potrafi nadpisać box-shadow).
+   ═══════════════════════════════════════════════════════════ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+  box-shadow: 0 0 0 30px #0f172a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Autofill w stanie focus — dodaj subtelną zieloną obwódkę */
+input:-webkit-autofill:focus {
+  -webkit-box-shadow:
+    0 0 0 30px #0f172a inset,
+    0 0 0 1px rgba(74, 222, 128, 0.6) !important;
+  box-shadow:
+    0 0 0 30px #0f172a inset,
+    0 0 0 1px rgba(74, 222, 128, 0.6) !important;
 }
