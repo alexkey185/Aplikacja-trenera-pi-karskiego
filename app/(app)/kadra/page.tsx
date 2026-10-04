@@ -30,7 +30,7 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 // ═══════════════════════════════════════════════════════
-// Kolor kropki obecności — spójny z resztą apki
+// Kolor kropki obecności
 //   zielony  = obecny / spóźniony
 //   czerwony = nieobecny / usprawiedliwiony
 //   szary    = brak wpisu
@@ -85,14 +85,23 @@ export default async function Kadra({
   const lista = (rawZawodnicy ?? []) as ZawodnikZObecnoscia[];
 
   // ═══════════════════════════════════════════════════════════
-  // Ostatnie 5 wydarzeń drużyny — potrzebne do kropek obecności.
-  // Sortowanie: po dacie, potem godzinie (żeby przy tym samym dniu
-  // najpóźniejsze wydarzenie było „pierwsze od lewej").
+  // Ostatnie 5 wydarzeń KTÓRE SIĘ ODBYŁY (data <= dziś).
+  //
+  // Było: brak filtra daty → pierwsza kropka mogła pokazywać
+  // przyszły trening (np. zaplanowany na 30.10, gdy dziś 3.10).
+  //
+  // Jest: filtr .lte('data', dziś) → pierwsza kropka to
+  // najnowszy trening który już się odbył.
   // ═══════════════════════════════════════════════════════════
+  const dzisISO = new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Warsaw',
+  });
+
   const { data: ostatnieWydarzenia } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ')
     .eq('druzyna_id', druzynaId)
+    .lte('data', dzisISO)
     .order('data', { ascending: false })
     .order('godzina', { ascending: false })
     .limit(5);
@@ -265,13 +274,12 @@ export default async function Kadra({
                   </div>
 
                   {/* ═══════════════════════════════════════════════════
-                      5 kropek — ostatnie 5 wydarzeń drużyny.
-                      Od lewej: najnowsze. Kolor:
+                      5 kropek — ostatnie 5 wydarzeń KTÓRE SIĘ ODBYŁY.
+                      Od lewej: najnowszy (data DESC).
+                      Kolor:
                         zielony  = obecny / spóźniony
                         czerwony = nieobecny / usprawiedliwiony
                         szary    = brak wpisu
-                      Ukryte na bardzo małych ekranach — brak miejsca,
-                      a i tak dane są widoczne na karcie zawodnika.
                       ═══════════════════════════════════════════════════ */}
                   {dots.length > 0 && (
                     <div className="hidden sm:flex items-center gap-1 md:gap-1.5 flex-shrink-0">

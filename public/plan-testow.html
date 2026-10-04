@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Plan testów — Talent</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ═══════════════════════════════════════════════════════════
+     A4 layout — gotowy do druku
+     ═══════════════════════════════════════════════════════════ */
+
+  @page {
+    size: A4;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+    background: #e2e8f0;
+    line-height: 1.5;
+    font-size: 10.5pt;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    background: white;
+    padding: 15mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 3px solid #0a0e1a;
+    margin-bottom: 20px;
+  }
+
+  .header-logo {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #15803d 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 900;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .header-text { flex: 1; }
+
+  .header-title {
+    font-size: 22pt;
+    font-weight: 900;
+    color: #0a0e1a;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .header-subtitle {
+    font-size: 10pt;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    text-align: right;
+    font-size: 9pt;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  .header-meta strong {
+    color: #0a0e1a;
+    display: block;
+    font-size: 10pt;
+  }
+
+  /* ── Sekcje ── */
+  .section {
+    margin-bottom: 22px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-size: 13pt;
+    font-weight: 900;
+    color: #0a0e1a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border-left: 4px solid #22c55e;
+    margin-bottom: 12px;
+  }
+
+  .section-title .num {
+    color: #22c55e;
+    margin-right: 6px;
+  }
+
+  .section-intro {
+    font-size: 9.5pt;
+    color: #475569;
+    margin-bottom: 10px;
+    padding: 0 4px;
+    font-style: italic;
+  }
+
+  /* ── Checkbox list ── */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 10pt;
+    line-height: 1.45;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid #64748b;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: inline-block;
+  }
+
+  .checklist li strong {
+    color: #0a0e1a;
+  }
+
+  /* ── Priority badges ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+
+  .badge-blocker {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .badge-important {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+  }
+
+  .badge-later {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+  }
+
+  /* ── Info box ── */
+  .info-box {
+    background: #fef9c3;
+    border: 1px solid #fde047;
+    border-left: 4px solid #eab308;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 9.5pt;
+    color: #713f12;
+  }
+
+  .info-box strong {
+    color: #422006;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .warn-box {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-left: 4px solid #dc2626;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 9.5pt;
+    color: #7f1d1d;
+  }
+
+  .warn-box strong {
+    color: #450a0a;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* ── Plan table ── */
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin-top: 8px;
+  }
+
+  .plan-table th {
+    background: #0a0e1a;
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 800;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .plan-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+
+  .plan-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .plan-table .day-col {
+    font-weight: 800;
+    color: #22c55e;
+    white-space: nowrap;
+    width: 90px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1;
+    font-size: 8.5pt;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ── Print overrides ── */
+  @media print {
+    body { background: white; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      width: auto;
+      min-height: auto;
+      padding: 0;
+    }
+    .no-print { display: none !important; }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
+  .no-print {
+    max-width: 210mm;
+    margin: 20px auto 0;
+    padding: 16px 20px;
+    background: #0a0e1a;
+    color: white;
+    border-radius: 12px;
+    font-size: 11pt;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  .no-print strong {
+    color: #4ade80;
+  }
+
+  .no-print kbd {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: ui-monospace, monospace;
+    font-size: 10pt;
+    color: #e2e8f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  📄 Zapisz jako PDF: <kbd>Ctrl</kbd> + <kbd>P</kbd> → Destination: <strong>Save as PDF</strong> → Save
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STRONA 1
+     ═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="header">
+    <div class="header-logo">t</div>
+    <div class="header-text">
+      <div class="header-title">Plan testów przed startem</div>
+      <div class="header-subtitle">Talent — Aplikacja Trenera</div>
+    </div>
+    <div class="header-meta">
+      <strong>Data startu:</strong>
+      __________________
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <strong>🚫 Zasada: NIE startujesz, dopóki 4 blokery nie przejdą.</strong>
+    Każdy bloker to potencjalna utrata pierwszego wrażenia. Tester, który się zgubi — nie wraca.
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BLOKER 1 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">1.</span> Ścieżka nowego testera <span class="badge badge-blocker">Bloker</span>
+    </div>
+    <p class="section-intro">
+      Na świeżym koncie, na telefonie, najlepiej bez patrzenia w swoją wiedzę o aplikacji.
+      Jeśli tu coś jest niejasne — tester nie przejdzie dalej.
+    </p>
+
+    <ul class="checklist">
+      <li><span class="checkbox"></span>Rejestracja: formularz akceptuje dane, przycisk działa</li>
+      <li><span class="checkbox"></span>Mail potwierdzający przychodzi w &lt; 2 min, <strong>nie w spamie</strong></li>
+      <li><span class="checkbox"></span>Link w mailu prowadzi na <strong>talentapp.pl</strong> (nie localhost:3000)</li>
+      <li><span class="checkbox"></span>Po kliknięciu linku → <strong>/dashboard</strong>, widać onboarding</li>
+      <li><span class="checkbox"></span>Ekran „Nowa drużyna" — zrozumiały, co wpisać</li>
+      <li><span class="checkbox"></span>Utworzenie drużyny działa, przekierowanie na dashboard</li>
+      <li><span class="checkbox"></span>Dodanie 3-5 zawodników działa</li>
+      <li><span class="checkbox"></span>Utworzenie treningu działa</li>
+      <li><span class="checkbox"></span>Zaznaczenie obecności działa (zielony/czerwony)</li>
+      <li><span class="checkbox"></span>Po powrocie na <strong>/kadra</strong> widać 5 kropek</li>
+      <li><span class="checkbox"></span>Kropki pokazują stan obecności</li>
+      <li><span class="checkbox"></span><strong>/statystyki</strong> pokazuje dane (nie pusty ekran)</li>
+      <li><span class="checkbox"></span>Wylogowanie działa</li>
+      <li><span class="checkbox"></span>Ponowne logowanie działa</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BLOKER 2 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">2.</span> Izolacja danych między kontami <span class="badge badge-blocker">Bloker</span>
+    </div>
+    <p class="section-intro">
+      Dwa konta trenerów (A i B). Konto A ma dane, konto B nie powinno ich widzieć.
+      To najważniejszy test bezpieczeństwa — chodzi o dane dzieci.
+    </p>
+
+    <ul class="checklist">
+      <li><span class="checkbox"></span>Konto A: drużyna „Orły" + 3 zawodników + 2 treningi</li>
+      <li><span class="checkbox"></span>Konto B: drużyna „Lwy" + 2 zawodników</li>
+      <li><span class="checkbox"></span>Zalogowany jako B: <strong>/kadra</strong> pokazuje tylko zawodników Lwów</li>
+      <li><span class="checkbox"></span>Zalogowany jako B: <strong>/kalendarz</strong> pokazuje tylko treningi Lwów</li>
+      <li><span class="checkbox"></span>Ręcznie wpisz URL <strong>/zawodnicy/[ID_z_Orłów]</strong> jako B → 404</li>
+      <li><span class="checkbox"></span>Ręcznie wpisz URL <strong>/druzyny/[ID_Orłów]/edytuj</strong> jako B → 404</li>
+      <li><span class="checkbox"></span>Ręcznie wpisz URL <strong>/kalendarz/[ID_treningu_z_Orłów]/obecnosc</strong> jako B → 404</li>
+      <li><span class="checkbox"></span>DevTools Network: zapytania do <code>/rest/v1/</code> mają filtr <code>druzyna_id=eq.[ID_Lwów]</code></li>
+      <li><span class="checkbox"></span>Konto A nadal widzi swoje dane po zalogowaniu</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BLOKER 3 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">3.</span> Telefony — iPhone i Android <span class="badge badge-blocker">Bloker</span>
+    </div>
+
+    <p class="section-intro">
+      <strong>iPhone (Safari):</strong>
+    </p>
+    <ul class="checklist">
+      <li><span class="checkbox"></span>Rejestracja działa — klawiatura nie zasłania przycisku</li>
+      <li><span class="checkbox"></span>Mail przyszedł, link działa</li>
+      <li><span class="checkbox"></span>Logowanie działa — autofill nie psuje pól</li>
+      <li><span class="checkbox"></span>Wylogowanie działa</li>
+      <li><span class="checkbox"></span>Reset hasła: link prowadzi na <strong>/auth/update-password</strong></li>
+      <li><span class="checkbox"></span>Instalacja PWA: Udostępnij → Dodaj do ekranu początkowego</li>
+      <li><span class="checkbox"></span>Po instalacji apka otwiera się bez paska Safari</li>
+      <li><span class="checkbox"></span>Bottom nav nie skacze (safe-area-inset)</li>
+    </ul>
+
+    <p class="section-intro" style="margin-top: 12px;">
+      <strong>Android (Chrome):</strong>
+    </p>
+    <ul class="checklist">
+      <li><span class="checkbox"></span>Wszystko co wyżej (jak iPhone)</li>
+      <li><span class="checkbox"></span>PWA install prompt pojawia się po 2 wizytach</li>
+      <li><span class="checkbox"></span>Po instalacji: ikona na pulpicie, apka fullscreen</li>
+      <li><span class="checkbox"></span>Autofill ciemny (nie biały)</li>
+      <li><span class="checkbox"></span>Backdrop-blur nie zamula (FPS w scrollu OK)</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BLOKER 4 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">4.</span> Prawne minimum <span class="badge badge-blocker">Bloker</span>
+    </div>
+
+    <ul class="checklist">
+      <li><span class="checkbox"></span><strong>/regulamin</strong> — dostępny z /auth/sign-up (link w checkboxie)</li>
+      <li><span class="checkbox"></span><strong>/regulamin</strong> — dostępny z /profil</li>
+      <li><span class="checkbox"></span><strong>/prywatnosc</strong> — dostępny z tych samych miejsc</li>
+      <li><span class="checkbox"></span>W obu dokumentach <strong>brak placeholderów</strong> ([ADRES-EMAIL-KONTAKTOWY] zamieniony)</li>
+      <li><span class="checkbox"></span>Usunięcie drużyny: /druzyny/[id]/edytuj → Strefa niebezpieczna → działa</li>
+      <li><span class="checkbox"></span>Usunięcie konta: /profil → Strefa niebezpieczna → działa</li>
+      <li><span class="checkbox"></span>Formularz /profil/pomoc: wysyła zgłoszenie, zapisuje do bazy</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <span>Talent — Plan testów</span>
+    <span>Strona 1 / 3</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STRONA 2
+     ═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <div class="section-title">
+      Ważne — ale można poprawić po starcie <span class="badge badge-important">Ważne</span>
+    </div>
+
+    <p class="section-intro">
+      Te punkty nie blokują startu. Jeśli coś tu nie działa — zanotuj i popraw w pierwszym tygodniu.
+    </p>
+
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Polskie znaki</strong> — wpisz „Ćwikła" i wyszukaj „ćwi". Sortowanie alfabetyczne uwzględnia polskie znaki (Ć między B a D).</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Polskie znaki w PDF</strong> — /kalendarz/eksport → sprawdź czy „Ćwikła" wyświetla się poprawnie.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Dane skrajne</strong> — drużyna z 0 zawodników (pusty stan), z 30 zawodników (wydajność).</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Długie nazwisko</strong> — „Wierzchowskowskа-Nowakowska" — sprawdź czy się nie ucina w złym miejscu.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Nowy zawodnik z &lt; 5 treningami</strong> — kropki pokazują szare dla brakujących.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Kalendarz — powtarzalne</strong> — dodaj trening co tydzień na 3 miesiące. Edytuj jedno wystąpienie vs całą serię.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Statystyki — okresy</strong> — przełącz 30 dni / sezon / cały okres. Sprawdź okres bez treningów.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Przeglądarki desktop</strong> — Chrome, Edge, Firefox.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Słabe łącze</strong> — DevTools → Network → Slow 3G. Czy apka nie gubi danych?</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><strong>Brak internetu</strong> — wyłącz Wi-Fi. Co widzi user przy próbie zapisu obecności?</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- INFO BOX — maile -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      Łatwo zapomnieć — sprawdź dziś <span class="badge badge-important">Ważne</span>
+    </div>
+
+    <div class="info-box">
+      <strong>📧 Maile z rejestracji — KRYTYCZNE</strong>
+      Wbudowana wysyłka Supabase = <strong>2 maile/godzinę</strong>. Przy 3 testerach w jednym dniu trzeci nie dostanie maila.
+      <br><br>
+      ✅ <strong>Sprawdź:</strong> Supabase → Project Settings → Auth → SMTP Settings → czy „Enable Custom SMTP" jest ON (powinno być <code>smtp.resend.com</code>).
+      <br>
+      ✅ <strong>Test:</strong> zarejestruj 3 konta w ciągu 5 minut. Wszystkie 3 maile dochodzą?
+    </div>
+
+    <div class="info-box">
+      <strong>⏸️ Supabase pausing</strong>
+      Free tier pauzuje projekt po 7 dniach nieaktywności. Pierwszy request po pauzie = 5 min opóźnienia.
+      <br><br>
+      ✅ <strong>Rozwiązanie:</strong> UptimeRobot (darmowy) ping na <code>/api/health</code> co godzinę. Albo Vercel Cron.
+    </div>
+
+    <div class="info-box">
+      <strong>💾 Backupy</strong>
+      Free tier = 7 dni retencji automatycznych backupów. Dla danych dzieci rozważ:
+      <br>
+      ✅ Tygodniowy ręczny <code>pg_dump</code>
+      <br>
+      ✅ Albo Daily backup do S3 (wymaga konfiguracji)
+    </div>
+
+    <div class="info-box">
+      <strong>📨 Kanał zgłoszeń</strong>
+      Jeden email na błędy, żeby uwagi nie rozproszyły się po wiadomościach.
+      <br><br>
+      ✅ Cloudflare Email Routing → <code>kontakt@talentapp.pl</code> → forward do Gmaila (5 min konfiguracji)
+      <br>
+      ✅ Albo formularz <code>/profil/pomoc</code> (już masz) + codzienne sprawdzanie bazy
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Talent — Plan testów</span>
+    <span>Strona 2 / 3</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STRONA 3
+     ═══════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <div class="section-title">
+      Plan na weekend
+    </div>
+
+    <table class="plan-table">
+      <thead>
+        <tr>
+          <th style="width: 90px;">Dzień</th>
+          <th>Co robimy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="day-col">Sobota<br>rano</td>
+          <td>
+            <strong>Blokery u siebie.</strong><br>
+            • Sprawdź maile (3 rejestracje pod rząd, 5 min)<br>
+            • Sprawdź Supabase SMTP (Custom czy default)<br>
+            • Sprawdź izolację danych (2 konta, próba dostępu do obcego ID)<br>
+            • Przejdź ścieżkę testera na telefonie incognito
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Sobota<br>popołudnie</td>
+          <td>
+            <strong>Poprawki + zaproszenia.</strong><br>
+            • Jeśli coś pękło — napraw<br>
+            • Jeśli czysto → wyślij zaproszenia do 2 zaufanych osób<br>
+            • Wyślij im krótką instrukcję (sekcja poniżej)
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Sobota<br>wieczór</td>
+          <td>
+            <strong>Zbieraj pierwsze uwagi.</strong><br>
+            • Notuj wszystko, w czym się zawahają<br>
+            • Screenshoty / opisy błędów
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Niedziela<br>rano</td>
+          <td>
+            <strong>Poprawki blokerów z soboty.</strong><br>
+            • Priorytet: to co blokuje flow testera
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Niedziela<br>popołudnie</td>
+          <td>
+            <strong>Druga runda testów.</strong><br>
+            • Ty + testerzy na swoich telefonach<br>
+            • Bez Twojej pomocy — obserwuj jak sobie radzą
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Niedziela<br>wieczór</td>
+          <td>
+            <strong>Decyzja.</strong><br>
+            • 4 blokery OK → wypuszczasz w poniedziałek<br>
+            • Coś leży → przesuń start, popraw
+          </td>
+        </tr>
+        <tr>
+          <td class="day-col">Poniedziałek</td>
+          <td>
+            <strong>START.</strong><br>
+            • Otwórz apkę publicznie<br>
+            • Wyślij zaproszenia do szerszej grupy<br>
+            • Monitoruj zgłoszenia
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- INSTRUKCJA DLA TESTERÓW -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      Krótka instrukcja dla testerów <span class="badge badge-later">Wyślij mailem</span>
+    </div>
+
+    <div class="info-box" style="background: #f0fdf4; border-color: #86efac; border-left-color: #22c55e; color: #14532d;">
+      <strong style="color: #052e16;">Cześć!</strong>
+      Dzięki że testujesz <strong>Talent</strong> — aplikację dla trenerów piłki nożnej.
+      <br><br>
+      <strong style="color: #052e16;">Jak zacząć (3 kroki):</strong><br>
+      1. Wejdź na <strong>https://www.talentapp.pl</strong><br>
+      2. Kliknij „Zarejestruj się" i potwierdź maila<br>
+      3. Po zalogowaniu utwórz drużynę, dodaj 3-5 zawodników, zaplanuj trening i zaznacz obecność
+      <br><br>
+      <strong style="color: #052e16;">Co sprawdzić:</strong><br>
+      • Czy wszystko jest zrozumiałe?<br>
+      • Czy coś wygląda dziwnie / nie działa?<br>
+      • Czy na telefonie klawiatura nie zasłania pól?
+      <br><br>
+      <strong style="color: #052e16;">Jak zgłosić problem:</strong><br>
+      • Formularz: <strong>/profil/pomoc</strong> (w apce)<br>
+      • Albo napisz mi SMS-a
+      <br><br>
+      <strong style="color: #052e16;">Termin:</strong> do niedzieli wieczorem
+      <br><br>
+      Dzięki! 🙌
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DECYZJA -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">
+      Decyzja — startujemy?
+    </div>
+
+    <ul class="checklist">
+      <li><span class="checkbox"></span><strong>Bloker 1</strong> — ścieżka nowego testera: wszystko działa</li>
+      <li><span class="checkbox"></span><strong>Bloker 2</strong> — izolacja danych: 100% bezpieczna</li>
+      <li><span class="checkbox"></span><strong>Bloker 3</strong> — telefon: iPhone i Android działają</li>
+      <li><span class="checkbox"></span><strong>Bloker 4</strong> — prawo: dokumenty + usuwanie działa</li>
+      <li><span class="checkbox"></span><strong>Maile</strong> — 3 rejestracje pod rząd działają</li>
+      <li><span class="checkbox"></span><strong>Kanał zgłoszeń</strong> — działa, testerzy wiedzą gdzie pisać</li>
+    </ul>
+
+    <div class="warn-box" style="margin-top: 12px;">
+      <strong>🚦 Warunek startu: wszystkie 6 powyżej odhaczone.</strong>
+      Reszta (polskie znaki, długie nazwiska, edge case'y) — do poprawy w pierwszym tygodniu.
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Talent — Plan testów · wygenerowano dla trenera</span>
+    <span>Strona 3 / 3</span>
+  </div>
+</div>
+
+</body>
+</html>

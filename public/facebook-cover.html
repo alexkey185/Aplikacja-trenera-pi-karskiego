@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Talent — Facebook Cover</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    gap: 24px;
+  }
+
+  /* ── Pasek akcji (nie łapie się do PNG) ── */
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(34, 197, 94, 0.6);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+  }
+
+  .status {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     FACEBOOK COVER — 820 × 312 px
+     ═══════════════════════════════════════════════════════ */
+  .cover {
+    width: 820px;
+    height: 312px;
+    background: #0a0e1a;
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, transparent 65%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.32) 0%, transparent 65%);
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 35%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 35%, transparent 85%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 50%, #059669 100%);
+    z-index: 5;
+  }
+
+  .content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 60px;
+    gap: 18px;
+  }
+
+  .wordmark {
+    width: 380px;
+    height: auto;
+    display: block;
+    mix-blend-mode: lighten;
+    filter:
+      drop-shadow(0 0 30px rgba(34, 197, 94, 0.45))
+      drop-shadow(0 0 60px rgba(34, 197, 94, 0.2));
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.7) 50%, transparent 100%);
+    margin: 4px 0 2px;
+  }
+
+  .headline {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-align: center;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  .headline .accent {
+    color: #4ade80;
+  }
+
+  .subline {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Przycisk — klika raz, dostajesz PNG w folderze Pobrane.
+     ═══════════════════════════════════════════════════════════ -->
+<div class="actions">
+  <button id="downloadBtn" class="btn btn-primary">
+    ⬇ Pobierz PNG (1640×624 retina)
+  </button>
+  <span id="status" class="status"></span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     COVER — to co zostanie wyrenderowane do PNG
+     ═══════════════════════════════════════════════════════════ -->
+<div id="cover" class="cover">
+  <div class="grid"></div>
+  <div class="top-bar"></div>
+
+  <div class="content">
+    <img
+      src="wordmark-transparent-400.png"
+      alt="talent."
+      class="wordmark"
+      crossorigin="anonymous"
+    />
+
+    <div class="divider"></div>
+
+    <div class="headline">
+      Twoja drużyna, <span class="accent">Twoje zasady</span>.
+    </div>
+
+    <div class="subline">
+      Obecność i plan treningów w jednym miejscu.
+    </div>
+  </div>
+</div>
+
+<script>
+  const btn = document.getElementById('downloadBtn');
+  const status = document.getElementById('status');
+  const cover = document.getElementById('cover');
+
+  // Poczekaj aż wordmark się załaduje
+  const img = cover.querySelector('.wordmark');
+  if (img && !img.complete) {
+    btn.disabled = true;
+    status.textContent = 'Ładowanie wordmarka...';
+    img.addEventListener('load', () => {
+      btn.disabled = false;
+      status.textContent = '';
+    });
+    img.addEventListener('error', () => {
+      status.textContent = '⚠ Nie znaleziono wordmark-transparent-400.png';
+      btn.disabled = false;
+    });
+  }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    status.textContent = 'Renderowanie... (2-3s)';
+
+    try {
+      const canvas = await html2canvas(cover, {
+        width: 820,
+        height: 312,
+        scale: 2,           // retina 2×
+        backgroundColor: '#0a0e1a',
+        useCORS: true,
+        logging: false,
+      });
+
+      const link = document.createElement('a');
+      link.download = 'talent-facebook-cover.png';
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+
+      status.textContent = '✓ Zapisano w folderze Pobrane';
+    } catch (err) {
+      console.error(err);
+      status.textContent = '✗ Błąd: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      setTimeout(() => { status.textContent = ''; }, 5000);
+    }
+  });
+</script>
+
+</body>
+</html>
