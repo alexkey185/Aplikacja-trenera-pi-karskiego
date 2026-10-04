@@ -165,7 +165,7 @@ export function Landing() {
             <div className={styles.hero2}>
               <div>
                 <div className={`${styles.eyebrow} ${styles.fd}`}>
-                  Aplikacja dla trenerów piłki nożnej młodzieżowej
+                  Aplikacja dla trenerów piłki nożnej
                 </div>
                 <h1 className={styles.h1}>
                   <span className={styles.w} style={{ '--i': 0 } as CSSProperties}>
