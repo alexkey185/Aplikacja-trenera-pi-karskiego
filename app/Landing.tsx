@@ -34,6 +34,10 @@ const FEATURES: { icon: FeatureIcon; title: string; desc: string }[] = [
 
 const HINT_INITIAL = { player: 2, dot: 1 };
 
+const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595246542172';
+const CONTACT_EMAIL = 'kontakt@talentapp.pl';
+const SIGNUP_URL = '/auth/sign-up';
+
 export function Landing() {
   const rootRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -293,7 +297,7 @@ export function Landing() {
         </div>
       </div>
 
-      {/* 🆕 Kadra */}
+      {/* Kadra */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split}>
@@ -320,7 +324,7 @@ export function Landing() {
         </div>
       </div>
 
-      {/* 🆕 Kalendarz */}
+      {/* Kalendarz */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={`${styles.split} ${styles.rev}`}>
@@ -480,13 +484,33 @@ export function Landing() {
               co poprawić.
             </p>
             <div className={styles.ctas} style={{ justifyContent: 'center' }}>
-              <a className={`${styles.btn} ${styles.btnP}`} href="/auth/sign-up">
+              <a className={`${styles.btn} ${styles.btnP}`} href={SIGNUP_URL}>
                 Zarejestruj się
               </a>
             </div>
-            <p className={styles.sub} style={{ marginTop: 20, fontSize: 15 }}>
-              Kontakt:{' '}
-              <a href="mailto:kontakt@talentapp.pl">kontakt@talentapp.pl</a>
+            <p
+              className={styles.sub}
+              style={{
+                marginTop: 20,
+                fontSize: 15,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 16,
+                flexWrap: 'wrap',
+              }}
+            >
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              <a
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook talent."
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              >
+                <FacebookIcon />
+                Facebook
+              </a>
             </p>
           </div>
         </div>
@@ -499,7 +523,15 @@ export function Landing() {
           <span>
             <a href="/prywatnosc">Polityka prywatności</a>
             <a href="/regulamin">Regulamin</a>
-            <a href="mailto:kontakt@talentapp.pl">Kontakt</a>
+            <a href={`mailto:${CONTACT_EMAIL}`}>Kontakt</a>
+            <a
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook talent."
+            >
+              Facebook
+            </a>
           </span>
         </div>
       </div>
@@ -597,4 +629,18 @@ function FeatureIcon({ kind }: { kind: FeatureIcon }) {
         </svg>
       );
   }
+}
+
+function FacebookIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12Z" />
+    </svg>
+  );
 }
