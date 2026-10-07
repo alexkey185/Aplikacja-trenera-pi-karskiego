@@ -16,7 +16,7 @@ export default function PolitykaPrywatnosci() {
           Polityka prywatności
         </h1>
         <p className="text-sm text-slate-500 mb-10">
-          Ostatnia aktualizacja: 29 września 2026
+          Ostatnia aktualizacja: 7 października 2026
         </p>
 
         <div className="space-y-8 text-sm leading-relaxed">
@@ -30,21 +30,18 @@ export default function PolitykaPrywatnosci() {
               osobowych w aplikacji internetowej{' '}
               <strong className="text-white">Talent</strong> (dalej:
               „Aplikacja"), dostępnej pod adresem{' '}
-              <strong className="text-white">https://[TWOJA-DOMENA].pl</strong>,
+              <strong className="text-white">https://talentapp.pl.pl</strong>,
               służącej do zarządzania drużyną piłkarską — planowania treningów,
               meczów oraz prowadzenia ewidencji obecności zawodników.
             </p>
             <p>Administratorem danych osobowych (dalej: „Administrator") jest:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>
-                <strong className="text-white">[IMIĘ I NAZWISKO]</strong>
-              </li>
-              <li>
-                <strong className="text-white">[ADRES]</strong>
+                <strong className="text-white">Adam Pilny</strong>
               </li>
               <li>
                 E-mail:{' '}
-                <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+                <strong className="text-white">kontakt@talentapp.pl</strong>
               </li>
             </ul>
           </section>
@@ -174,7 +171,7 @@ export default function PolitykaPrywatnosci() {
                 hostingu aplikacji
               </li>
               <li>
-                <strong className="text-white">[DOSTAWCA-SMTP]</strong> —
+                <strong className="text-white">Resend</strong> —
                 dostawca usługi wysyłki wiadomości e-mail (np. SendGrid,
                 Resend)
               </li>
@@ -231,7 +228,7 @@ export default function PolitykaPrywatnosci() {
             <p className="mt-3">
               Aby skorzystać z powyższych praw, prosimy o kontakt z
               Administratorem pod adresem:{' '}
-              <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+              <strong className="text-white">kontakt@talentapp.pl</strong>
             </p>
           </section>
 
@@ -271,7 +268,7 @@ export default function PolitykaPrywatnosci() {
             <p>
               W sprawach dotyczących ochrony danych osobowych prosimy o kontakt
               z Administratorem pod adresem:{' '}
-              <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+              <strong className="text-white">kontakt@talentapp.pl</strong>
             </p>
           </section>
 

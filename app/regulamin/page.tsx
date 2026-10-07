@@ -16,7 +16,7 @@ export default function Regulamin() {
           Regulamin
         </h1>
         <p className="text-sm text-slate-500 mb-10">
-          Ostatnia aktualizacja: 29 września 2026
+          Ostatnia aktualizacja: 7 października 2026
         </p>
 
         <div className="space-y-8 text-sm leading-relaxed">
@@ -29,7 +29,7 @@ export default function Regulamin() {
               Niniejszy Regulamin określa zasady korzystania z aplikacji
               internetowej <strong className="text-white">Talent</strong>{' '}
               (dalej: „Aplikacja"), dostępnej pod adresem{' '}
-              <strong className="text-white">https://[TWOJA-DOMENA].pl</strong>,
+              <strong className="text-white">https://talentapp.pl.pl</strong>,
               służącej trenerom piłki nożnej do zarządzania drużyną, planowania
               treningów oraz prowadzenia ewidencji obecności.
             </p>
@@ -38,14 +38,11 @@ export default function Regulamin() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong className="text-white">[IMIĘ I NAZWISKO]</strong>
-              </li>
-              <li>
-                <strong className="text-white">[ADRES]</strong>
+                <strong className="text-white">Adam Pilny</strong>
               </li>
               <li>
                 E-mail:{' '}
-                <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+                <strong className="text-white">kontakt@talentapp.pl</strong>
               </li>
             </ul>
             <p className="mt-3">
@@ -284,7 +281,7 @@ export default function Regulamin() {
             <p className="mb-3">
               Reklamacje dotyczące działania Aplikacji można składać na adres
               e-mail:{' '}
-              <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+              <strong className="text-white">kontakt@talentapp.pl</strong>
             </p>
             <p>
               Reklamacja powinna zawierać: dane Użytkownika, opis problemu oraz
@@ -311,7 +308,7 @@ export default function Regulamin() {
             <p>
               W sprawach związanych z Regulaminem prosimy o kontakt z
               Operatorem pod adresem:{' '}
-              <strong className="text-white">[ADRES-EMAIL-KONTAKTOWY]</strong>
+              <strong className="text-white">kontakt@talentapp.pl</strong>
             </p>
           </section>
 
