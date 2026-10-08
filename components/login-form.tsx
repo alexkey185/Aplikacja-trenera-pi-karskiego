@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Mail, Lock, LogIn, AlertCircle, ArrowLeft } from 'lucide-react';
 import { AuthField } from '@/components/AuthField';
 import { SubmitButton } from '@/components/SubmitButton';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { loginSchema, zodToFieldErrors } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
 
@@ -49,6 +50,7 @@ export function LoginForm() {
 
       if (error) throw error;
 
+      clearTimeout(safetyTimer);
       router.push('/dashboard');
       router.refresh();
     } catch (err) {
@@ -74,6 +76,21 @@ export function LoginForm() {
         </div>
 
         <form onSubmit={handleLogin} noValidate className="space-y-4">
+          {/* Google OAuth */}
+          <GoogleSignInButton nextPath="/dashboard" />
+
+          {/* Separator */}
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+              <span className="bg-slate-900/80 px-3 text-white/40 font-bold">
+                lub
+              </span>
+            </div>
+          </div>
+
           <AuthField
             icon={Mail}
             label="Email"
