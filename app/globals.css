@@ -66,16 +66,19 @@ main {
   box-sizing: border-box;
 }
 
-@media (min-width: 768px) {
-  main {
-    padding-top: 0;
-  }
+/* ══════════════════════════════════════════════ */
+/* SAFE AREA — iOS PWA (dynamic island)          */
+/* ══════════════════════════════════════════════ */
+
+/* Główna zawartość apki — padding górny pod pasek statusu */
+.app-content {
+  padding-top: max(4.5rem, env(safe-area-inset-top));
 }
 
-@media (max-width: 767px) {
-  main {
-    padding-top: max(4rem, env(safe-area-inset-top));
-  }
+/* Ekrany auth (logowanie, rejestracja) — wyśrodkowane */
+.auth-content {
+  padding-top: max(2rem, env(safe-area-inset-top));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
 /* ══════════════════════════════════════════════ */
@@ -286,11 +289,6 @@ input[type='number'] {
 
 /* ═══════════════════════════════════════════════════════════
    CHROME AUTOFILL — nadpisanie jasnego tła
-   
-   Chrome ignoruje bg-white/5 na polach autofill, więc wymuszamy
-   ciemny background przez box-shadow inset + białe wypełnienie tekstu.
-   Trick: transition 5000s opóźnia zmianę background-color o ~80 minut,
-   co w praktyce = nigdy (Chrome nie potrafi nadpisać box-shadow).
    ═══════════════════════════════════════════════════════════ */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -303,7 +301,6 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Autofill w stanie focus — dodaj subtelną zieloną obwódkę */
 input:-webkit-autofill:focus {
   -webkit-box-shadow:
     0 0 0 30px #0f172a inset,

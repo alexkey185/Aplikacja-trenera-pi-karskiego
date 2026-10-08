@@ -30,20 +30,14 @@ export default function AuthLayout({
         />
       </div>
 
-      {/* Overlay + blur — blur tylko na desktopie */}
+      {/* Overlay + blur */}
       <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
-      {/* ═══════════════════════════════════════════════════════
-          Zawartość — WYŚRODKOWANA I OGRANICZONA.
-          
-          Kluczowe: flex justify-center + wewnętrzny kontener z max-w-md
-          (448px). Bez tego formularz rozciąga się na całą szerokość
-          ekranu (na 1900px desktop wygląda fatalnie).
-
-          mx-auto — pas bezpieczeństwa, gdyby rodzic nie był flexem.
-          ═══════════════════════════════════════════════════════ */}
-      <div className="relative z-20 min-h-screen w-full flex items-center justify-center p-4">
-        <div className="w-full max-w-md mx-auto">{children}</div>
+      {/* Zawartość
+          .auth-content — safe area na iOS (góra + dół),
+          żeby formularz nie wchodził pod pasek statusu ani pod home indicator. */}
+      <div className="auth-content relative z-20 min-h-screen w-full flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">{children}</div>
       </div>
     </main>
   );

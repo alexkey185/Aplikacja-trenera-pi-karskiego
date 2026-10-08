@@ -273,16 +273,21 @@ export default async function Kadra({
                     </div>
                   </div>
 
+                  {/* 5 kropek — ostatnie 5 wydarzeń KTÓRE SIĘ ODBYŁY.
+                      Na mobile mniejsze (w-1 h-1), na sm+ wracają do normalnego rozmiaru. */}
                   {/* ═══════════════════════════════════════════════════
                       5 kropek — ostatnie 5 wydarzeń KTÓRE SIĘ ODBYŁY.
-                      Od lewej: najnowszy (data DESC).
-                      Kolor:
-                        zielony  = obecny / spóźniony
-                        czerwony = nieobecny / usprawiedliwiony
-                        szary    = brak wpisu
+
+                      Mobile (<640px):  tylko 3 ostatnie kropki, każda
+                        6px (w-1.5 h-1.5) — większe są nieczytelne,
+                        a 5 kropek nie zmieści się obok nazwiska.
+
+                      sm+ (≥640px):     wszystkie 5 kropek, 8px (w-2 h-2)
+
+                      md+ (≥768px):     10px (w-2.5 h-2.5)
                       ═══════════════════════════════════════════════════ */}
                   {dots.length > 0 && (
-                    <div className="hidden sm:flex items-center gap-1 md:gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
                       {dots.map((status, idx) => {
                         const wydarzenie = last5[idx];
                         const dataStr = wydarzenie
@@ -294,12 +299,16 @@ export default async function Kadra({
                         const title = wydarzenie
                           ? `${dataStr} · ${wydarzenie.typ} — ${labelStatusu(status)}`
                           : labelStatusu(status);
+
+                        // Na mobile pokazujemy tylko 3 ostatnie kropki
+                        const hideOnMobile = idx >= 3;
+
                         return (
                           <span
                             key={idx}
                             title={title}
                             aria-label={title}
-                            className={`block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${kolorKropki(status)} ring-1 ring-black/20`}
+                            className={`${hideOnMobile ? 'hidden sm:block' : 'block'} w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-2.5 md:h-2.5 rounded-full ${kolorKropki(status)} ring-1 ring-black/30`}
                           />
                         );
                       })}
