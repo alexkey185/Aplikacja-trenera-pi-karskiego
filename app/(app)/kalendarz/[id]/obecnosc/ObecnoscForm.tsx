@@ -2,15 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { zapiszObecnosc } from './actions';
-import {
-  Check,
-  X,
-  Save,
-  TrendingUp,
-  RotateCw,
-  Clock,
-  FileCheck2,
-} from 'lucide-react';
+import { Check, X, Save, TrendingUp, RotateCw } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -30,14 +22,6 @@ const opcje = [
       'bg-gradient-to-br from-green-500 to-green-700 border-green-400 shadow-lg shadow-green-900/50',
   },
   {
-    value: 'spozniony',
-    icon: Clock,
-    title: 'Spóźniony',
-    color: 'text-yellow-400',
-    bgActive:
-      'bg-gradient-to-br from-yellow-500 to-yellow-700 border-yellow-400 shadow-lg shadow-yellow-900/50',
-  },
-  {
     value: 'nieobecny',
     icon: X,
     title: 'Nieobecny',
@@ -45,17 +29,7 @@ const opcje = [
     bgActive:
       'bg-gradient-to-br from-red-500 to-red-700 border-red-400 shadow-lg shadow-red-900/50',
   },
-  {
-    value: 'usprawiedliwiony',
-    icon: FileCheck2,
-    title: 'Usprawiedliwiony',
-    color: 'text-orange-400',
-    bgActive:
-      'bg-gradient-to-br from-orange-500 to-orange-700 border-orange-400 shadow-lg shadow-orange-900/50',
-  },
 ] as const;
-
-const DOZWOLONE = new Set(['obecny', 'spozniony', 'nieobecny', 'usprawiedliwiony']);
 
 export function ObecnoscForm({
   treningId,
@@ -71,15 +45,21 @@ export function ObecnoscForm({
   typTreningu?: string;
 }) {
   // ═══════════════════════════════════════════════════════════════
-  // Inicjalizacja: zachowujemy 4 stany. Wcześniej UI sprowadzał
-  // wszystko do 2 wartości i gubił „spozniony"/„usprawiedliwiony".
+  // Inicjalizacja: mapujemy 4 możliwe statusy z bazy na 2 widoczne
+  // w UI. Stare wpisy „spozniony" i „usprawiedliwiony" trafiają do
+  // odpowiednich kubełków (obecny / nieobecny), ale są zachowane
+  // w oryginalnej formie do momentu aż user kliknie inny status.
   // ═══════════════════════════════════════════════════════════════
   const [statuses, setStatuses] = useState<Record<number, string>>(() => {
     const init: Record<number, string> = {};
     zawodnicy.forEach((z) => {
       const obecny = initialStatus[z.id];
-      if (obecny && DOZWOLONE.has(obecny)) {
-        init[z.id] = obecny;
+      if (obecny === 'obecny' || obecny === 'spozniony') {
+        init[z.id] = 'obecny';
+        return;
+      }
+      if (obecny === 'nieobecny' || obecny === 'usprawiedliwiony') {
+        init[z.id] = 'nieobecny';
         return;
       }
 
@@ -95,14 +75,25 @@ export function ObecnoscForm({
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // hasChanges — bez normalizacji, bezpośrednie porównanie.
+  // hasChanges — porównujemy znormalizowane wartości.
+  // „spozniony" z bazy == „obecny" w UI → brak zmiany.
   // ═══════════════════════════════════════════════════════════════
   const hasChanges = useMemo(() => {
     const initialCount = Object.keys(initialStatus).length;
     if (initialCount === 0) return false;
 
     for (const z of zawodnicy) {
-      if (initialStatus[z.id] !== statuses[z.id]) {
+      const wBazie = initialStatus[z.id];
+      const wFormularzu = statuses[z.id];
+
+      const znormalizowanyBazowy =
+        wBazie === 'obecny' || wBazie === 'spozniony'
+          ? 'obecny'
+          : wBazie === 'nieobecny' || wBazie === 'usprawiedliwiony'
+          ? 'nieobecny'
+          : null;
+
+      if (znormalizowanyBazowy !== wFormularzu) {
         return true;
       }
     }
@@ -114,14 +105,7 @@ export function ObecnoscForm({
     userTouched && (hasChanges || Object.keys(initialStatus).length === 0);
 
   // ═══════════════════════════════════════════════════════════════
-  // Blokada przed wyjściem — działa dla:
-  //   1. zamknięcia karty / reload (beforeunload)
-  //   2. kliknięcia w link wewnętrzny (Link z next/link, BottomNav)
-  //   3. wstecz/dalej przeglądarki (popstate)
-  //
-  // Uwaga: window.confirm jest pragmatycznym wyborem. W przyszłości
-  // można podmienić na ConfirmDialog, ale wymaga to dodatkowego
-  // stanu + kolejki przekierowań — na razie wystarczy.
+  // Blokada przed wyjściem — beforeunload, kliki w linki, back/forward.
   // ═══════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!showExitWarning) return;
@@ -138,7 +122,6 @@ export function ObecnoscForm({
       if (!href) return;
       if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) return;
       if (!href.startsWith('/')) return;
-      // Linki wewnętrzne — zapytaj usera
       const ok = window.confirm('Masz niezapisane zmiany. Opuścić stronę?');
       if (!ok) {
         e.preventDefault();
@@ -147,11 +130,9 @@ export function ObecnoscForm({
       }
     };
 
-    // Back/forward przeglądarki
     const popStateHandler = () => {
       const ok = window.confirm('Masz niezapisane zmiany. Opuścić stronę?');
       if (!ok) {
-        // Cofnij przejście
         window.history.pushState(null, '', window.location.href);
       }
     };
@@ -183,23 +164,17 @@ export function ObecnoscForm({
     return count;
   }, [usesPrevious, previousStatus, zawodnicy]);
 
-  // ═══════════════════════════════════════════════════════════════
-  // Stats — 4 kubełki. Do % liczymy obecny + spozniony.
-  // ═══════════════════════════════════════════════════════════════
   const stats = useMemo(() => {
-    const s = { obecny: 0, spozniony: 0, nieobecny: 0, usprawiedliwiony: 0 };
+    const s = { obecny: 0, nieobecny: 0 };
     Object.values(statuses).forEach((v) => {
       if (v === 'obecny') s.obecny += 1;
-      else if (v === 'spozniony') s.spozniony += 1;
       else if (v === 'nieobecny') s.nieobecny += 1;
-      else if (v === 'usprawiedliwiony') s.usprawiedliwiony += 1;
     });
     return s;
   }, [statuses]);
 
   const total = zawodnicy.length;
-  const obecniRazem = stats.obecny + stats.spozniony;
-  const procent = total > 0 ? Math.round((obecniRazem / total) * 100) : 0;
+  const procent = total > 0 ? Math.round((stats.obecny / total) * 100) : 0;
 
   const zmienStatus = (id: number, status: string) => {
     setStatuses((s) => ({ ...s, [id]: status }));
@@ -223,30 +198,18 @@ export function ObecnoscForm({
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold text-white drop-shadow leading-none">
-                {obecniRazem}
+                {stats.obecny}
               </span>
               <span className="text-white/60 text-sm">/ {total}</span>
               <span className="text-white/80 text-xs ml-auto font-semibold">{procent}%</span>
             </div>
-            <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2 flex-wrap">
-              <span>obecnych</span>
-              {stats.spozniony > 0 && (
-                <>
-                  <span className="text-white/30">·</span>
-                  <span className="text-yellow-400/80 font-medium">{stats.spozniony} spóźn.</span>
-                </>
-              )}
+            <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2">
+              <span>obecnych na treningu</span>
               {stats.nieobecny > 0 && (
                 <>
                   <span className="text-white/30">·</span>
-                  <span className="text-red-400/80 font-medium">{stats.nieobecny} nieob.</span>
-                </>
-              )}
-              {stats.usprawiedliwiony > 0 && (
-                <>
-                  <span className="text-white/30">·</span>
-                  <span className="text-orange-400/80 font-medium">
-                    {stats.usprawiedliwiony} uspraw.
+                  <span className="text-red-400/80 font-medium">
+                    {stats.nieobecny} nieob.
                   </span>
                 </>
               )}
@@ -321,7 +284,7 @@ export function ObecnoscForm({
                   </div>
                 </div>
 
-                <div className="flex gap-1 md:gap-1.5 flex-shrink-0">
+                <div className="flex gap-1.5 flex-shrink-0">
                   {opcje.map((o) => {
                     const Icon = o.icon;
                     const aktywny = aktualny === o.value;
@@ -332,14 +295,14 @@ export function ObecnoscForm({
                         title={o.title}
                         aria-label={o.title}
                         onClick={() => zmienStatus(z.id, o.value)}
-                        className={`relative w-8 h-8 md:w-9 md:h-9 rounded-lg border flex items-center justify-center transition-all ${
+                        className={`relative w-9 h-9 md:w-10 md:h-10 rounded-lg border flex items-center justify-center transition-all ${
                           aktywny
                             ? `${o.bgActive} scale-105`
                             : 'bg-white/5 border-white/15 hover:border-white/30 hover:bg-white/10 hover:scale-105'
                         }`}
                       >
                         <Icon
-                          className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                          className={`w-4 h-4 md:w-5 md:h-5 ${
                             aktywny ? 'text-white' : o.color
                           }`}
                           strokeWidth={aktywny ? 3 : 2.5}
