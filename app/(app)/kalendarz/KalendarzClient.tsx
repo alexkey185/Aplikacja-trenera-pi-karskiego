@@ -46,7 +46,7 @@ const DAYS_LONG = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek',
 const HOLIDAYS = new Set(['2026-01-01', '2026-01-06', '2026-04-06', '2026-05-01', '2026-05-03', '2026-06-04', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25', '2026-12-26']);
 
 const TYP_CONFIG: Record<string, { color: string; bg: string; border: string; gradient: string; icon: string; label: string }> = {
-  trening: { color: 'bg-blue-500', bg: 'bg-blue-500/15', border: 'border-blue-400/40', gradient: 'from-blue-400 to-blue-600', icon: '📅', label: 'Trening' },
+  trening: { color: 'bg-blue-500', bg: 'bg-blue-500/15', border: 'border-blue-400/40', gradient: 'from-blue-400 to-blue-600', icon: '🏃', label: 'Trening' },
   mecz: { color: 'bg-red-500', bg: 'bg-red-500/15', border: 'border-red-400/40', gradient: 'from-red-400 to-red-600', icon: '🏆', label: 'Mecz' },
   sparing: { color: 'bg-orange-500', bg: 'bg-orange-500/15', border: 'border-orange-400/40', gradient: 'from-orange-400 to-orange-600', icon: '🔥', label: 'Sparing' },
   turniej: { color: 'bg-purple-500', bg: 'bg-purple-500/15', border: 'border-purple-400/40', gradient: 'from-purple-400 to-purple-600', icon: '🎯', label: 'Turniej' },
@@ -100,7 +100,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   }, [treningi, monthPrefix]);
 
   const selectedEvents = eventsByDate[selectedDate] ?? [];
-  const todayEvents = eventsByDate[todayISO] ?? [];
   const isTodaySelected = selectedDate === todayISO;
 
   const upcoming = useMemo(() => {
@@ -128,7 +127,12 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     }
   };
 
-  const goToToday = () => { setViewYear(todayDate.getFullYear()); setViewMonth(todayDate.getMonth()); selectDay(todayISO); };
+  const goToToday = () => {
+    setViewYear(todayDate.getFullYear());
+    setViewMonth(todayDate.getMonth());
+    selectDay(todayISO);
+  };
+
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
   const handleFabClick = () => { router.push(`/kalendarz/nowy?data=${selectedDate}`); };
 
@@ -225,6 +229,13 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     return cells;
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // KAFEL GÓRNY — kontekstowy: pokazuje WYBRANY dzień, nie zawsze dziś
+  // ═══════════════════════════════════════════════════════════════
+  const selectedDateObj = parseISO(selectedDate);
+  const selectedDayLabel = DAYS_LONG[selectedDateObj.getDay()];
+  const selectedMonthLabel = MONTHS_PL_GENITIVE[selectedDateObj.getMonth()];
+
   return (
     <div className="w-full max-w-2xl lg:max-w-screen-2xl mx-auto lg:h-full lg:flex lg:flex-col">
       <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
@@ -254,44 +265,85 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-          <button onClick={goToToday} className={`w-full text-left rounded-2xl p-5 lg:p-4 transition-all animate-fadeIn flex-shrink-0 ${isTodaySelected ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20' : 'bg-slate-900/80 backdrop-blur-md border border-green-400/20 hover:border-green-400/40 hover:bg-slate-900/90'}`}>
+          {/* ═══════════════════════════════════════════════════════════
+              KAFEL DNIA — kontekstowy
+              - Jeśli selected = today → "Dzisiaj" (zielony, klikalny by wrócić)
+              - Jeśli selected != today → nazwa dnia + data (niebieski)
+              ═══════════════════════════════════════════════════════════ */}
+          <button
+            onClick={goToToday}
+            className={`w-full text-left rounded-2xl p-5 lg:p-4 transition-all animate-fadeIn flex-shrink-0 ${
+              isTodaySelected
+                ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
+                : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30 hover:border-blue-400/50 hover:bg-slate-900/90'
+            }`}
+          >
             <div className="flex items-center gap-4 lg:gap-3">
               <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-md opacity-60 animate-pulse" />
-                <div className="relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-                  <span className="text-xl lg:text-lg">⚡</span>
+                <div className={`absolute inset-0 rounded-2xl blur-md opacity-60 animate-pulse ${
+                  isTodaySelected
+                    ? 'bg-gradient-to-br from-green-400 to-green-700'
+                    : 'bg-gradient-to-br from-blue-400 to-blue-700'
+                }`} />
+                <div className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
+                  isTodaySelected
+                    ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
+                    : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
+                }`}>
+                  <span className="text-xl lg:text-lg">{isTodaySelected ? '⚡' : '📅'}</span>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
-                  <span className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-green-400">Dzisiaj</span>
-                  <span className="text-[10px] lg:text-xs text-white/50 capitalize">· {todayDate.getDate()} {MONTHS_PL_GENITIVE[todayDate.getMonth()]}</span>
+                  <span className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest ${
+                    isTodaySelected ? 'text-green-400' : 'text-blue-400'
+                  }`}>
+                    {isTodaySelected ? 'Dzisiaj' : selectedDayLabel}
+                  </span>
+                  <span className="text-[10px] lg:text-xs text-white/50 capitalize">
+                    · {selectedDateObj.getDate()} {selectedMonthLabel}
+                    {selectedDateObj.getFullYear() !== todayDate.getFullYear() && ` ${selectedDateObj.getFullYear()}`}
+                  </span>
                 </div>
-                {todayEvents.length > 0 ? (
+                {selectedEvents.length > 0 ? (
                   <>
                     <div className="text-white font-bold text-base lg:text-base leading-tight">
-                      {todayEvents.length === 1 ? '1 wydarzenie' : `${todayEvents.length} wydarzenia`}
+                      {selectedEvents.length === 1 ? '1 wydarzenie' : `${selectedEvents.length} wydarzenia`}
                       <span className="text-white/60 font-normal"> · pierwsze o </span>
-                      <span className="text-green-300 font-bold">{todayEvents[0].godzina}</span>
+                      <span className={isTodaySelected ? 'text-green-300 font-bold' : 'text-blue-300 font-bold'}>
+                        {selectedEvents[0].godzina}
+                      </span>
                     </div>
                     <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5 truncate">
-                      {TYP_CONFIG[todayEvents[0].typ]?.icon} {TYP_CONFIG[todayEvents[0].typ]?.label}
-                      {todayEvents[0].przeciwnik && ` vs ${todayEvents[0].przeciwnik}`}
-                      {todayEvents[0].miejsce && ` · ${todayEvents[0].miejsce}`}
+                      {TYP_CONFIG[selectedEvents[0].typ]?.icon} {TYP_CONFIG[selectedEvents[0].typ]?.label}
+                      {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
+                      {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="text-white font-bold text-base lg:text-base leading-tight">Brak wydarzeń</div>
-                    <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">Nic nie zaplanowano na dziś</div>
+                    <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">
+                      {isTodaySelected ? 'Nic nie zaplanowano na dziś' : 'Nic nie zaplanowano na ten dzień'}
+                    </div>
                   </>
                 )}
               </div>
+              {!isTodaySelected && (
+                <div className="hidden lg:flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
+                    Wróć do
+                  </span>
+                  <span className="text-xs text-blue-300 font-semibold">
+                    Dzisiaj →
+                  </span>
+                </div>
+              )}
             </div>
           </button>
 
           <div className="grid grid-cols-4 gap-2 lg:gap-3 animate-fadeIn flex-shrink-0">
-            <CompactStat icon="📅" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
+            <CompactStat icon="🏃" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
             <CompactStat icon="🏆" color="text-red-400" bg="from-red-500/20 to-red-700/10" border="border-red-400/30" label="Mecze" value={monthStats.mecze} />
             <CompactStat icon="🔥" color="text-orange-400" bg="from-orange-500/20 to-orange-700/10" border="border-orange-400/30" label="Sparingi" value={monthStats.sparingi} />
             <CompactStat icon="🎯" color="text-purple-400" bg="from-purple-500/20 to-purple-700/10" border="border-purple-400/30" label="Turnieje" value={monthStats.turnieje} />
@@ -338,7 +390,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
           {upcoming.length > 0 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-4 animate-fadeIn shadow-2xl shadow-black/60">
               <div className="flex items-center gap-2 mb-4 lg:mb-3">
-                <span className="text-white/40 text-sm">📌</span>
+                <span className="text-white/40 text-sm">📅</span>
                 <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Najbliższe 3 wydarzenia</h2>
               </div>
               <div className="space-y-2">
@@ -392,7 +444,6 @@ function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null 
         return;
       }
 
-      // TOAST — zależnie od tego co usunięto
       if (finalScope === 'all' && result.count > 1) {
         toast.success('Cała seria usunięta', {
           description: `Usunięto ${result.count} treningów z cyklu`,
@@ -449,163 +500,4 @@ function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null 
                   onClick={() => setScope('all')}
                   className={`p-3 rounded-xl border text-left transition-all ${
                     scope === 'all'
-                      ? 'bg-purple-500/15 border-purple-400/60 ring-1 ring-purple-400/30'
-                      : 'bg-white/5 border-white/10 hover:border-white/30'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white mb-1">🔁 Cała seria</div>
-                  <div className="text-[10px] text-white/60 leading-tight">Usuwa wszystkie z cyklu</div>
-                </button>
-              </div>
-              <div className="bg-red-500/10 border border-red-400/30 rounded-lg p-2 text-xs text-red-200">
-                ⚠️ Zostaną usunięte też wpisy obecności. <strong>Tej operacji nie można cofnąć.</strong>
-              </div>
-            </div>
-          ) : (
-            <>
-              Usuną się też wszystkie wpisy obecności dla tego treningu.
-              <br /><br />
-              <span style={{ color: '#f87171' }}>Tej operacji nie można cofnąć.</span>
-            </>
-          )
-        }
-      />
-    </>
-  );
-}
-
-function EventCard({ trening, stats, onDragStart, isDragging, highlighted = false }: { trening: Trening; stats: StatsMap; onDragStart?: (e: React.DragEvent, id: number) => void; isDragging?: boolean; highlighted?: boolean }) {
-  const router = useRouter();
-  const cfg = TYP_CONFIG[trening.typ] ?? TYP_CONFIG.trening;
-  const s = stats[trening.id];
-  const proc = s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
-
-  const mapsUrl = trening.miejsce?.trim()
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trening.miejsce.trim())}`
-    : null;
-
-  const goToAttendance = () => {
-    router.push(`/kalendarz/${trening.id}/obecnosc`);
-  };
-
-  return (
-    <div className={`group relative rounded-xl transition-all ${isDragging ? 'opacity-50' : ''} ${highlighted ? 'bg-green-500/[0.06] border-[1.5px] border-green-400/55 shadow-[0_0_12px_rgba(34,197,94,0.25)]' : 'bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20'}`}>
-      <div
-        onClick={goToAttendance}
-        draggable={!!onDragStart}
-        onDragStart={(e) => onDragStart?.(e, trening.id)}
-        className="block p-2.5 cursor-pointer"
-      >
-        <div className="flex items-center gap-2.5">
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-md text-base flex-shrink-0`}>{cfg.icon}</div>
-          <div className="flex-shrink-0 w-12"><div className="text-sm font-bold text-white">{trening.godzina}</div></div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="flex-1 min-w-0 pr-24">
-            <div className="font-semibold text-white text-xs truncate">
-              {cfg.label}
-              {trening.przeciwnik && <span className="text-white/60 font-medium"> vs {trening.przeciwnik}</span>}
-            </div>
-            {trening.miejsce ? (
-              mapsUrl ? (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => { e.stopPropagation(); }}
-                  draggable={false}
-                  onDragStart={(e) => e.preventDefault()}
-                  title="Otwórz w Google Maps"
-                  className="text-[10px] text-white/50 hover:text-green-400 mt-0.5 flex items-center gap-1 group/maps transition-colors w-fit max-w-full"
-                >
-                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{trening.miejsce}</span>
-                  <ExternalLink className="w-2.5 h-2.5 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
-                </a>
-              ) : (
-                <div className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1">
-                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{trening.miejsce}</span>
-                </div>
-              )
-            ) : (
-              <div className="text-[10px] text-white/50 mt-0.5">Brak lokalizacji</div>
-            )}
-            {s && s.total > 0 ? (
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] text-white/60">👥 {s.obecni}/{s.total}</span>
-                <div className="flex-1 max-w-[60px] h-0.5 bg-slate-950/60 rounded-full overflow-hidden"><div className="h-full bg-green-500 rounded-full" style={{ width: `${proc}%` }} /></div>
-              </div>
-            ) : (<div className="text-[10px] text-white/40 mt-1">Brak wpisów</div>)}
-          </div>
-        </div>
-      </div>
-      <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Link href={`/kalendarz/${trening.id}/edytuj`} onClick={(e) => e.stopPropagation()} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center text-white/40 hover:text-white transition-all" title="Edytuj wydarzenie">
-            <Pencil className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <div className="pointer-events-auto"><DeleteEventButton id={trening.id} cyklId={trening.cykl_id} /></div>
-        <ChevronRight className={`w-4 h-4 transition-all flex-shrink-0 ${highlighted ? 'text-green-400' : 'text-white/40'}`} />
-      </div>
-    </div>
-  );
-}
-
-function SelectedDayView({ selectedDate, todayISO, events, stats, onAddClick, onDragStart, draggedId }: { selectedDate: string; todayISO: string; events: Trening[]; stats: StatsMap; onAddClick: () => void; onDragStart: (e: React.DragEvent, id: number) => void; draggedId: number | null }) {
-  const dateObj = parseISO(selectedDate);
-  const isToday = selectedDate === todayISO;
-  const monthGenitive = MONTHS_PL_GENITIVE[dateObj.getMonth()];
-  return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-5 animate-fadeIn shadow-2xl shadow-black/60">
-      <div className="mb-4 lg:mb-4 flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <div className="text-2xl lg:text-3xl font-black text-white">{pad2(dateObj.getDate())}</div>
-          <div>
-            <div className="text-sm lg:text-base font-bold text-white/90">{DAYS_LONG[dateObj.getDay()]}</div>
-            <div className="text-xs lg:text-sm text-white/50 capitalize">{monthGenitive} {dateObj.getFullYear()}</div>
-          </div>
-        </div>
-        {isToday && <span className="text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-500/10 border border-green-400/30 rounded-full px-2.5 py-1">Dzisiaj</span>}
-      </div>
-      {events.length === 0 ? (
-        <div className="text-center py-6 lg:py-4">
-          <div className="w-14 h-14 lg:w-14 lg:h-14 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-3 text-xl">📅</div>
-          <h3 className="font-bold text-sm text-white mb-1">Brak wydarzeń</h3>
-          <p className="text-xs text-white/50 mb-4">Nic nie zaplanowano na ten dzień.</p>
-          <button onClick={onAddClick} className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-green-500/40">
-            <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />Dodaj wydarzenie
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {events.map((t) => (<EventCard key={t.id} trening={t} stats={stats} onDragStart={onDragStart} isDragging={draggedId === t.id} highlighted />))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function UpcomingRow({ trening }: { trening: Trening }) {
-  const cfg = TYP_CONFIG[trening.typ] ?? TYP_CONFIG.trening;
-  const d = parseISO(trening.data);
-  return (
-    <Link href={`/kalendarz/${trening.id}/obecnosc`} className="group block bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-2.5 transition-all">
-      <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-md text-base flex-shrink-0`}>{cfg.icon}</div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-xs flex-wrap">
-            <span className="font-bold text-white">{pad2(d.getDate())}.{pad2(d.getMonth() + 1)}</span>
-            <span className="text-white/50">·</span>
-            <span className="font-semibold text-white">{trening.godzina}</span>
-          </div>
-          <div className="text-[10px] text-white/60 mt-0.5 truncate">
-            {cfg.label}
-            {trening.przeciwnik && ` vs ${trening.przeciwnik}`}
-          </div>
-        </div>
-        <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-green-400 transition-all flex-shrink-0" />
-      </div>
-    </Link>
-  );
-}
+                      ? 'bg-purple-500/15 border-purple-400/60
