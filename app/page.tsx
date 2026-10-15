@@ -4,11 +4,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Space_Grotesk, Manrope } from "next/font/google";
 
-// Optymalizacja 1: Wbudowane fonty Next.js
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["500", "700"] });
-const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "700"] });
+const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
-// Inicjalizacja klienta Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -17,45 +15,32 @@ interface Player {
   id: number;
   initials: string;
   name: string;
-  position: string;
-  attendance: boolean[];
+  status: "present" | "absent" | null;
 }
 
+// Zaktualizowana lista zawodników na podstawie Twojego projektu (image_f3bf26.jpg)
 const initialPlayers: Player[] = [
-  { id: 1, initials: "JK", name: "Jan Kowalski", position: "Pomocnik · #10", attendance: [true, true, true, true] },
-  { id: 2, initials: "MN", name: "Michał Nowak", position: "Napastnik · #9", attendance: [true, true, false, true] },
-  { id: 3, initials: "AW", name: "Adam Wiśniewski", position: "Obrońca · #4", attendance: [true, false, false, false] },
-  { id: 4, initials: "PZ", name: "Piotr Zieliński", position: "Bramkarz · #1", attendance: [true, true, true, true] },
+  { id: 1, initials: "JB", name: "Jan Barański", status: "present" },
+  { id: 2, initials: "PB", name: "Paweł Barański", status: "present" },
+  { id: 3, initials: "TH", name: "Tymon Holona", status: "present" },
+  { id: 4, initials: "FK", name: "Franek Kąsek", status: "absent" },
 ];
 
 export default function LandingPage() {
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  
-  // Optymalizacja 2: Użycie useRef zamiast document.getElementById
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const hwRef = useRef<HTMLDivElement>(null);
 
-  const toggleAttendance = (playerId: number, dotIndex: number) => {
+  const updateStatus = (playerId: number, status: "present" | "absent") => {
     setPlayers((prev) =>
-      prev.map((player) => {
-        if (player.id === playerId) {
-          const updated = [...player.attendance];
-          updated[dotIndex] = !updated[dotIndex];
-          return { ...player, attendance: updated };
-        }
-        return player;
-      })
+      prev.map((player) => (player.id === playerId ? { ...player, status } : player))
     );
   };
 
-  // Optymalizacja 3: useMemo do kosztownych (potencjalnie) obliczeń
-  const totalDots = players.length * 4;
-  const presentCount = useMemo(
-    () => players.reduce((acc, p) => acc + p.attendance.filter(Boolean).length, 0),
-    [players]
-  );
-  const percentage = Math.round((presentCount / totalDots) * 100);
+  const presentCount = useMemo(() => players.filter((p) => p.status === "present").length, [players]);
+  const absentCount = useMemo(() => players.filter((p) => p.status === "absent").length, [players]);
+  const percentage = Math.round((presentCount / players.length) * 100) || 0;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -74,15 +59,15 @@ export default function LandingPage() {
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setStatus("loading");
+    setSubmitStatus("loading");
     
     const { error } = await supabase.from("waitlist").insert([{ email }]);
     
     if (error) {
       console.error(error);
-      setStatus("error");
+      setSubmitStatus("error");
     } else {
-      setStatus("success");
+      setSubmitStatus("success");
       setEmail("");
     }
   };
@@ -90,17 +75,8 @@ export default function LandingPage() {
   return (
     <>
       <style jsx global>{`
-        body {
-          margin: 0;
-          background: #0a0e1a;
-          color: #e2e8f0;
-          font-family: ${manrope.style.fontFamily}, system-ui, sans-serif;
-          font-size: 17px;
-          line-height: 1.6;
-        }
-        h1, h2, h3, .logo, .num, .dh, .mq span, #intro .lg {
-          font-family: ${spaceGrotesk.style.fontFamily}, system-ui, sans-serif;
-        }
+        body { margin: 0; background: #0a0e1a; color: #e2e8f0; font-family: ${manrope.style.fontFamily}, system-ui, sans-serif; font-size: 17px; line-height: 1.6; }
+        h1, h2, h3, .logo, .num, .demo-title h3, .demo-stats-numbers, .mq span, #intro .lg { font-family: ${spaceGrotesk.style.fontFamily}, system-ui, sans-serif; }
         h1, h2, h3 { margin: 0; color: #fff; line-height: 1.1; }
         p { margin: 0; }
         a { color: #4ade80; }
@@ -161,34 +137,40 @@ export default function LandingPage() {
         .w3 { animation-delay: 1.85s; }
         .fd { opacity: 0; animation: rise .9s ease forwards; animation-delay: 2.1s; }
         .demo-wrap { perspective: 1200px; opacity: 0; animation: rise 1s cubic-bezier(.2, .8, .2, 1) 2.2s forwards; }
-        .demo { background: #0f172a; border: 1px solid #334155; border-radius: 20px; padding: 20px; box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(34,197,94,.12); }
-        .dh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #fff; font-weight: 700; letter-spacing: .04em; }
-        .dh small { color: #4ade80; font-family: ${manrope.style.fontFamily}, system-ui, sans-serif; font-weight: 700; font-size: 12px; letter-spacing: .06em; }
-        .row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #1e293b; background: #0b1222; border-radius: 12px; margin-top: 8px; }
-        .av { width: 38px; height: 38px; border-radius: 10px; background: #1e293b; color: #cbd5e1; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
-        .nm { flex: 1; min-width: 0; line-height: 1.25; }
-        .nm b { display: block; color: #fff; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nm span { color: #94a3b8; font-size: 12px; }
-        .warn { font-size: 11px; font-weight: 700; color: #fca5a5; background: #450a0a; border-radius: 99px; padding: 2px 8px; margin-left: 6px; white-space: nowrap; }
-        .dots { display: flex; gap: 2px; }
-        .d { width: 28px; height: 28px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; padding: 0; border-radius: 8px; position: relative; }
-        .d::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 12px rgba(34,197,94,.55); transition: all .2s; }
-        .d.off::before { background: transparent; border: 2px solid #f87171; box-shadow: none; width: 10px; height: 10px; }
-        .d:hover::before { transform: scale(1.35); }
-        .df { display: flex; align-items: center; gap: 18px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #1e293b; }
-        .ring { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; flex: none; transition: background .3s; }
-        .ring div { width: 66px; height: 66px; border-radius: 50%; background: #0f172a; display: grid; place-items: center; font-weight: 700; font-size: 22px; color: #fff; }
-        .df p { color: #94a3b8; font-size: 14px; line-height: 1.45; }
-        .df p b { color: #fff; }
-        .mq { overflow: hidden; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; padding: 18px 0; background: #0a0e1a; }
-        .mq div { display: flex; width: max-content; animation: mq 30s linear infinite; }
-        .mq span { font-weight: 700; font-size: clamp(28px, 5vw, 52px); color: transparent; -webkit-text-stroke: 1px #475569; padding: 0 28px; white-space: nowrap; }
-        .mq span:nth-child(3n) { -webkit-text-stroke: 0; color: #22c55e; }
         
+        /* NOWY DESIGN DEMO NA BAZIE ZDJĘCIA */
+        .demo { background: #161c2d; border: 1px solid #2d3748; border-radius: 16px; padding: 20px; box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(34,197,94,.12); }
+        .demo-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .demo-icon { width: 42px; height: 42px; border-radius: 12px; background: #22c55e; display: flex; align-items: center; justify-content: center; }
+        .demo-title h3 { font-size: 20px; margin-bottom: 2px; }
+        .demo-title p { font-size: 13px; color: #a0aec0; }
+        .demo-stats { background: #1e2536; border: 1px solid #2d3748; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .demo-stats-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+        .demo-stats-numbers { font-size: 28px; font-weight: 700; color: #fff; line-height: 1; }
+        .demo-stats-numbers span { font-size: 16px; font-weight: 500; color: #a0aec0; font-family: ${manrope.style.fontFamily}; }
+        .demo-stats-sub { font-size: 13px; color: #a0aec0; margin-top: 6px; font-weight: 500; }
+        .demo-bar-bg { height: 4px; background: #2d3748; border-radius: 2px; overflow: hidden; }
+        .demo-bar-fg { height: 100%; background: #eab308; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .demo-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #1e2536; border-radius: 12px; margin-bottom: 8px; border: 1px solid #2d3748; transition: border-color 0.2s; }
+        .demo-row:hover { border-color: #4a5568; }
+        .demo-av { width: 38px; height: 38px; border-radius: 8px; background: #2d3748; color: #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex: none; }
+        .demo-nm { flex: 1; line-height: 1.3; }
+        .demo-nm b { display: block; color: #fff; font-size: 15px; }
+        .demo-nm span { font-size: 12px; font-weight: 600; }
+        .demo-actions { display: flex; gap: 8px; }
+        .demo-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #2d3748; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #a0aec0; }
+        .demo-btn:hover { background: #2d3748; color: #fff; }
+        .demo-btn.active-present { background: #16a34a; border-color: #16a34a; color: #fff; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3); }
+        .demo-btn.active-absent { background: #dc2626; border-color: #dc2626; color: #fff; box-shadow: 0 0 15px rgba(220, 38, 38, 0.3); }
+
         .form-group { display: flex; gap: 12px; width: 100%; max-width: 400px; margin: 0 auto 16px; }
         .input { flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: #fff; padding: 0 16px; font-size: 16px; outline: none; transition: border-color 0.2s; }
         .input:focus { border-color: #22c55e; }
         
+        .mq { overflow: hidden; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; padding: 18px 0; background: #0a0e1a; }
+        .mq div { display: flex; width: max-content; animation: mq 30s linear infinite; }
+        .mq span { font-weight: 700; font-size: clamp(28px, 5vw, 52px); color: transparent; -webkit-text-stroke: 1px #475569; padding: 0 28px; white-space: nowrap; }
+        .mq span:nth-child(3n) { -webkit-text-stroke: 0; color: #22c55e; }
         @keyframes mq { to { transform: translateX(-50%); } }
         @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
         @media (max-width: 860px) {
@@ -240,52 +222,66 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="demo-wrap" id="dw">
-                <div className="demo" id="demo">
-                  <div className="dh">
-                    <span>LISTA ZAWODNIKÓW</span>
-                    <small>SKRZATY · DEMO</small>
-                  </div>
-                  <div id="rows">
-                    {players.map((p) => {
-                      const absentCount = p.attendance.filter((v) => !v).length;
-                      return (
-                        <div key={p.id} className="row">
-                          <div className="av">{p.initials}</div>
-                          <div className="nm">
-                            <b>{p.name}</b>
-                            <span>{p.position}</span>
-                          </div>
-                          {absentCount >= 3 && <div className="warn">Spadek frekwencji</div>}
-                          <div className="dots">
-                            {p.attendance.map((present, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                className={`d ${present ? "" : "off"}`}
-                                onClick={() => toggleAttendance(p.id, idx)}
-                                title={present ? "Obecny" : "Nieobecny"}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="df">
-                    <div
-                      className="ring"
-                      id="ring"
-                      style={{
-                        background: `conic-gradient(#22c55e ${percentage}%, #7f1d1d 0)`,
-                      }}
-                    >
-                      <div id="pct">{percentage}%</div>
+                {/* NOWY MODUŁ DEMO ODWZOROWUJĄCY PROJEKT */}
+                <div className="demo">
+                  <div className="demo-header">
+                    <div className="demo-icon">
+                      <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
-                    <p>
-                      <b>Frekwencja drużyny.</b>
-                      <br />
-                      Kliknij kropkę, żeby zmienić obecność i zobaczyć, jak zmienia się wynik.
-                    </p>
+                    <div className="demo-title">
+                      <h3>Obecność</h3>
+                      <p>🏃 Trening · Dzisiaj, 17:00</p>
+                    </div>
+                  </div>
+
+                  <div className="demo-stats">
+                    <div className="demo-stats-top">
+                      <div>
+                        <div className="demo-stats-numbers">{presentCount} <span>/ {players.length}</span></div>
+                        <div className="demo-stats-sub">
+                          <span style={{ color: "#22c55e" }}>obecnych</span> · <span style={{ color: "#ef4444" }}>{absentCount} nieob.</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>{percentage}%</div>
+                    </div>
+                    <div className="demo-bar-bg">
+                      <div className="demo-bar-fg" style={{ width: `${percentage}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {players.map((p) => (
+                      <div key={p.id} className="demo-row">
+                        <div className="demo-av">{p.initials}</div>
+                        <div className="demo-nm">
+                          <b>{p.name}</b>
+                          {p.status === "present" && <span style={{ color: "#22c55e" }}>Obecny</span>}
+                          {p.status === "absent" && <span style={{ color: "#ef4444" }}>Nieobecny</span>}
+                          {p.status === null && <span style={{ color: "#94a3b8" }}>Brak statusu</span>}
+                        </div>
+                        <div className="demo-actions">
+                          {/* Przycisk Obecny [V] */}
+                          <button
+                            type="button"
+                            className={`demo-btn ${p.status === "present" ? "active-present" : ""}`}
+                            onClick={() => updateStatus(p.id, "present")}
+                            title="Obecny"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </button>
+                          
+                          {/* Przycisk Nieobecny [X] */}
+                          <button
+                            type="button"
+                            className={`demo-btn ${p.status === "absent" ? "active-absent" : ""}`}
+                            onClick={() => updateStatus(p.id, "absent")}
+                            title="Nieobecny"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -413,21 +409,21 @@ export default function LandingPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={status === "loading" || status === "success"}
+                  disabled={submitStatus === "loading" || submitStatus === "success"}
                 />
                 <button 
                   type="submit" 
                   className="btn btn-p"
-                  disabled={status === "loading" || status === "success"}
+                  disabled={submitStatus === "loading" || submitStatus === "success"}
                 >
-                  {status === "loading" ? "Zapisywanie..." : status === "success" ? "Zapisano!" : "Zarejestruj się"}
+                  {submitStatus === "loading" ? "Zapisywanie..." : submitStatus === "success" ? "Zapisano!" : "Zarejestruj się"}
                 </button>
               </form>
               
-              {status === "success" && (
+              {submitStatus === "success" && (
                 <p style={{ color: "#4ade80", fontSize: "14px" }}>Dziękujemy! Odezwiemy się wkrótce.</p>
               )}
-              {status === "error" && (
+              {submitStatus === "error" && (
                 <p style={{ color: "#f87171", fontSize: "14px" }}>Wystąpił błąd. Spróbuj ponownie lub użyj innego e-maila.</p>
               )}
             </div>
