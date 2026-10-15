@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import { unstable_noStore as noStore } from 'next/cache';
-import { notFound } from 'next/navigation';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { notFound, redirect } from 'next/navigation';
 import { EksportClient } from './EksportClient';
 
-// ══════════════════════════════════════════════
-// HELPERY
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// Helpery
+// ═══════════════════════════════════════════════════════════════
 function pad2(n: number) {
   return String(n).padStart(2, '0');
 }
@@ -29,23 +29,13 @@ function addDays(date: Date, days: number) {
   return d;
 }
 
-const MONTHS_PL_GENITIVE = [
-  'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
-  'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia',
-];
-
-// ══════════════════════════════════════════════
-// PAGE
-// ══════════════════════════════════════════════
 export default async function EksportPage({
   searchParams,
 }: {
   searchParams: Promise<{ w?: string }>;
 }) {
-  noStore();
   const params = await searchParams;
 
-  // Ustal poniedziałek tygodnia
   const teraz = new Date();
   let poniedzialek = getMonday(teraz);
   if (params.w) {
@@ -61,11 +51,17 @@ export default async function EksportPage({
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(poniedzialekISO)) notFound();
 
-  // Pobierz treningi z tego tygodnia
   const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+  if (!druzynaId) redirect('/druzyny/nowa');
+
+  // ═══════════════════════════════════════════════════════════
+  // POPRAWKA: filtr po druzyna_id — wcześniej mieszał drużyny
+  // ═══════════════════════════════════════════════════════════
   const { data: treningi } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce, notatki')
+    .eq('druzyna_id', druzynaId)
     .gte('data', poniedzialekISO)
     .lte('data', niedzielaISO)
     .order('data', { ascending: true })
@@ -73,7 +69,6 @@ export default async function EksportPage({
 
   const { data: user } = await supabase.auth.getUser();
 
-  // Statystyki tygodnia
   const events = treningi ?? [];
   const stats = {
     treningi: events.filter((t) => t.typ === 'trening').length,
@@ -82,10 +77,10 @@ export default async function EksportPage({
     turnieje: events.filter((t) => t.typ === 'turniej').length,
   };
 
-  // Format daty "28.09 — 04.10"
-  const zakres = `${pad2(poniedzialek.getDate())}.${pad2(poniedzialek.getMonth() + 1)} — ${pad2(niedziela.getDate())}.${pad2(niedziela.getMonth() + 1)}`;
+  const zakres = `${pad2(poniedzialek.getDate())}.${pad2(
+    poniedzialek.getMonth() + 1
+  )} — ${pad2(niedziela.getDate())}.${pad2(niedziela.getMonth() + 1)}`;
 
-  // Grupowanie po dniach
   const dni = Array.from({ length: 7 }, (_, i) => {
     const d = addDays(poniedzialek, i);
     const iso = toISO(d);
@@ -96,7 +91,6 @@ export default async function EksportPage({
     };
   });
 
-  // Data wygenerowania
   const dataGen = `${pad2(teraz.getDate())}.${pad2(teraz.getMonth() + 1)}.${teraz.getFullYear()}`;
 
   return (

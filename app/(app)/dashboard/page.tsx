@@ -17,6 +17,15 @@ import {
   Pencil,
 } from 'lucide-react';
 
+// ═════════════════════════════════════════════════════════════
+// Data w strefie Europe/Warsaw (spójne z resztą apki)
+// ═════════════════════════════════════════════════════════════
+function getDzisISO(): string {
+  return new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Warsaw',
+  });
+}
+
 function getMonday(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
@@ -37,9 +46,6 @@ function toISO(date: Date): string {
   return `${y}-${m}-${dd}`;
 }
 
-// ═══════════════════════════════════════════════════════
-// Typ pojedynczego wiersza z zagnieżdżonym selectem
-// ═══════════════════════════════════════════════════════
 type TreningZObecnoscia = {
   id: number;
   data: string;
@@ -57,7 +63,7 @@ export default async function Dashboard({
 }) {
   const params = await searchParams;
   const teraz = new Date();
-  const dzisStr = toISO(teraz);
+  const dzisStr = getDzisISO();
 
   let poniedzialek = getMonday(teraz);
   if (params.w) {
@@ -76,65 +82,44 @@ export default async function Dashboard({
   const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
   const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
 
-  // ═══════════════════════════════════════════════════════════
-  // JEDNO ZAPYTANIE z zagnieżdżonym selectem obecności
-  //
-  // Było: 2 zapytania (treningi + osobno obecności przez .in())
-  // Jest: 1 zapytanie (PostgREST robi LEFT JOIN + RLS per tabela)
-  //
-  // Efekt: 50% mniej requestów, ~150ms szybciej
-  // ═══════════════════════════════════════════════════════════
-  const { data: treningi, error: errT } = await supabase
-    .from('treningi')
-    .select(`
-      id, data, godzina, typ, przeciwnik, miejsce,
-      obecnosc (trening_id, status)
-    `)
-    .eq('druzyna_id', druzynaId)
-    .gte('data', toISO(odD))
-    .lte('data', toISO(doD))
-    .order('data', { ascending: true })
-    .order('godzina', { ascending: true });
+  // ═════════════════════════════════════════════════════════════
+  // TRZY ZAPYTANIA RÓWNOLEGLE (było: 1 osobno + 2 w Promise.all)
+  // ═════════════════════════════════════════════════════════════
+  const [treningiRes, zawodnicyCountRes, treningiCountRes] = await Promise.all([
+    supabase
+      .from('treningi')
+      .select(`
+        id, data, godzina, typ, przeciwnik, miejsce,
+        obecnosc (trening_id, status)
+      `)
+      .eq('druzyna_id', druzynaId)
+      .gte('data', toISO(odD))
+      .lte('data', toISO(doD))
+      .order('data', { ascending: true })
+      .order('godzina', { ascending: true }),
 
-  if (errT) {
-    console.error('Błąd pobierania treningów:', errT);
-  }
-
-  const lista = (treningi ?? []) as unknown as TreningZObecnoscia[];
-
-  // ═══════════════════════════════════════════════════════
-  // Onboarding — sprawdź czy user ma komplet danych.
-  //
-  // hasDruzyna = zawsze true (bo inaczej redirect na /druzyny/nowa)
-  // hasZawodnicy = count z tabeli zawodnicy
-  // hasTreningi = count z tabeli treningi
-  //
-  // Dwa tanie `head: true` county — Postgres zwraca liczbę
-  // bez pobierania wierszy.
-  // ═══════════════════════════════════════════════════════
-  const [zawodnicyCountRes, treningiCountRes] = await Promise.all([
     supabase
       .from('zawodnicy')
       .select('id', { count: 'exact', head: true })
       .eq('druzyna_id', druzynaId),
+
     supabase
       .from('treningi')
       .select('id', { count: 'exact', head: true })
       .eq('druzyna_id', druzynaId),
   ]);
 
+  if (treningiRes.error) {
+    console.error('Błąd pobierania treningów:', treningiRes.error);
+  }
+
+  const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
+
   const hasZawodnicy = (zawodnicyCountRes.count ?? 0) > 0;
   const hasTreningi = (treningiCountRes.count ?? 0) > 0;
 
-  // ═══════════════════════════════════════════════════════
-  // Spłaszcz obecności do jednej tablicy
-  // — używane w sekcji „Frekwencja" i „Dzisiaj"
-  // ═══════════════════════════════════════════════════════
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
-  // ═══════════════════════════════════════════════════════
-  // Statystyki per trening (obecni / nieobecni)
-  // ═══════════════════════════════════════════════════════
   const stats = new Map<number, { obecni: number; nieobecni: number }>();
   lista.forEach((t) => {
     let obecni = 0;
@@ -219,14 +204,15 @@ export default async function Dashboard({
             </div>
             <div>
               <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Tydzień</h1>
-              <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">{formatMiesiacRok(poniedzialek)}</p>
+              <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow capitalize">
+                {formatMiesiacRok(poniedzialek)}
+              </p>
             </div>
           </div>
           <TopBar />
         </div>
       </header>
 
-      {/* Onboarding — znika automatycznie gdy wszystkie kroki zrobione */}
       <OnboardingChecklist
         hasDruzyna={true}
         hasZawodnicy={hasZawodnicy}
@@ -235,16 +221,27 @@ export default async function Dashboard({
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
-          <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
+          <Link
+            href={`/dashboard?w=${prevWeek}`}
+            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
+          >
             <ChevronLeft className="w-4 h-4" />
           </Link>
           <div className="text-center px-2">
             <div className="font-bold text-white text-sm capitalize">
-              {poniedzialek.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} — {niedziela.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+              {poniedzialek.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} —{' '}
+              {niedziela.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
             </div>
-            {jestWTygodniu && <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Bieżący tydzień</div>}
+            {jestWTygodniu && (
+              <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">
+                Bieżący tydzień
+              </div>
+            )}
           </div>
-          <Link href={`/dashboard?w=${nextWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
+          <Link
+            href={`/dashboard?w=${nextWeek}`}
+            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
+          >
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -257,34 +254,74 @@ export default async function Dashboard({
             const maEventy = eventy.length > 0;
             const href = getDayHref(dataStr);
             return (
-              <Link key={i} href={href} className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20' : 'bg-slate-800/60 border border-white/10'}`}>
+              <Link
+                key={i}
+                href={href}
+                className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col ${
+                  czyDzis
+                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                    : 'bg-slate-800/60 border border-white/10'
+                }`}
+              >
                 <div className="mb-3 pb-2 border-b border-white/10">
-                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
-                  <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : 'text-white'}`}>{d.getDate()}</div>
-                  <div className="text-[10px] text-white/40 mt-0.5 capitalize">{d.toLocaleDateString('pl-PL', { month: 'short' })}</div>
+                  <div
+                    className={`text-[10px] uppercase tracking-widest font-bold ${
+                      czyDzis ? 'text-green-300' : 'text-white/40'
+                    }`}
+                  >
+                    {formatDzienTyg(d)}
+                  </div>
+                  <div
+                    className={`text-2xl font-black leading-none mt-1 ${
+                      czyDzis ? 'text-green-400' : 'text-white'
+                    }`}
+                  >
+                    {d.getDate()}
+                  </div>
+                  <div className="text-[10px] text-white/40 mt-0.5 capitalize">
+                    {d.toLocaleDateString('pl-PL', { month: 'short' })}
+                  </div>
                 </div>
                 <div className="flex-1 space-y-1.5">
-                  {eventy.length === 0 && <div className="text-[10px] text-white/30 text-center py-2">brak</div>}
+                  {eventy.length === 0 && (
+                    <div className="text-[10px] text-white/30 text-center py-2">brak</div>
+                  )}
                   {eventy.slice(0, 4).map((t) => (
-                    <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(t.typ)} bg-white/5`}>
+                    <div
+                      key={t.id}
+                      className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(
+                        t.typ,
+                      )} bg-white/5`}
+                    >
                       <div className="font-bold leading-tight">{t.godzina}</div>
                       <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
                     </div>
                   ))}
-                  {eventy.length > 4 && <div className="text-[10px] text-white/40 text-center pt-0.5">+{eventy.length - 4}</div>}
+                  {eventy.length > 4 && (
+                    <div className="text-[10px] text-white/40 text-center pt-0.5">
+                      +{eventy.length - 4}
+                    </div>
+                  )}
                 </div>
                 {maEventy && (
                   <div className="flex gap-1 mt-2">
-                    {eventy.slice(0, 5).map((e, idx) => (<div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />))}
+                    {eventy.slice(0, 5).map((e, idx) => (
+                      <div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />
+                    ))}
                   </div>
                 )}
-                {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
+                {czyDzis && (
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                )}
               </Link>
             );
           })}
         </div>
 
-        <Link href="/kalendarz" className="md:hidden mt-3 flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 transition-all">
+        <Link
+          href="/kalendarz"
+          className="md:hidden mt-3 flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 transition-all"
+        >
           📅 Zobacz cały tydzień
         </Link>
 
@@ -296,43 +333,90 @@ export default async function Dashboard({
             const maEventy = eventy.length > 0;
             const href = getDayHref(dataStr);
             return (
-              <Link key={i} href={href} className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20' : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'}`}>
+              <Link
+                key={i}
+                href={href}
+                className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col ${
+                  czyDzis
+                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                    : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
+                }`}
+              >
                 <div className="mb-2 flex-shrink-0">
-                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
-                  <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : 'text-white'}`}>{d.getDate()}</div>
+                  <div
+                    className={`text-[10px] uppercase tracking-widest font-bold ${
+                      czyDzis ? 'text-green-300' : 'text-white/40'
+                    }`}
+                  >
+                    {formatDzienTyg(d)}
+                  </div>
+                  <div
+                    className={`text-2xl font-black leading-none mt-0.5 ${
+                      czyDzis ? 'text-green-400' : 'text-white'
+                    }`}
+                  >
+                    {d.getDate()}
+                  </div>
                 </div>
                 <div className="flex-1 space-y-1 overflow-hidden">
                   {eventy.slice(0, 3).map((t) => (
-                    <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(t.typ)} bg-white/5`}>
+                    <div
+                      key={t.id}
+                      className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
+                        t.typ,
+                      )} bg-white/5`}
+                    >
                       <div className="font-bold leading-tight">{t.godzina}</div>
                       <div className="truncate text-white/70 leading-tight capitalize">{t.typ}</div>
                     </div>
                   ))}
-                  {eventy.length > 3 && <div className="text-[9px] text-white/40 text-center pt-0.5">+{eventy.length - 3} więcej</div>}
+                  {eventy.length > 3 && (
+                    <div className="text-[9px] text-white/40 text-center pt-0.5">
+                      +{eventy.length - 3} więcej
+                    </div>
+                  )}
                 </div>
                 {maEventy && (
                   <div className="flex gap-0.5 mt-1 flex-shrink-0">
-                    {eventy.slice(0, 4).map((e, idx) => (<div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />))}
+                    {eventy.slice(0, 4).map((e, idx) => (
+                      <div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />
+                    ))}
                   </div>
                 )}
-                {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
+                {czyDzis && (
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                )}
               </Link>
             );
           })}
         </div>
 
         <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-white/10 text-[10px] flex-wrap">
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-white/60">Trening</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-white/60">Mecz</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-white/60">Sparing</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-white/60">Turniej</span></div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-white/60">Trening</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-white/60">Mecz</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-orange-500" />
+            <span className="text-white/60">Sparing</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-purple-500" />
+            <span className="text-white/60">Turniej</span>
+          </div>
         </div>
       </div>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Dzisiaj · {teraz.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}</h2>
+          <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+            Dzisiaj · {teraz.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+          </h2>
         </div>
         {dzisiejsze.length === 0 ? (
           <div className="text-center py-6 text-white/40 text-sm">Brak wydarzeń na dziś</div>
@@ -347,7 +431,9 @@ export default async function Dashboard({
               return (
                 <div
                   key={t.id}
-                  className={`group relative flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
+                  className={`group relative flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(
+                    t.typ,
+                  )} bg-white/5 hover:bg-white/10 transition-all`}
                 >
                   <Link
                     href={`/kalendarz/${t.id}/obecnosc`}
@@ -366,7 +452,9 @@ export default async function Dashboard({
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-white text-sm truncate capitalize">
                         {t.typ}
-                        {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
+                        {t.przeciwnik && (
+                          <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>
+                        )}
                       </div>
 
                       {t.miejsce ? (
@@ -393,7 +481,9 @@ export default async function Dashboard({
                       {s && (s.obecni > 0 || s.nieobecni > 0) && (
                         <div className="text-xs mt-1 flex items-center gap-3">
                           <span className="text-green-400 font-medium">✓ {s.obecni}</span>
-                          {s.nieobecni > 0 && <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>}
+                          {s.nieobecni > 0 && (
+                            <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -432,22 +522,44 @@ export default async function Dashboard({
               })
               .slice(0, 3);
             if (nadchodzace.length === 0) {
-              return <div className="text-center py-6 text-white/40 text-sm">Brak nadchodzących wydarzeń</div>;
+              return (
+                <div className="text-center py-6 text-white/40 text-sm">
+                  Brak nadchodzących wydarzeń
+                </div>
+              );
             }
             return (
               <div className="space-y-2">
                 {nadchodzace.map((t) => (
-                  <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
+                  <Link
+                    key={t.id}
+                    href={`/kalendarz/${t.id}/obecnosc`}
+                    className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(
+                      t.typ,
+                    )} bg-white/5 hover:bg-white/10 transition-all`}
+                  >
                     <div className="flex-shrink-0 text-center w-10">
-                      <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">{new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', { month: 'short' })}</div>
-                      <div className="text-lg font-black text-white leading-none">{new Date(t.data + 'T00:00:00').getDate()}</div>
+                      <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
+                        {new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', {
+                          month: 'short',
+                        })}
+                      </div>
+                      <div className="text-lg font-black text-white leading-none">
+                        {new Date(t.data + 'T00:00:00').getDate()}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-semibold text-white truncate capitalize">
                         {t.godzina} · {t.typ}
-                        {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
+                        {t.przeciwnik && (
+                          <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>
+                        )}
                       </div>
-                      {t.miejsce && <div className="text-[10px] text-white/50 truncate mt-0.5">{t.miejsce}</div>}
+                      {t.miejsce && (
+                        <div className="text-[10px] text-white/50 truncate mt-0.5">
+                          {t.miejsce}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 ))}
@@ -459,7 +571,9 @@ export default async function Dashboard({
         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja — {teraz.toLocaleDateString('pl-PL', { month: 'long' })}</h2>
+            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+              Frekwencja — {teraz.toLocaleDateString('pl-PL', { month: 'long' })}
+            </h2>
           </div>
           {(() => {
             const rokMiesiac = dzisStr.substring(0, 7);
@@ -480,14 +594,29 @@ export default async function Dashboard({
                   <span className="text-2xl text-white/40 font-bold">%</span>
                 </div>
                 <div className="w-full h-3 bg-slate-950/60 rounded-full overflow-hidden mb-3 shadow-inner">
-                  <div className={`h-full rounded-full transition-all ${procent >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' : procent >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${procent}%` }} />
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      procent >= 80
+                        ? 'bg-gradient-to-r from-green-500 to-green-400'
+                        : procent >= 60
+                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
+                        : 'bg-gradient-to-r from-red-500 to-red-400'
+                    }`}
+                    style={{ width: `${procent}%` }}
+                  />
                 </div>
                 <div className="flex items-center justify-between text-xs text-white/50">
-                  <span><span className="text-green-400 font-semibold">{obecniMies}</span> obecnych</span>
+                  <span>
+                    <span className="text-green-400 font-semibold">{obecniMies}</span> obecnych
+                  </span>
                   <span>{obecnosciMies.length} wpisów</span>
                 </div>
-                <Link href="/statystyki" className="mt-4 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
-                  <BarChart3Icon className="w-3.5 h-3.5" />Zobacz pełne statystyki
+                <Link
+                  href="/statystyki"
+                  className="mt-4 w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
+                >
+                  <BarChart3Icon className="w-3.5 h-3.5" />
+                  Zobacz pełne statystyki
                 </Link>
               </>
             );

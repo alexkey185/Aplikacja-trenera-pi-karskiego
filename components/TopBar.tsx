@@ -1,17 +1,17 @@
+import { Suspense } from 'react';
 import { getDruzyny, getActiveDruzynaId, getZawodnicyCounts } from '@/lib/druzyny';
 import { DruzynaSwitcher } from './DruzynaSwitcher';
 import { UserAvatar } from './UserAvatar';
+import { TopBarSkeleton } from './TopBarSkeleton';
 
-export async function TopBar() {
-  // ═══════════════════════════════════════════════════
-  // Te trzy wywołania są darmowe jeśli w tym samym
-  // render pass zawołał je już layout albo page —
-  // cache() z React dedupuje.
-  // ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// Wewnętrzny async komponent — pobiera dane (może używać cookies).
+// Jest owinięty w Suspense w sync wrapperze poniżej.
+// ═══════════════════════════════════════════════════════════════
+async function TopBarContent() {
   const druzyny = await getDruzyny();
   const activeId = await getActiveDruzynaId();
 
-  // Brak drużyn — pokaż tylko UserAvatar (i to tylko na desktopie)
   if (druzyny.length === 0 || !activeId) {
     return (
       <div className="hidden md:flex items-center gap-2 flex-shrink-0">
@@ -29,10 +29,21 @@ export async function TopBar() {
         activeId={activeId}
         zawodnicyCount={zawodnicyCount}
       />
-      {/* UserAvatar tylko na desktopie — na mobile jest w dolnej nawigacji „Profil" */}
       <div className="hidden md:block">
         <UserAvatar />
       </div>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Publiczny API — sync, owija async część w Suspense.
+// Wszystkie istniejące `<TopBar />` w kodzie działają bez zmian.
+// ═══════════════════════════════════════════════════════════════
+export function TopBar() {
+  return (
+    <Suspense fallback={<TopBarSkeleton />}>
+      <TopBarContent />
+    </Suspense>
   );
 }

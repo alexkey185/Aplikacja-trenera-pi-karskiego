@@ -1,140 +1,104 @@
-// ═══════════════════════════════════════════════════════════
-// Talent — Service Worker
+// ═══════════════════════════════════════════════════════════════
+// Service Worker — Talent
 //
 // Strategie:
-//   _next/static/*       → cache-first (immutable)
-//   obrazy / fonty       → cache-first
-//   nawigacja (HTML)     → network-first + fallback z cache
-//   /api, /auth, supabase → network-only
-//
-// Update flow:
-//   Nowy deploy → przeglądarka widzi zmianę sw.js → instaluje w tle
-//   → waiting (NIE aktywuje się sam) → klient pokazuje toast
-//   → user klika „Odśwież" → postMessage SKIP_WAITING → activate
-//   → clients.claim() → controllerchange → reload w kliencie
-//
-// Cache version: bump przy każdym deployu zmieniającym statyczne
-// pliki w public/ (ikony, manifest, itp.).
-// ═══════════════════════════════════════════════════════════
+//   /_next/static/*     → Cache First (immutable)
+//   obrazy/fonty        → Stale-While-Revalidate
+//   nawigacja (HTML)    → Network First z fallbackiem do cache
+//   reszta (API)        → Network Only (bez cache)
+// ═══════════════════════════════════════════════════════════════
 
-const STATIC_CACHE = 'talent-static-v2';
-const PAGES_CACHE = 'talent-pages-v2';
+const VERSION = 'v3';
+const STATIC_CACHE = `static-${VERSION}`;
+const RUNTIME_CACHE = `runtime-${VERSION}`;
 
-// Precache — pliki krytyczne dla PWA (instalacja + offline shell).
-// Każdy łapany osobno — brak jednego nie zabija całego install.
-const PRECACHE_URLS = [
-  '/manifest.json',
-  '/icons/favicon.svg',
-  '/icons/apple-touch-icon.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-192.png',
-  '/icons/icon-maskable-512.png',
-];
+const PRECACHE = ['/', '/manifest.json'];
 
-// ─── INSTALL ───
-// Precache z osobno łapanymi błędami. NIE wywołujemy skipWaiting() —
-// czekamy na SKIP_WAITING z klienta (żeby uniknąć mieszanki starych
-// i nowych chunków w trakcie sesji usera).
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(async (cache) => {
-      await Promise.all(
-        PRECACHE_URLS.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn('[SW] Precache nieudany dla:', url, err);
-          })
-        )
-      );
-    })
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE))
   );
 });
 
-// ─── ACTIVATE ───
-// Wyczyść stare wersje cache, przejmij kontrolę nad otwartymi kartami.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
+    caches.keys().then((keys) =>
+      Promise.all(
         keys
-          .filter((key) => key !== STATIC_CACHE && key !== PAGES_CACHE)
-          .map((key) => caches.delete(key))
-      );
-      await self.clients.claim();
-    })()
+          .filter((k) => k !== STATIC_CACHE && k !== RUNTIME_CACHE)
+          .map((k) => caches.delete(k))
+      )
+    )
   );
+  self.clients.claim();
 });
 
-// ─── MESSAGE ───
-// Klient wysyła { type: 'SKIP_WAITING' } gdy user kliknie „Odśwież".
+// Klient wysyła SKIP_WAITING po kliknięciu „Odśwież" w toaście
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// ─── FETCH ───
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  const url = new URL(request.url);
-
-  // Tylko GET
   if (request.method !== 'GET') return;
 
-  // Supabase / API / auth — zawsze network (dane muszą być świeże)
-  if (
-    url.hostname.includes('supabase') ||
-    url.pathname.startsWith('/api') ||
-    url.pathname.startsWith('/auth/')
-  ) {
+  const url = new URL(request.url);
+
+  // Nie dotykamy zewnętrznych domen (Supabase!)
+  if (url.origin !== self.location.origin) return;
+
+  // 1) Next.js static assets — Cache First
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          })
+      )
+    );
     return;
   }
 
-  // Statyczne assety + obrazy/fonty — cache-first
-  if (
-    url.pathname.startsWith('/_next/static/') ||
-    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff|woff2|ttf)$/)
-  ) {
+  // 2) Obrazy, fonty, ikony — Stale-While-Revalidate
+  if (/\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?|ttf|otf)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request)
+        const networkFetch = fetch(request)
           .then((response) => {
             if (response.ok) {
               const clone = response.clone();
-              caches
-                .open(STATIC_CACHE)
-                .then((cache) => cache.put(request, clone));
+              caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
             }
             return response;
           })
           .catch(() => cached);
+        return cached || networkFetch;
       })
     );
     return;
   }
 
-  // Nawigacja (HTML) — network-first z fallbackiem do cache
+  // 3) Nawigacja — Network First z fallbackiem do cache
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches
-              .open(PAGES_CACHE)
-              .then((cache) => cache.put(request, clone));
-          }
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => {
-          return caches.match(request).then((cached) => {
-            if (cached) return cached;
-            return caches.match('/');
-          });
-        })
+        .catch(() => caches.match(request).then((c) => c || caches.match('/')))
     );
     return;
   }
+
+  // 4) Reszta (API, RSC payload) — Network Only, bez cache
 });

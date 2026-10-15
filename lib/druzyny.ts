@@ -1,7 +1,9 @@
 import 'server-only';
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const ACTIVE_DRUZYNA_COOKIE = 'active_druzyna_id';
 
@@ -13,25 +15,40 @@ export type Druzyna = {
   created_at: string;
 };
 
-// ═══════════════════════════════════════════════════
-// cache() z React — dedupuje wywołania w obrębie JEDNEGO requestu.
-//
-// Problem: layout, page i TopBar niezależnie wołają getDruzyny()
-// i getActiveDruzynaId(). Bez cache to 4 zapytania do tej samej
-// tabeli przy każdym wejściu na stronę.
-//
-// Cache trzyma wynik tylko w obrębie jednego render pass — między
-// requestami zawsze świeże dane. Nie mylić z unstable_cache z Next.js
-// (ten cache'uje między requestami — niebezpieczne dla cookies).
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// Cache tag — używany w revalidateTag po mutacji drużyn.
+// ═══════════════════════════════════════════════════════════════
+export const DRUZYNY_CACHE_TAG = 'druzyny';
 
+// ═══════════════════════════════════════════════════════════════
+// Cache WEWNĘTRZNY — nie czyta cookies, więc może być
+// cross-requestowy. Klucz zawiera userId (user-specific cache).
+// ═══════════════════════════════════════════════════════════════
+const _getDruzynyForUser = unstable_cache(
+  async (userId: string): Promise<Druzyna[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from('druzyny')
+      .select('id, nazwa, rocznik, kolor, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+    return (data ?? []) as Druzyna[];
+  },
+  ['druzyny-by-user'],
+  { tags: [DRUZYNY_CACHE_TAG], revalidate: 60 }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// Publiczne API — czyta usera z cookies, potem uderza w cache.
+// React cache() dodatkowo dedupuje w obrębie jednego requestu.
+// ═══════════════════════════════════════════════════════════════
 export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('druzyny')
-    .select('id, nazwa, rocznik, kolor, created_at')
-    .order('created_at', { ascending: true });
-  return (data ?? []) as Druzyna[];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  return _getDruzynyForUser(user.id);
 });
 
 export const getActiveDruzynaId = cache(async (): Promise<string | null> => {
@@ -55,20 +72,22 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
   return druzyny.find((d) => d.id === id) ?? null;
 });
 
-// ═══════════════════════════════════════════════════
-// Zawodnicy per drużyna — liczba do badge'a w DruzynaSwitcher.
-// Też cache, żeby TopBar nie robił zapytania za każdym razem.
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// Liczba zawodników per drużyna — RPC.
+// ═══════════════════════════════════════════════════════════════
 export const getZawodnicyCounts = cache(
   async (): Promise<Record<string, number>> => {
     const supabase = await createClient();
-    const { data } = await supabase.from('zawodnicy').select('druzyna_id');
+    const { data, error } = await supabase.rpc('get_zawodnicy_counts');
+
+    if (error) {
+      console.error('RPC get_zawodnicy_counts error:', error);
+      return {};
+    }
 
     const counts: Record<string, number> = {};
-    (data ?? []).forEach((z) => {
-      if (z.druzyna_id) {
-        counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
-      }
+    (data ?? []).forEach((row: { druzyna_id: string; cnt: number }) => {
+      counts[row.druzyna_id] = Number(row.cnt);
     });
     return counts;
   }

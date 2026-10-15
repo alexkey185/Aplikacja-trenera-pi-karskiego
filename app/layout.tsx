@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import { Geist } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { BottomNav } from '@/components/BottomNav';
@@ -55,30 +56,20 @@ const geistSans = Geist({
   subsets: ['latin'],
 });
 
-// Lokalna data w strefie Europe/Warsaw (spójne z resztą apki)
 function getDzisISO(): string {
   return new Date().toLocaleDateString('sv-SE', {
     timeZone: 'Europe/Warsaw',
   });
 }
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+// ═══════════════════════════════════════════════════════════════
+// BottomNav — async komponent pobierający user + count.
+// Wydzielony, żeby owinąć w Suspense w RootLayout.
+// ═══════════════════════════════════════════════════════════════
+async function BottomNavServer() {
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
 
-  // ═══════════════════════════════════════════════════════════
-  // Równoległe pobranie: user + dzisiejszy count treningów.
-  //
-  // Wcześniej: BottomNav (klient) wywoływał oba zapytania 2× —
-  // raz dla sidebara desktop, raz dla nav mobile (oba były w DOM
-  // ukryte CSS-em). Efekt: 4 zapytania na każde wejście.
-  //
-  // Teraz: server robi to raz, BottomNav dostaje gotowe propsy.
-  // ═══════════════════════════════════════════════════════════
   const [userResult, dzisiajResult] = await Promise.all([
     supabase.auth.getUser(),
     druzynaId
@@ -94,6 +85,21 @@ export default async function RootLayout({
   const dzisiajCount = dzisiajResult.count ?? 0;
 
   return (
+    <BottomNav
+      dzisiajCount={dzisiajCount}
+      userEmail={user?.email ?? null}
+      userImie={(user?.user_metadata?.imie as string | undefined) ?? null}
+      userNazwisko={(user?.user_metadata?.nazwisko as string | undefined) ?? null}
+    />
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
     <html lang="pl" suppressHydrationWarning>
       <head>
         {supabaseUrl && (
@@ -106,12 +112,12 @@ export default async function RootLayout({
       </head>
       <body className={`${geistSans.variable} antialiased`}>
         <ContentWrapper>{children}</ContentWrapper>
-        <BottomNav
-          dzisiajCount={dzisiajCount}
-          userEmail={user?.email ?? null}
-          userImie={(user?.user_metadata?.imie as string | undefined) ?? null}
-          userNazwisko={(user?.user_metadata?.nazwisko as string | undefined) ?? null}
-        />
+
+        {/* BottomNav streamuje się po wyrenderowaniu shell */}
+        <Suspense fallback={null}>
+          <BottomNavServer />
+        </Suspense>
+
         <ServiceWorkerRegister />
 
         <Toaster

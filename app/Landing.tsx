@@ -2,6 +2,7 @@
 
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import styles from './landing.module.css';
 
 type Player = {
@@ -10,6 +11,14 @@ type Player = {
   meta: string;
   days: number[];
 };
+
+// ── Wymiary screenshotów (podmień na wynik `identify`) ──
+const SHOTS = {
+  kadra: { src: '/screenshots/screen1-lista-kadry.webp', w: 1280, h: 800 },
+  kalendarzD: { src: '/screenshots/screen2-kalendarz-desktop.webp', w: 1280, h: 800 },
+  statystyki: { src: '/screenshots/screen3-statystyki.webp', w: 1280, h: 800 },
+  kalendarzM: { src: '/screenshots/screen4-kalendarz-mobile.webp', w: 720, h: 1560 },
+} as const;
 
 const INITIAL_PLAYERS: Player[] = [
   { name: 'Antoni Adamski', ini: 'AA', meta: '2018 · Pomocnik', days: [1, 1, 0, 1, 1] },
@@ -129,7 +138,6 @@ export function Landing() {
 
   return (
     <div ref={rootRef} className={styles.root}>
-      {/* Intro overlay z animacją piłki */}
       <div className={styles.intro} aria-hidden="true">
         <div className={styles.lg}>
           talent<span className={styles.bd} />
@@ -270,7 +278,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Marquee */}
       <div className={styles.mq} aria-hidden="true">
         <div>
           {[...MARQUEE, ...MARQUEE].map((t, i) => (
@@ -279,7 +286,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Jak to działa */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <h2 className={`${styles.h2} ${styles.rv}`}>Jak to działa</h2>
@@ -297,7 +303,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Kadra */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split}>
@@ -314,17 +319,20 @@ export function Landing() {
               </ul>
             </div>
             <div className={`${styles.media} ${styles.shot} ${styles.rv}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/screenshots/screen1-lista-kadry.png"
+              <Image
+                src={SHOTS.kadra.src}
                 alt="Lista zawodników w aplikacji talent."
+                width={SHOTS.kadra.w}
+                height={SHOTS.kadra.h}
+                sizes="(max-width: 860px) 100vw, 620px"
+                quality={75}
+                loading="lazy"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Kalendarz */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={`${styles.split} ${styles.rev}`}>
@@ -341,17 +349,20 @@ export function Landing() {
               </ul>
             </div>
             <div className={`${styles.media} ${styles.shot} ${styles.rv}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/screenshots/screen2-kalendarz-desktop.png"
+              <Image
+                src={SHOTS.kalendarzD.src}
                 alt="Kalendarz w aplikacji talent. na komputerze"
+                width={SHOTS.kalendarzD.w}
+                height={SHOTS.kalendarzD.h}
+                sizes="(max-width: 860px) 100vw, 620px"
+                quality={75}
+                loading="lazy"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Funkcje */}
       <div className={styles.sec} id="funkcje">
         <div className={styles.wrap}>
           <h2 className={`${styles.h2} ${styles.rv}`}>
@@ -374,7 +385,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Frekwencja bez liczenia — screen3 */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split}>
@@ -390,17 +400,20 @@ export function Landing() {
               </ul>
             </div>
             <div className={`${styles.media} ${styles.shot} ${styles.rv}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/screenshots/screen3-statystyki.png"
+              <Image
+                src={SHOTS.statystyki.src}
                 alt="Widok statystyk frekwencji drużyny w aplikacji talent."
+                width={SHOTS.statystyki.w}
+                height={SHOTS.statystyki.h}
+                sizes="(max-width: 860px) 100vw, 620px"
+                quality={75}
+                loading="lazy"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Zawsze pod ręką — screen4 */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={`${styles.split} ${styles.rev}`}>
@@ -411,16 +424,20 @@ export function Landing() {
               </p>
               <ul className={styles.ticks}>
                 <Tick>Widok dostosowany do telefonu i komputera</Tick>
-                <Tick>Ekran „Dzisiaj” pokazuje, co masz zaplanowane</Tick>
+                <Tick>Ekran „Dzisiaj" pokazuje, co masz zaplanowane</Tick>
                 <Tick>Szybkie dodawanie treningów, meczów i turniejów</Tick>
               </ul>
             </div>
             <div className={styles.media}>
               <div className={`${styles.phone} ${styles.shot} ${styles.rv}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/screenshots/screen4-kalendarz-mobile.png"
+                <Image
+                  src={SHOTS.kalendarzM.src}
                   alt="Kalendarz w aplikacji talent. na telefonie"
+                  width={SHOTS.kalendarzM.w}
+                  height={SHOTS.kalendarzM.h}
+                  sizes="(max-width: 860px) 80vw, 300px"
+                  quality={75}
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -428,7 +445,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Zbudowana przez trenera */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split} style={{ gridTemplateColumns: '1fr' }}>
@@ -444,7 +460,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* FAQ */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <h2 className={`${styles.h2} ${styles.rv}`}>Najczęstsze pytania</h2>
@@ -474,7 +489,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* CTA */}
       <div className={styles.sec} id="testy">
         <div className={styles.wrap}>
           <div className={`${styles.ctaBox} ${styles.rv}`}>
@@ -516,7 +530,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* Footer */}
       <div className={styles.wrap}>
         <div className={styles.foot}>
           <span>© 2026 talent.</span>
@@ -538,8 +551,6 @@ export function Landing() {
     </div>
   );
 }
-
-/* ─── Helpery ───────────────────────────────────────────── */
 
 function Step({ n, title, children }: { n: string; title: string; children: ReactNode }) {
   return (

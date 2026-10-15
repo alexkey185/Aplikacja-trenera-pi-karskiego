@@ -3,8 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
-import { ACTIVE_DRUZYNA_COOKIE } from '@/lib/druzyny';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { ACTIVE_DRUZYNA_COOKIE, DRUZYNY_CACHE_TAG } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
 
@@ -48,6 +48,7 @@ export async function dodajDruzyna(formData: FormData) {
     secure: process.env.NODE_ENV === 'production',
   });
 
+  revalidateTag(DRUZYNY_CACHE_TAG);
   revalidatePath('/', 'layout');
   redirect('/druzyny?toast=druzyna_dodana');
 }

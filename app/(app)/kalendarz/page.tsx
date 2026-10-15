@@ -1,11 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
-import { unstable_noStore as noStore } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { KalendarzClient } from './KalendarzClient';
 import { TopBar } from '@/components/TopBar';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 
-// Typy zgodne z KalendarzClient
 type Trening = {
   id: number;
   data: string;
@@ -27,7 +25,6 @@ type StatsMap = Record<
 >;
 
 export default async function KalendarzPage() {
-  noStore();
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
@@ -38,14 +35,10 @@ export default async function KalendarzPage() {
   const do_ = new Date(dzis.getFullYear(), dzis.getMonth() + 3, 0);
 
   const toISO = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+      d.getDate()
+    ).padStart(2, '0')}`;
 
-  // ═══════════════════════════════════════════════════════════
-  // JEDNO zapytanie — treningi z zagnieżdżoną obecnością.
-  //
-  // Było: 2 zapytania (treningi, potem osobno obecnosc .in(ids))
-  // Jest: 1 zapytanie (PostgREST robi LEFT JOIN, RLS per tabela)
-  // ═══════════════════════════════════════════════════════════
   const { data: rawTreningi } = await supabase
     .from('treningi')
     .select(`
@@ -59,7 +52,6 @@ export default async function KalendarzPage() {
 
   const lista = (rawTreningi ?? []) as TreningZObecnoscia[];
 
-  // Statystyki per trening — spłaszczamy obecności z zagnieżdżonej tablicy
   const stats: StatsMap = {};
   lista.forEach((t) => {
     let obecni = 0;
@@ -71,8 +63,6 @@ export default async function KalendarzPage() {
     stats[t.id] = { obecni, nieobecni, total: obecni + nieobecni };
   });
 
-  // Strip `obecnosc` — KalendarzClient nie zna tego pola, przekazujemy
-  // tylko potrzebne kolumny (explicytnie, żeby nie śmiecić propsów)
   const treningi: Trening[] = lista.map((t) => ({
     id: t.id,
     data: t.data,

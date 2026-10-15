@@ -11,9 +11,6 @@ export function ServiceWorkerRegister() {
     if (typeof window === 'undefined') return;
     if (!('serviceWorker' in navigator)) return;
 
-    // ═══════════════════════════════════════════════════════
-    // W trybie dev: wyrejestruj SW (cache psuje HMR)
-    // ═══════════════════════════════════════════════════════
     if (process.env.NODE_ENV !== 'production') {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         registrations.forEach((reg) => {
@@ -36,19 +33,15 @@ export function ServiceWorkerRegister() {
         if (cancelled) return;
         console.log('✓ Service Worker zarejestrowany:', reg.scope);
 
-        // ── Jeśli jest już waiting worker (z poprzedniej sesji) ──
         if (reg.waiting) {
           setWaitingWorker(reg.waiting);
         }
 
-        // ── Nasłuchuj nowych wersji ──
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           if (!newWorker) return;
 
           newWorker.addEventListener('statechange', () => {
-            // „installed" + istniejący kontroler = nowa wersja gotowa
-            // (gdy nie ma kontrolera = pierwszy install, nie pokazuj)
             if (
               newWorker.state === 'installed' &&
               navigator.serviceWorker.controller
@@ -58,7 +51,6 @@ export function ServiceWorkerRegister() {
           });
         });
 
-        // ── Auto-check co godzinę (dla długo otwartych kart) ──
         setInterval(() => {
           reg.update().catch(() => {});
         }, 60 * 60 * 1000);
@@ -73,7 +65,6 @@ export function ServiceWorkerRegister() {
       window.addEventListener('load', register);
     }
 
-    // ── Nasłuchuj przejęcia kontroli → reload z nowym SW ──
     const onControllerChange = () => {
       window.location.reload();
     };
@@ -88,10 +79,6 @@ export function ServiceWorkerRegister() {
     };
   }, []);
 
-  // ═══════════════════════════════════════════════════════
-  // Nowa wersja gotowa → toast z przyciskiem „Odśwież"
-  // duration: Infinity → zostaje do kliknięcia
-  // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!waitingWorker) return;
 
@@ -101,9 +88,7 @@ export function ServiceWorkerRegister() {
       action: {
         label: 'Odśwież',
         onClick: () => {
-          // Wyślij SW sygnał: aktywuj się od razu
           waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-          // controllerchange wymusi reload
           toast.dismiss(toastId);
         },
       },
