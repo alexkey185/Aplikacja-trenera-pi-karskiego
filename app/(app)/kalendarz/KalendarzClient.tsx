@@ -13,6 +13,7 @@ import {
   Calendar as CalendarIcon,
   Printer,
   ExternalLink,
+  Users,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
 import { usunTreningZakres } from './[id]/edytuj/actions';
@@ -119,6 +120,19 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
   const selectedEvents = eventsByDate[selectedDate] ?? [];
   const isTodaySelected = selectedDate === todayISO;
+
+  // ═══════════════════════════════════════════════════════════════
+  // Najblizszy trening tego samego typu co pierwszy wybranego dnia
+  // (do karty kontekstu w prawej kolumnie)
+  // ═══════════════════════════════════════════════════════════════
+  const kontekstTypu = useMemo(() => {
+    const pierwszy = selectedEvents[0];
+    if (!pierwszy) return null;
+    const ostatni = treningi
+      .filter((t) => t.typ === pierwszy.typ && t.data < pierwszy.data)
+      .sort((a, b) => b.data.localeCompare(a.data))[0];
+    return ostatni ?? null;
+  }, [selectedEvents, treningi]);
 
   const upcoming = useMemo(() => {
     return treningi
@@ -323,6 +337,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const selectedDateObj = parseISO(selectedDate);
   const selectedDayLabel = DAYS_LONG[selectedDateObj.getDay()];
   const selectedMonthLabel = MONTHS_PL_GENITIVE[selectedDateObj.getMonth()];
+  const pierwszeWydarzenie = selectedEvents[0] ?? null;
 
   return (
     <div className="w-full max-w-2xl lg:max-w-screen-2xl mx-auto lg:h-full lg:flex lg:flex-col">
@@ -359,94 +374,126 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-          <button
-            onClick={goToToday}
-            className={`w-full text-left rounded-2xl p-5 lg:p-4 transition-all animate-fadeIn flex-shrink-0 ${
+          {/* ═══════════════════════════════════════════════════════════
+              Kafel dnia - informacje + akcje (edit / attendance)
+              ═══════════════════════════════════════════════════════════ */}
+          <div
+            className={`rounded-2xl p-5 lg:p-4 transition-all animate-fadeIn flex-shrink-0 ${
               isTodaySelected
                 ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
-                : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30 hover:border-blue-400/50 hover:bg-slate-900/90'
+                : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30'
             }`}
           >
             <div className="flex items-center gap-4 lg:gap-3">
-              <div className="relative flex-shrink-0">
-                <div
-                  className={`absolute inset-0 rounded-2xl blur-md opacity-60 animate-pulse ${
-                    isTodaySelected
-                      ? 'bg-gradient-to-br from-green-400 to-green-700'
-                      : 'bg-gradient-to-br from-blue-400 to-blue-700'
-                  }`}
-                />
-                <div
-                  className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
-                    isTodaySelected
-                      ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
-                      : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
-                  }`}
-                >
-                  <span className="text-white font-black text-lg">
-                    {isTodaySelected ? '!' : 'D'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
-                  <span
-                    className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest ${
-                      isTodaySelected ? 'text-green-400' : 'text-blue-400'
+              <button
+                onClick={goToToday}
+                className="flex items-center gap-4 lg:gap-3 flex-1 min-w-0 text-left"
+                title={isTodaySelected ? 'Dzisiaj' : 'Wroc do dzisiaj'}
+              >
+                <div className="relative flex-shrink-0">
+                  <div
+                    className={`absolute inset-0 rounded-2xl blur-md opacity-60 animate-pulse ${
+                      isTodaySelected
+                        ? 'bg-gradient-to-br from-green-400 to-green-700'
+                        : 'bg-gradient-to-br from-blue-400 to-blue-700'
+                    }`}
+                  />
+                  <div
+                    className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
+                      isTodaySelected
+                        ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
+                        : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
                     }`}
                   >
-                    {isTodaySelected ? 'Dzisiaj' : selectedDayLabel}
-                  </span>
-                  <span className="text-[10px] lg:text-xs text-white/50 capitalize">
-                    · {selectedDateObj.getDate()} {selectedMonthLabel}
-                    {selectedDateObj.getFullYear() !== todayDate.getFullYear() &&
-                      ` ${selectedDateObj.getFullYear()}`}
-                  </span>
+                    <span className="text-white font-black text-lg">
+                      {isTodaySelected ? '!' : 'D'}
+                    </span>
+                  </div>
                 </div>
-                {selectedEvents.length > 0 ? (
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
+                    <span
+                      className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest ${
+                        isTodaySelected ? 'text-green-400' : 'text-blue-400'
+                      }`}
+                    >
+                      {isTodaySelected ? 'Dzisiaj' : selectedDayLabel}
+                    </span>
+                    <span className="text-[10px] lg:text-xs text-white/50 capitalize">
+                      · {selectedDateObj.getDate()} {selectedMonthLabel}
+                      {selectedDateObj.getFullYear() !== todayDate.getFullYear() &&
+                        ` ${selectedDateObj.getFullYear()}`}
+                    </span>
+                  </div>
+                  {selectedEvents.length > 0 ? (
+                    <>
+                      <div className="text-white font-bold text-base lg:text-base leading-tight">
+                        {selectedEvents.length === 1
+                          ? '1 wydarzenie'
+                          : `${selectedEvents.length} wydarzenia`}
+                        <span className="text-white/60 font-normal"> · pierwsze o </span>
+                        <span
+                          className={
+                            isTodaySelected ? 'text-green-300 font-bold' : 'text-blue-300 font-bold'
+                          }
+                        >
+                          {selectedEvents[0].godzina}
+                        </span>
+                      </div>
+                      <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5 truncate">
+                        {TYP_CONFIG[selectedEvents[0].typ]?.label}
+                        {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
+                        {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-white font-bold text-base lg:text-base leading-tight">
+                        Brak wydarzen
+                      </div>
+                      <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">
+                        {isTodaySelected
+                          ? 'Nic nie zaplanowano na dzis'
+                          : 'Nic nie zaplanowano na ten dzien'}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </button>
+
+              {/* Akcje kontekstowe */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {pierwszeWydarzenie ? (
                   <>
-                    <div className="text-white font-bold text-base lg:text-base leading-tight">
-                      {selectedEvents.length === 1
-                        ? '1 wydarzenie'
-                        : `${selectedEvents.length} wydarzenia`}
-                      <span className="text-white/60 font-normal"> · pierwsze o </span>
-                      <span
-                        className={
-                          isTodaySelected ? 'text-green-300 font-bold' : 'text-blue-300 font-bold'
-                        }
-                      >
-                        {selectedEvents[0].godzina}
-                      </span>
-                    </div>
-                    <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5 truncate">
-                      {TYP_CONFIG[selectedEvents[0].typ]?.label}
-                      {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
-                      {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
-                    </div>
+                    <Link
+                      href={`/kalendarz/${pierwszeWydarzenie.id}/obecnosc`}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-green-500/15 border border-white/10 hover:border-green-400/40 text-white/70 hover:text-green-300 text-xs font-semibold transition-all"
+                      title="Zapisz obecnosc"
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">Obecnosc</span>
+                    </Link>
+                    <Link
+                      href={`/kalendarz/${pierwszeWydarzenie.id}/edytuj`}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-blue-500/15 border border-white/10 hover:border-blue-400/40 text-white/70 hover:text-blue-300 text-xs font-semibold transition-all"
+                      title="Edytuj wydarzenie"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">Edytuj</span>
+                    </Link>
                   </>
                 ) : (
-                  <>
-                    <div className="text-white font-bold text-base lg:text-base leading-tight">
-                      Brak wydarzen
-                    </div>
-                    <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">
-                      {isTodaySelected
-                        ? 'Nic nie zaplanowano na dzis'
-                        : 'Nic nie zaplanowano na ten dzien'}
-                    </div>
-                  </>
+                  <button
+                    onClick={handleFabClick}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Dodaj</span>
+                  </button>
                 )}
               </div>
-              {!isTodaySelected && (
-                <div className="hidden lg:flex flex-col items-end gap-1 flex-shrink-0">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
-                    Wroc do
-                  </span>
-                  <span className="text-xs text-blue-300 font-semibold">Dzisiaj</span>
-                </div>
-              )}
             </div>
-          </button>
+          </div>
 
           <div className="grid grid-cols-4 gap-2 lg:gap-3 animate-fadeIn flex-shrink-0">
             <CompactStat icon="T" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
@@ -516,17 +563,32 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
           </div>
         </div>
 
+        {/* ═══════════════════════════════════════════════════════════
+            PRAWA KOLUMNA
+            - Gdy > 1 wydarzenie wybranego dnia: pokaz liste (bez duplikatu)
+            - Gdy 0 lub 1: pokaz kontekst (ostatni trening tego typu)
+            ═══════════════════════════════════════════════════════════ */}
         <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
           <div ref={eventsAnchorRef} className="scroll-mt-4" />
-          <SelectedDayView
-            selectedDate={selectedDate}
-            todayISO={todayISO}
-            events={selectedEvents}
-            stats={stats}
-            onAddClick={handleFabClick}
-            onDragStart={handleDragStart}
-            draggedId={draggedId}
-          />
+
+          {selectedEvents.length > 1 ? (
+            <SelectedDayView
+              selectedDate={selectedDate}
+              todayISO={todayISO}
+              events={selectedEvents}
+              stats={stats}
+              onAddClick={handleFabClick}
+              onDragStart={handleDragStart}
+              draggedId={draggedId}
+            />
+          ) : (
+            <KontekstDnia
+              wybranyDzien={selectedEvents[0] ?? null}
+              ostatniTreningTypu={kontekstTypu}
+              onAddClick={handleFabClick}
+            />
+          )}
+
           {upcoming.length > 0 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-4 animate-fadeIn shadow-2xl shadow-black/60">
               <div className="flex items-center gap-2 mb-4 lg:mb-3">
@@ -590,6 +652,114 @@ function CompactStat({
           {label}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Karta kontekstu dla dni z 0 lub 1 wydarzeniem
+// ═══════════════════════════════════════════════════════════════
+function KontekstDnia({
+  wybranyDzien,
+  ostatniTreningTypu,
+  onAddClick,
+}: {
+  wybranyDzien: Trening | null;
+  ostatniTreningTypu: Trening | null;
+  onAddClick: () => void;
+}) {
+  const cfg = wybranyDzien ? TYP_CONFIG[wybranyDzien.typ] ?? TYP_CONFIG.trening : null;
+
+  return (
+    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-5 animate-fadeIn shadow-2xl shadow-black/60">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-white/40 text-sm">i</span>
+        <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+          {wybranyDzien ? 'Szczegoly' : 'Szybkie akcje'}
+        </h2>
+      </div>
+
+      {wybranyDzien && cfg ? (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-lg text-white font-black text-base flex-shrink-0`}
+            >
+              {cfg.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-bold text-base leading-tight">{cfg.label}</div>
+              <div className="text-xs text-white/50 mt-0.5">{wybranyDzien.godzina}</div>
+            </div>
+          </div>
+
+          {wybranyDzien.miejsce && (
+            <div className="flex items-start gap-2 text-xs text-white/70 bg-white/5 rounded-xl px-3 py-2">
+              <MapPin className="w-3.5 h-3.5 text-white/40 mt-0.5 flex-shrink-0" />
+              <span className="truncate">{wybranyDzien.miejsce}</span>
+            </div>
+          )}
+
+          {wybranyDzien.przeciwnik && (
+            <div className="text-xs text-white/70 bg-white/5 rounded-xl px-3 py-2">
+              Przeciwnik: <span className="font-semibold text-white">{wybranyDzien.przeciwnik}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Link
+              href={`/kalendarz/${wybranyDzien.id}/obecnosc`}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Obecnosc
+            </Link>
+            <Link
+              href={`/kalendarz/${wybranyDzien.id}/edytuj`}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-blue-500/15 border border-white/10 hover:border-blue-400/40 text-white/70 hover:text-blue-300 text-xs font-semibold transition-all"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edytuj
+            </Link>
+          </div>
+
+          {ostatniTreningTypu && (
+            <div className="pt-3 border-t border-white/10">
+              <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2">
+                Poprzedni {cfg.label.toLowerCase()}
+              </div>
+              <Link
+                href={`/kalendarz/${ostatniTreningTypu.id}/obecnosc`}
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all"
+              >
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-white/80">
+                    {formatShort(ostatniTreningTypu.data)}
+                    {ostatniTreningTypu.przeciwnik && ` vs ${ostatniTreningTypu.przeciwnik}`}
+                  </div>
+                  <div className="text-[10px] text-white/40">{ostatniTreningTypu.godzina}</div>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+              </Link>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-4">
+          <div className="w-14 h-14 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-3 text-white/40 text-2xl font-black">
+            +
+          </div>
+          <h3 className="font-bold text-sm text-white mb-1">Wolny dzien</h3>
+          <p className="text-xs text-white/50 mb-4">Nic nie zaplanowano na ten dzien.</p>
+          <button
+            onClick={onAddClick}
+            className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-green-500/40"
+          >
+            <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+            Dodaj wydarzenie
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -870,35 +1040,25 @@ function SelectedDayView({
           </span>
         )}
       </div>
-      {events.length === 0 ? (
-        <div className="text-center py-6 lg:py-4">
-          <div className="w-14 h-14 lg:w-14 lg:h-14 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-3 text-white/40 font-black">
-            +
-          </div>
-          <h3 className="font-bold text-sm text-white mb-1">Brak wydarzen</h3>
-          <p className="text-xs text-white/50 mb-4">Nic nie zaplanowano na ten dzien.</p>
-          <button
-            onClick={onAddClick}
-            className="group inline-flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-green-500/40"
-          >
-            <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-            Dodaj wydarzenie
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {events.map((t) => (
-            <EventCard
-              key={t.id}
-              trening={t}
-              stats={stats}
-              onDragStart={onDragStart}
-              isDragging={draggedId === t.id}
-              highlighted
-            />
-          ))}
-        </div>
-      )}
+      <div className="space-y-2">
+        {events.map((t) => (
+          <EventCard
+            key={t.id}
+            trening={t}
+            stats={stats}
+            onDragStart={onDragStart}
+            isDragging={draggedId === t.id}
+            highlighted
+          />
+        ))}
+      </div>
+      <button
+        onClick={onAddClick}
+        className="group w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 hover:border-white/40 text-white/50 hover:text-white text-xs font-semibold transition-all"
+      >
+        <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
+        Dodaj kolejne wydarzenie
+      </button>
     </div>
   );
 }
