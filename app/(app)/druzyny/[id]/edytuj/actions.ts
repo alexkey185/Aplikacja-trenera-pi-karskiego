@@ -16,7 +16,7 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('Musisz być zalogowany.');
+    throw new Error('Musisz byc zalogowany.');
   }
 
   await enforceRateLimit(`user:${user.id}`, 'aktualizujDruzyna', 20, 3600);
@@ -33,7 +33,7 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidateTag(DRUZYNY_CACHE_TAG);
+  revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
   revalidatePath('/druzyny');
   redirect('/druzyny?toast=druzyna_zapisana');
@@ -43,7 +43,7 @@ export async function usunDruzyna(formData: FormData) {
   const id = formData.get('id') as string;
 
   if (!id) {
-    throw new Error('Brak ID drużyny.');
+    throw new Error('Brak ID druzyny.');
   }
 
   const supabase = await createClient();
@@ -53,7 +53,7 @@ export async function usunDruzyna(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('Musisz być zalogowany.');
+    throw new Error('Musisz byc zalogowany.');
   }
 
   await enforceRateLimit(`user:${user.id}`, 'usunDruzyna', 5, 3600);
@@ -65,7 +65,7 @@ export async function usunDruzyna(formData: FormData) {
     .single();
 
   if (errFetch || !druzyna) {
-    throw new Error('Nie znaleziono drużyny.');
+    throw new Error('Nie znaleziono druzyny.');
   }
 
   const { error } = await supabase.from('druzyny').delete().eq('id', id);
@@ -97,7 +97,7 @@ export async function usunDruzyna(formData: FormData) {
     }
   }
 
-  revalidateTag(DRUZYNY_CACHE_TAG);
+  revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
   revalidatePath('/druzyny');
   redirect('/druzyny?toast=druzyna_usunieta');

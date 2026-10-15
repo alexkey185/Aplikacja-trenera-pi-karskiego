@@ -16,7 +16,7 @@ export async function dodajDruzyna(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('Musisz być zalogowany.');
+    throw new Error('Musisz byc zalogowany.');
   }
 
   await enforceRateLimit(`user:${user.id}`, 'dodajDruzyna', 10, 3600);
@@ -36,7 +36,7 @@ export async function dodajDruzyna(formData: FormData) {
     .single();
 
   if (error || !nowa) {
-    throw new Error(error?.message ?? 'Nie udało się utworzyć drużyny.');
+    throw new Error(error?.message ?? 'Nie udalo sie utworzyc druzyny.');
   }
 
   const cookieStore = await cookies();
@@ -48,7 +48,7 @@ export async function dodajDruzyna(formData: FormData) {
     secure: process.env.NODE_ENV === 'production',
   });
 
-  revalidateTag(DRUZYNY_CACHE_TAG);
+  revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
   redirect('/druzyny?toast=druzyna_dodana');
 }
