@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ACTIVE_DRUZYNA_COOKIE } from './druzyny';
 
 export async function setActiveDruzyna(id: string) {
-  // Weryfikacja przez RLS — user widzi tylko swoje drużyny
+  // Weryfikacja przez RLS - user widzi tylko swoje drużyny
   const supabase = await createClient();
   const { data } = await supabase
     .from('druzyny')

@@ -5,7 +5,7 @@ import { UserAvatar } from './UserAvatar';
 import { TopBarSkeleton } from './TopBarSkeleton';
 
 // ═══════════════════════════════════════════════════════════════
-// Wewnętrzny async komponent — pobiera dane (może używać cookies).
+// Wewnętrzny async komponent - pobiera dane (może używać cookies).
 // Jest owinięty w Suspense w sync wrapperze poniżej.
 // ═══════════════════════════════════════════════════════════════
 async function TopBarContent() {
@@ -37,7 +37,7 @@ async function TopBarContent() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Publiczny API — sync, owija async część w Suspense.
+// Publiczny API - sync, owija async część w Suspense.
 // Wszystkie istniejące `<TopBar />` w kodzie działają bez zmian.
 // ═══════════════════════════════════════════════════════════════
 export function TopBar() {

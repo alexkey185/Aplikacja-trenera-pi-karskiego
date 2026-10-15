@@ -2,7 +2,7 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 
 // ═══════════════════════════════════════════════════════
-// Wersje dokumentów — zmień gdy aktualizujesz treść
+// Wersje dokumentów - zmień gdy aktualizujesz treść
 // ═══════════════════════════════════════════════════════
 export const TERMS_VERSION = '1.0';
 export const PRIVACY_VERSION = '1.0';
@@ -15,8 +15,8 @@ export const PRIVACY_VERSION = '1.0';
  *   2. Po potwierdzeniu emaila user ma sesję
  *   3. Ta funkcja odczytuje user_metadata i zapisuje do tabeli user_consents
  *
- * Idempotentne — jeśli rekord istnieje, nic nie robi.
- * Fail-safe — błędy logujemy, ale nie przerywamy pracy.
+ * Idempotentne - jeśli rekord istnieje, nic nie robi.
+ * Fail-safe - błędy logujemy, ale nie przerywamy pracy.
  */
 export async function ensureConsentRecord(): Promise<void> {
   try {
@@ -42,7 +42,7 @@ export async function ensureConsentRecord(): Promise<void> {
     const accepted = meta.accepted_terms === true;
 
     if (!accepted) {
-      // User nie zaakceptował (np. legacy konto) — nie zapisujemy
+      // User nie zaakceptował (np. legacy konto) - nie zapisujemy
       return;
     }
 

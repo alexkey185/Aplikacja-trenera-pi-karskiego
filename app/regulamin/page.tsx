@@ -1,7 +1,7 @@
 import { BackButton } from '@/components/BackButton';
 
 export const metadata = {
-  title: 'Regulamin — Talent',
+  title: 'Regulamin - Talent',
   description:
     'Regulamin korzystania z aplikacji Talent do zarządzania drużyną piłkarską',
 };
@@ -55,23 +55,23 @@ export default function Regulamin() {
             <h2 className="text-lg font-bold text-white mb-2">2. Definicje</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong className="text-white">Aplikacja</strong> — serwis
+                <strong className="text-white">Aplikacja</strong> - serwis
                 internetowy „Talent" działający pod adresem wskazanym w pkt 1.
               </li>
               <li>
-                <strong className="text-white">Użytkownik</strong> — osoba
+                <strong className="text-white">Użytkownik</strong> - osoba
                 fizyczna (trener), która utworzyła konto w Aplikacji.
               </li>
               <li>
-                <strong className="text-white">Konto</strong> — indywidualny
+                <strong className="text-white">Konto</strong> - indywidualny
                 dostęp do Aplikacji chroniony adresem e-mail i hasłem.
               </li>
               <li>
-                <strong className="text-white">Zawodnik</strong> — osoba
+                <strong className="text-white">Zawodnik</strong> - osoba
                 niepełnoletnia wpisana przez Użytkownika do ewidencji drużyny.
               </li>
               <li>
-                <strong className="text-white">Drużyna</strong> — zbiór
+                <strong className="text-white">Drużyna</strong> - zbiór
                 zawodników zgrupowanych pod kontem jednego Użytkownika.
               </li>
             </ul>
@@ -119,7 +119,7 @@ export default function Regulamin() {
               <li>Wprowadzania danych zgodnych z prawdą</li>
               <li>
                 Przestrzegania przepisów RODO wobec danych osobowych zawodników
-                — uzyskania zgody rodziców/opiekunów przed wprowadzeniem danych
+                - uzyskania zgody rodziców/opiekunów przed wprowadzeniem danych
                 dziecka do Aplikacji
               </li>
             </ul>
@@ -208,7 +208,7 @@ export default function Regulamin() {
               bezawaryjnie. Zastrzega jednak prawo do czasowego wyłączenia
               Aplikacji w celu przeprowadzenia prac technicznych, aktualizacji
               lub modernizacji. O planowanych przerwach Operator będzie
-              informować z odpowiednim wyprzedzeniem — drogą e-mailową lub
+              informować z odpowiednim wyprzedzeniem - drogą e-mailową lub
               komunikatem w Aplikacji.
             </p>
           </section>
@@ -218,8 +218,8 @@ export default function Regulamin() {
               8. Własność intelektualna
             </h2>
             <p>
-              Wszystkie elementy Aplikacji — w tym kod źródłowy, wygląd
-              graficzny, logo, nazwy, treści oraz układ interfejsu — są
+              Wszystkie elementy Aplikacji - w tym kod źródłowy, wygląd
+              graficzny, logo, nazwy, treści oraz układ interfejsu - są
               chronione prawem autorskim i stanowią własność Operatora.
               Kopiowanie, modyfikowanie, rozpowszechnianie, dekompilacja i
               wykorzystywanie komercyjne bez pisemnej zgody Operatora jest
@@ -270,7 +270,7 @@ export default function Regulamin() {
             <p>
               Operator zastrzega sobie prawo do zmiany Regulaminu. O istotnych
               zmianach Użytkownicy zostaną poinformowani z co najmniej
-              14-dniowym wyprzedzeniem — drogą e-mailową lub poprzez komunikat
+              14-dniowym wyprzedzeniem - drogą e-mailową lub poprzez komunikat
               w Aplikacji. Dalsze korzystanie z Aplikacji po wejściu zmian w
               życie oznacza akceptację nowego Regulaminu.
             </p>

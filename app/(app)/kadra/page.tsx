@@ -129,7 +129,7 @@ export default async function Kadra({
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // Mapa frekwencji (do sortowania) — z RPC
+  // Mapa frekwencji (do sortowania) - z RPC
   // ═══════════════════════════════════════════════════════════════
   const frekwencjaMap = new Map<number, { obecni: number; total: number }>();
   for (const row of (frekwencjaRes.data ?? []) as {
@@ -284,7 +284,7 @@ export default async function Kadra({
                       {z.imie} {z.nazwisko}
                     </div>
                     <div className="text-[10px] md:text-xs text-white/40 leading-tight truncate md:mt-0.5">
-                      {z.rocznik ?? '—'}
+                      {z.rocznik ?? '-'}
                       {z.pozycja ? ` · ${z.pozycja}` : ''}
                     </div>
                   </div>
@@ -300,7 +300,7 @@ export default async function Kadra({
                             })
                           : '';
                         const title = wydarzenie
-                          ? `${dataStr} · ${wydarzenie.typ} — ${labelStatusu(status)}`
+                          ? `${dataStr} · ${wydarzenie.typ} - ${labelStatusu(status)}`
                           : labelStatusu(status);
 
                         const hideOnMobile = idx >= 3;

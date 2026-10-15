@@ -7,9 +7,9 @@ type AuthFieldProps = {
   icon: LucideIcon;
   /** Etykieta pola (np. "Email", "Hasło") */
   label: string;
-  /** HTML name — wymagane dla autouzupełniania i FormData */
+  /** HTML name - wymagane dla autouzupełniania i FormData */
   name: string;
-  /** HTML id — do powiązania label↔input (a11y) */
+  /** HTML id - do powiązania label↔input (a11y) */
   id: string;
   /** Typ pola: email, password, text, tel */
   type?: 'email' | 'password' | 'text' | 'tel';
@@ -19,7 +19,7 @@ type AuthFieldProps = {
   onChange: (value: string) => void;
   /** Placeholder */
   placeholder?: string;
-  /** Komunikat błędu (jeśli jest — pole na czerwono) */
+  /** Komunikat błędu (jeśli jest - pole na czerwono) */
   error?: string;
   /** Atrybut autocomplete (email, current-password, new-password, tel) */
   autoComplete?: string;

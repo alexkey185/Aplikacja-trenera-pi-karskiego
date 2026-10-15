@@ -57,9 +57,9 @@ export function PWAInstallPrompt() {
   useEffect(() => {
     // Dev: nie przeszkadzaj w pracy
     if (process.env.NODE_ENV !== 'production') return;
-    // Już zainstalowana — cisza
+    // Już zainstalowana - cisza
     if (isStandaloneMode()) return;
-    // Ostatnio odrzucono — poczekaj 30 dni
+    // Ostatnio odrzucono - poczekaj 30 dni
     if (isDismissedRecently()) return;
 
     // Zlicz wizytę
@@ -68,16 +68,16 @@ export function PWAInstallPrompt() {
       localStorage.setItem(VISITS_KEY, String(visits));
     } catch {}
 
-    // Za mało wizyt — poczekaj
+    // Za mało wizyt - poczekaj
     if (visits < VISITS_BEFORE_PROMPT) return;
 
-    // iOS Safari — brak natywnego promptu, pokaż instrukcje
+    // iOS Safari - brak natywnego promptu, pokaż instrukcje
     if (isIOS()) {
       setVisible(true);
       return;
     }
 
-    // Chromium — czekaj na beforeinstallprompt
+    // Chromium - czekaj na beforeinstallprompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -88,7 +88,7 @@ export function PWAInstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // appinstalled — user zainstalował, ukryj prompt i wyczyść dismissal
+  // appinstalled - user zainstalował, ukryj prompt i wyczyść dismissal
   useEffect(() => {
     const handler = () => {
       setVisible(false);

@@ -1,7 +1,7 @@
 import { BackButton } from '@/components/BackButton';
 
 export const metadata = {
-  title: 'Polityka prywatności — Talent',
+  title: 'Polityka prywatności - Talent',
   description:
     'Polityka prywatności aplikacji Talent do zarządzania drużyną piłkarską',
 };
@@ -31,7 +31,7 @@ export default function PolitykaPrywatnosci() {
               <strong className="text-white">Talent</strong> (dalej:
               „Aplikacja"), dostępnej pod adresem{' '}
               <strong className="text-white">https://talentapp.pl.pl</strong>,
-              służącej do zarządzania drużyną piłkarską — planowania treningów,
+              służącej do zarządzania drużyną piłkarską - planowania treningów,
               meczów oraz prowadzenia ewidencji obecności zawodników.
             </p>
             <p>Administratorem danych osobowych (dalej: „Administrator") jest:</p>
@@ -59,7 +59,7 @@ export default function PolitykaPrywatnosci() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Adres e-mail</li>
-              <li>Imię i nazwisko (opcjonalnie — podawane w profilu)</li>
+              <li>Imię i nazwisko (opcjonalnie - podawane w profilu)</li>
               <li>Data utworzenia konta i ostatniego logowania</li>
               <li>Zaszyfrowane hasło (nie mamy do niego dostępu)</li>
             </ul>
@@ -72,7 +72,7 @@ export default function PolitykaPrywatnosci() {
               <li>Rocznik (rok urodzenia)</li>
               <li>Pozycja na boisku (opcjonalnie)</li>
               <li>Numer na koszulce (opcjonalnie)</li>
-              <li>Kontakt do rodzica/opiekuna — numer telefonu (opcjonalnie)</li>
+              <li>Kontakt do rodzica/opiekuna - numer telefonu (opcjonalnie)</li>
               <li>Notatki trenera dotyczące zawodnika (opcjonalnie)</li>
               <li>Status obecności na treningach i meczach</li>
             </ul>
@@ -90,24 +90,24 @@ export default function PolitykaPrywatnosci() {
             <p className="mb-3">Dane przetwarzamy w następujących celach:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li>
-                <strong className="text-white">Świadczenie usługi</strong> —
+                <strong className="text-white">Świadczenie usługi</strong> -
                 umożliwienie prowadzenia ewidencji drużyny i planowania
-                treningów (art. 6 ust. 1 lit. b RODO — wykonanie umowy).
+                treningów (art. 6 ust. 1 lit. b RODO - wykonanie umowy).
               </li>
               <li>
                 <strong className="text-white">
                   Prawnie uzasadniony interes
                 </strong>{' '}
-                — zapewnienie bezpieczeństwa i prawidłowego działania Aplikacji,
+                - zapewnienie bezpieczeństwa i prawidłowego działania Aplikacji,
                 dochodzenie roszczeń (art. 6 ust. 1 lit. f RODO).
               </li>
               <li>
-                <strong className="text-white">Zgoda</strong> — rodzica lub
+                <strong className="text-white">Zgoda</strong> - rodzica lub
                 opiekuna prawnego na przetwarzanie danych dziecka w Aplikacji
                 (art. 6 ust. 1 lit. a RODO).
               </li>
               <li>
-                <strong className="text-white">Obowiązki prawne</strong> —
+                <strong className="text-white">Obowiązki prawne</strong> -
                 realizacja obowiązków wynikających z przepisów prawa, w tym
                 podatkowych i rachunkowych (art. 6 ust. 1 lit. c RODO).
               </li>
@@ -128,7 +128,7 @@ export default function PolitykaPrywatnosci() {
             <p className="mb-3">
               Zgoda obejmuje przetwarzanie danych w zakresie wskazanym w pkt 2.2
               Polityki. Rodzic lub opiekun ma prawo w każdej chwili wycofać
-              zgodę — wówczas dane dziecka zostaną usunięte z Aplikacji na
+              zgodę - wówczas dane dziecka zostaną usunięte z Aplikacji na
               żądanie trenera lub Administratora.
             </p>
             <p>
@@ -144,7 +144,7 @@ export default function PolitykaPrywatnosci() {
             </h2>
             <p>
               Dane przetwarzamy przez okres korzystania z Aplikacji przez
-              trenera, a po jego zakończeniu — przez okres niezbędny do
+              trenera, a po jego zakończeniu - przez okres niezbędny do
               realizacji celów statutowych klubu oraz przez okres wymagany
               przepisami prawa (w szczególności podatkowymi i rachunkowymi).
               Dane są usuwane na żądanie trenera lub rodzica/opiekuna.
@@ -162,16 +162,16 @@ export default function PolitykaPrywatnosci() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong className="text-white">Supabase Inc.</strong> —
+                <strong className="text-white">Supabase Inc.</strong> -
                 dostawca infrastruktury bazy danych i uwierzytelniania
                 (przetwarzanie w chmurze)
               </li>
               <li>
-                <strong className="text-white">Vercel Inc.</strong> — dostawca
+                <strong className="text-white">Vercel Inc.</strong> - dostawca
                 hostingu aplikacji
               </li>
               <li>
-                <strong className="text-white">Resend</strong> —
+                <strong className="text-white">Resend</strong> -
                 dostawca usługi wysyłki wiadomości e-mail (np. SendGrid,
                 Resend)
               </li>
@@ -196,7 +196,7 @@ export default function PolitykaPrywatnosci() {
               <li>Szyfrowanie bazy danych w spoczynku</li>
               <li>Zaszyfrowane hasła użytkowników (bcrypt)</li>
               <li>
-                Mechanizm Row Level Security (RLS) — każdy trener widzi
+                Mechanizm Row Level Security (RLS) - każdy trener widzi
                 wyłącznie dane swojej drużyny
               </li>
               <li>Regularne kopie zapasowe</li>
@@ -238,7 +238,7 @@ export default function PolitykaPrywatnosci() {
             </h2>
             <p className="mb-3">
               Aplikacja wykorzystuje pliki cookies wyłącznie w celach
-              technicznych — do utrzymania sesji zalogowanego użytkownika.
+              technicznych - do utrzymania sesji zalogowanego użytkownika.
               Nie stosujemy cookies marketingowych, reklamowych ani
               analitycznych.
             </p>
@@ -256,7 +256,7 @@ export default function PolitykaPrywatnosci() {
             <p>
               Zastrzegamy sobie prawo do zmiany niniejszej Polityki. O
               istotnych zmianach użytkownicy zostaną poinformowani z
-              odpowiednim wyprzedzeniem — drogą e-mailową lub poprzez komunikat
+              odpowiednim wyprzedzeniem - drogą e-mailową lub poprzez komunikat
               w Aplikacji.
             </p>
           </section>

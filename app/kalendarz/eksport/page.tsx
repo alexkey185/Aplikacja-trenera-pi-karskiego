@@ -56,7 +56,7 @@ export default async function EksportPage({
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════════
-  // POPRAWKA: filtr po druzyna_id — wcześniej mieszał drużyny
+  // POPRAWKA: filtr po druzyna_id - wcześniej mieszał drużyny
   // ═══════════════════════════════════════════════════════════
   const { data: treningi } = await supabase
     .from('treningi')
@@ -79,7 +79,7 @@ export default async function EksportPage({
 
   const zakres = `${pad2(poniedzialek.getDate())}.${pad2(
     poniedzialek.getMonth() + 1
-  )} — ${pad2(niedziela.getDate())}.${pad2(niedziela.getMonth() + 1)}`;
+  )} - ${pad2(niedziela.getDate())}.${pad2(niedziela.getMonth() + 1)}`;
 
   const dni = Array.from({ length: 7 }, (_, i) => {
     const d = addDays(poniedzialek, i);

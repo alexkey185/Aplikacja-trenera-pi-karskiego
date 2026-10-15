@@ -96,7 +96,7 @@ export async function dodajTrening(formData: FormData) {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // revalidatePath('/', 'layout') — kluczowe dla badge „Dzisiaj"
+  // revalidatePath('/', 'layout') - kluczowe dla badge „Dzisiaj"
   // w BottomNav (desktop sidebar). Bez tego licznik nie odświeży
   // się po dodaniu treningu na dziś.
   // ═══════════════════════════════════════════════════════════

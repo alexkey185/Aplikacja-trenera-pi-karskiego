@@ -7,7 +7,7 @@ export default function AuthLayout({
 }) {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
-      {/* Tło — mobile */}
+      {/* Tło - mobile */}
       <div className="fixed inset-0 z-0 md:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -19,7 +19,7 @@ export default function AuthLayout({
         />
       </div>
 
-      {/* Tło — desktop */}
+      {/* Tło - desktop */}
       <div className="fixed inset-0 z-0 hidden md:block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -34,7 +34,7 @@ export default function AuthLayout({
       <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
 
       {/* Zawartość
-          .auth-content — safe area na iOS (góra + dół),
+          .auth-content - safe area na iOS (góra + dół),
           żeby formularz nie wchodził pod pasek statusu ani pod home indicator. */}
       <div className="auth-content relative z-20 min-h-screen w-full flex items-center justify-center p-4">
         <div className="w-full max-w-sm">{children}</div>

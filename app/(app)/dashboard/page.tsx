@@ -229,7 +229,7 @@ export default async function Dashboard({
           </Link>
           <div className="text-center px-2">
             <div className="font-bold text-white text-sm capitalize">
-              {poniedzialek.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} —{' '}
+              {poniedzialek.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} -{' '}
               {niedziela.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
             </div>
             {jestWTygodniu && (
@@ -572,7 +572,7 @@ export default async function Dashboard({
           <div className="flex items-center gap-2 mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-              Frekwencja — {teraz.toLocaleDateString('pl-PL', { month: 'long' })}
+              Frekwencja - {teraz.toLocaleDateString('pl-PL', { month: 'long' })}
             </h2>
           </div>
           {(() => {

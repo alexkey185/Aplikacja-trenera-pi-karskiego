@@ -6,13 +6,13 @@ import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 // ═══════════════════════════════════════════════════════════════
 // force-dynamic usunięte.
 //
-// Layout nie fetchuje danych — tylko renderuje shell + Suspense.
+// Layout nie fetchuje danych - tylko renderuje shell + Suspense.
 // Dynamiczne fragmenty (TopBar, BottomNav) i tak wymuszają
 // dynamic mode przez cookies(), więc każda strona pod tym
 // layoutem pozostaje dynamic. Ale Next może teraz streamować
 // shell zanim dane się załadują.
 //
-// Jeśli widzisz dziwne błędy hydratacji — przywróć `force-dynamic`.
+// Jeśli widzisz dziwne błędy hydratacji - przywróć `force-dynamic`.
 // ═══════════════════════════════════════════════════════════════
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

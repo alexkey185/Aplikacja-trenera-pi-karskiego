@@ -309,7 +309,7 @@ export function Landing() {
             <div>
               <h2 className={`${styles.h2} ${styles.rv}`}>Cała kadra w jednym miejscu</h2>
               <p className={`${styles.sub} ${styles.rv}`}>
-                Imię, rocznik, pozycja i numer — plus kropki z ostatnich treningów obok każdego nazwiska.
+                Imię, rocznik, pozycja i numer - plus kropki z ostatnich treningów obok każdego nazwiska.
                 Wiesz, kto przestał przychodzić, zanim zrobi się z tego problem.
               </p>
               <ul className={styles.ticks}>
@@ -339,7 +339,7 @@ export function Landing() {
             <div>
               <h2 className={`${styles.h2} ${styles.rv}`}>Plan, który nie ginie w wiadomościach</h2>
               <p className={`${styles.sub} ${styles.rv}`}>
-                Treningi, mecze, sparingi i turnieje w jednym kalendarzu. Każdy typ wydarzenia ma swój kolor —
+                Treningi, mecze, sparingi i turnieje w jednym kalendarzu. Każdy typ wydarzenia ma swój kolor -
                 na pierwszy rzut oka wiesz, co się dzieje.
               </p>
               <ul className={styles.ticks}>

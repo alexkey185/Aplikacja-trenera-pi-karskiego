@@ -55,7 +55,7 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
     throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
   }
 
-  // ── Zawodnicy aktywnej drużyny — do walidacji przynależności ──
+  // ── Zawodnicy aktywnej drużyny - do walidacji przynależności ──
   const { data: zawodnicyDruzyny } = await supabase
     .from('zawodnicy')
     .select('id')
@@ -67,7 +67,7 @@ export async function zapiszObecnosc(treningId: number, formData: FormData) {
   // Zbieramy wpisy z FormData.
   //
   // Walidacja per wpis:
-  //   1. klucz ma format `status_<liczba>` (Number, nie parseInt —
+  //   1. klucz ma format `status_<liczba>` (Number, nie parseInt -
   //      parseInt("5abc") zwracałoby 5),
   //   2. zawodnik należy do aktywnej drużyny,
   //   3. wartość jest w whitelist.

@@ -7,7 +7,7 @@ import { aktualizujTreningSchema, parseFormData } from '@/lib/schemas';
 import { revalidatePath } from 'next/cache';
 
 // ═══════════════════════════════════════════════════════════════
-// AKTUALIZACJA TRENINGU — single lub cała seria
+// AKTUALIZACJA TRENINGU - single lub cała seria
 // ═══════════════════════════════════════════════════════════════
 export async function aktualizujTrening(
   id: number,
@@ -77,7 +77,7 @@ export async function aktualizujTrening(
 }
 
 // ═══════════════════════════════════════════════════════════════
-// USUWANIE TRENINGU — z opcją całej serii
+// USUWANIE TRENINGU - z opcją całej serii
 // ═══════════════════════════════════════════════════════════════
 export async function usunTreningZakres(
   id: number,

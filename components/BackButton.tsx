@@ -8,7 +8,7 @@ export function BackButton({ href = '/' }: { href?: string }) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Jeśli user przyszedł z innej strony w tej samej sesji — wróć tam.
+    // Jeśli user przyszedł z innej strony w tej samej sesji - wróć tam.
     // W przeciwnym razie idź do `href` (fallback = "/").
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back();

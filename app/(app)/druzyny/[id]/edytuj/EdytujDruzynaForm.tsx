@@ -134,7 +134,7 @@ export function EdytujDruzynaForm({
       </form>
 
       {/* ════════════════════════════════════════ */}
-      {/* STREFA NIEBEZPIECZNA — USUWANIE */}
+      {/* STREFA NIEBEZPIECZNA - USUWANIE */}
       {/* ════════════════════════════════════════ */}
       <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center gap-2 mb-3">

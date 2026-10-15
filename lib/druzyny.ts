@@ -16,12 +16,12 @@ export type Druzyna = {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// Cache tag — używany w revalidateTag po mutacji drużyn.
+// Cache tag - używany w revalidateTag po mutacji drużyn.
 // ═══════════════════════════════════════════════════════════════
 export const DRUZYNY_CACHE_TAG = 'druzyny';
 
 // ═══════════════════════════════════════════════════════════════
-// Cache WEWNĘTRZNY — nie czyta cookies, więc może być
+// Cache WEWNĘTRZNY - nie czyta cookies, więc może być
 // cross-requestowy. Klucz zawiera userId (user-specific cache).
 // ═══════════════════════════════════════════════════════════════
 const _getDruzynyForUser = unstable_cache(
@@ -39,7 +39,7 @@ const _getDruzynyForUser = unstable_cache(
 );
 
 // ═══════════════════════════════════════════════════════════════
-// Publiczne API — czyta usera z cookies, potem uderza w cache.
+// Publiczne API - czyta usera z cookies, potem uderza w cache.
 // React cache() dodatkowo dedupuje w obrębie jednego requestu.
 // ═══════════════════════════════════════════════════════════════
 export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
@@ -73,7 +73,7 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// Liczba zawodników per drużyna — RPC.
+// Liczba zawodników per drużyna - RPC.
 // ═══════════════════════════════════════════════════════════════
 export const getZawodnicyCounts = cache(
   async (): Promise<Record<string, number>> => {

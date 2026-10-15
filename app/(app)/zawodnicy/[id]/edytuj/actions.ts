@@ -75,7 +75,7 @@ export async function usunZawodnika(formData: FormData) {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // Poprawka: NIE kasujemy obecnosci ręcznie — kaskada FK
+  // Poprawka: NIE kasujemy obecnosci ręcznie - kaskada FK
   // (migracja 20261015_fk_cascade.sql) robi to atomowo w bazie.
   // Ręczne kasowanie było źródłem race conditions i dwóch requestów.
   // ═══════════════════════════════════════════════════════════════

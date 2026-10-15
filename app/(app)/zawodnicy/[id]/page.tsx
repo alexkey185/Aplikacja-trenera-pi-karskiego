@@ -191,7 +191,7 @@ export default async function KartaZawodnika({
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
             <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-3xl shadow-2xl text-white">
-              {zawodnik.numer ?? '—'}
+              {zawodnik.numer ?? '-'}
             </div>
           </div>
           <div className="flex-1 min-w-0">

@@ -73,7 +73,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
     const slowo =
       liczba === 1 ? 'wydarzenie' : liczba < 5 ? 'wydarzenia' : 'wydarzeń';
 
-    return `Zostanie utworzonych ${liczba} ${slowo} — od ${format(
+    return `Zostanie utworzonych ${liczba} ${slowo} - od ${format(
       startDate
     )} do ${format(endDate)}.`;
   }, [cyklDostepny, cykl, data, dataDo]);

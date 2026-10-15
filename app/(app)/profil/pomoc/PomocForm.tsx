@@ -169,7 +169,7 @@ export function PomocForm({ defaultEmail }: { defaultEmail: string }) {
           onChange={(e) => setOpis(e.target.value)}
           rows={6}
           maxLength={2000}
-          placeholder="Opisz dokładnie co się stało. Jeśli to błąd — napisz co robiłeś, gdy wystąpił."
+          placeholder="Opisz dokładnie co się stało. Jeśli to błąd - napisz co robiłeś, gdy wystąpił."
           className="w-full bg-white/5 border border-white/15 focus:border-blue-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none resize-none transition-all leading-relaxed"
         />
         <div className="text-[10px] text-white/30 text-right mt-1">

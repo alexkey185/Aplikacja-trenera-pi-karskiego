@@ -230,7 +230,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   };
 
   // ═══════════════════════════════════════════════════════════════
-  // KAFEL GÓRNY — kontekstowy: pokazuje WYBRANY dzień, nie zawsze dziś
+  // KAFEL GÓRNY - kontekstowy: pokazuje WYBRANY dzień, nie zawsze dziś
   // ═══════════════════════════════════════════════════════════════
   const selectedDateObj = parseISO(selectedDate);
   const selectedDayLabel = DAYS_LONG[selectedDateObj.getDay()];
@@ -266,7 +266,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
           {/* ═══════════════════════════════════════════════════════════
-              KAFEL DNIA — kontekstowy
+              KAFEL DNIA - kontekstowy
               - Jeśli selected = today → "Dzisiaj" (zielony, klikalny by wrócić)
               - Jeśli selected != today → nazwa dnia + data (niebieski)
               ═══════════════════════════════════════════════════════════ */}

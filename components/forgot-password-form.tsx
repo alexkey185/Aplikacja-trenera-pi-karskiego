@@ -83,7 +83,7 @@ export function ForgotPasswordForm() {
             Zapomniałeś hasła?
           </h1>
           <p className="text-xs text-white/60 mt-1 max-w-xs mx-auto">
-            Wpisz email, na który założone jest konto — wyślemy link do zresetowania hasła.
+            Wpisz email, na który założone jest konto - wyślemy link do zresetowania hasła.
           </p>
         </div>
 

@@ -18,8 +18,8 @@ const ALLOWED_TYPES = new Set<EmailOtpType>([
 
 // ═══════════════════════════════════════════════════════════
 // Domyślne ścieżki zależne od typu OTP
-// — recovery (reset hasła) idzie na update-password
-// — reszta idzie na dashboard
+// - recovery (reset hasła) idzie na update-password
+// - reszta idzie na dashboard
 // ═══════════════════════════════════════════════════════════
 function getDefaultNext(type: EmailOtpType | null): string {
   if (type === 'recovery') return '/auth/update-password';
@@ -29,8 +29,8 @@ function getDefaultNext(type: EmailOtpType | null): string {
 
 // ═══════════════════════════════════════════════════════════
 // Bezpieczna walidacja parametru `next`
-// — obsługuje też pełne URL-e z naszego hosta (wyciąga ścieżkę)
-// — blokuje open redirect, javascript:, data: itp.
+// - obsługuje też pełne URL-e z naszego hosta (wyciąga ścieżkę)
+// - blokuje open redirect, javascript:, data: itp.
 // ═══════════════════════════════════════════════════════════
 function safeNext(rawNext: string | null, type: EmailOtpType | null): string {
   const fallback = getDefaultNext(type);
@@ -39,7 +39,7 @@ function safeNext(rawNext: string | null, type: EmailOtpType | null): string {
 
   let candidate = rawNext;
 
-  // Jeśli pełny URL — zaakceptuj tylko jeśli host jest nasz
+  // Jeśli pełny URL - zaakceptuj tylko jeśli host jest nasz
   if (/^https?:\/\//i.test(rawNext)) {
     try {
       const url = new URL(rawNext);
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     if (!error) {
       // ═══════════════════════════════════════════════════
       // Zapisz zgodę RODO z user_metadata (jeśli signup)
-      // — idempotentne, więc bezpieczne dla każdego typu OTP
+      // - idempotentne, więc bezpieczne dla każdego typu OTP
       // ═══════════════════════════════════════════════════
       await ensureConsentRecord();
 

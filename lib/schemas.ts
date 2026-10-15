@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ═══════════════════════════════════════════════════
-// HELPERY — pola opcjonalne
+// HELPERY - pola opcjonalne
 // ═══════════════════════════════════════════════════
 
 const optionalString = (max: number) =>
@@ -26,11 +26,11 @@ const optionalNumber = (min: number, max: number) =>
     });
 
 // ═══════════════════════════════════════════════════
-// DATA — walidacja formatu + realnego istnienia
+// DATA - walidacja formatu + realnego istnienia
 //
 // Regex sprawdza tylko format (YYYY-MM-DD), ale przepuszcza
 // nieistniejące daty (31 lutego, 32 stycznia, miesiąc 13).
-// Refine sprawdza round-trip przez Date — jeśli JS normalizuje
+// Refine sprawdza round-trip przez Date - jeśli JS normalizuje
 // datę (31 lutego → 3 marca), znaczy że była nieprawidłowa.
 // ═══════════════════════════════════════════════════
 
@@ -62,7 +62,7 @@ const isoDate = z
   );
 
 // ═══════════════════════════════════════════════════
-// GODZINA — walidacja formatu + realnego zakresu
+// GODZINA - walidacja formatu + realnego zakresu
 //
 // Regex przepuszcza 25:99, 99:99. Refine pilnuje 0-23 : 0-59.
 // ═══════════════════════════════════════════════════
@@ -193,7 +193,7 @@ export function parseFormData<T extends z.ZodTypeAny>(
   return result.data;
 }
 // ═══════════════════════════════════════════════════
-// AUTH — walidacja formularzy logowania/rejestracji
+// AUTH - walidacja formularzy logowania/rejestracji
 // ═══════════════════════════════════════════════════
 
 /**
@@ -206,7 +206,7 @@ export const authEmailSchema = z
   .email('Adres e-mail jest nieprawidłowy');
 
 /**
- * Hasło — minimum 8 znaków (musi być zgodne z ustawieniem Supabase),
+ * Hasło - minimum 8 znaków (musi być zgodne z ustawieniem Supabase),
  * maksimum 72 znaki (limit bcrypt)
  */
 export const authPasswordSchema = z
@@ -216,7 +216,7 @@ export const authPasswordSchema = z
   .max(72, 'Hasło może mieć maksymalnie 72 znaki');
 
 /**
- * Login — email + hasło (bez limitu długości hasła — tylko sprawdzamy czy niepuste)
+ * Login - email + hasło (bez limitu długości hasła - tylko sprawdzamy czy niepuste)
  */
 export const loginSchema = z.object({
   email: authEmailSchema,
@@ -226,7 +226,7 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 /**
- * Sign-up — email + hasło + powtórzenie + akceptacja regulaminu
+ * Sign-up - email + hasło + powtórzenie + akceptacja regulaminu
  */
 export const signUpSchema = z
   .object({
@@ -245,7 +245,7 @@ export const signUpSchema = z
 export type SignUpInput = z.infer<typeof signUpSchema>;
 
 /**
- * Forgot password — tylko email
+ * Forgot password - tylko email
  */
 export const forgotPasswordSchema = z.object({
   email: authEmailSchema,
@@ -254,7 +254,7 @@ export const forgotPasswordSchema = z.object({
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 /**
- * Update password — nowe hasło + powtórzenie
+ * Update password - nowe hasło + powtórzenie
  */
 export const updatePasswordSchema = z
   .object({
@@ -269,7 +269,7 @@ export const updatePasswordSchema = z
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
 
 /**
- * Helper — zamienia ZodError na mapę błędów per pole.
+ * Helper - zamienia ZodError na mapę błędów per pole.
  *
  * Użycie:
  *   const result = signUpSchema.safeParse(data);

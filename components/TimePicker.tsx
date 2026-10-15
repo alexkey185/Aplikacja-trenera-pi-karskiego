@@ -32,7 +32,7 @@ export function TimePicker({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  // Po otwarciu — przewiń do aktualnie wybranych wartości
+  // Po otwarciu - przewiń do aktualnie wybranych wartości
   useEffect(() => {
     if (!open) return;
     setTimeout(() => {

@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // ═══════════════════════════════════════════════════════════
-// Ścieżki publiczne — dostępne bez logowania.
+// Ścieżki publiczne - dostępne bez logowania.
 // Middleware NIE odpytuje Supabase Auth dla tych tras.
 // ═══════════════════════════════════════════════════════════
 const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin', '/auth'];
@@ -31,7 +31,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // FAST PATH: ścieżki publiczne — zwróć NextResponse.next()
+  // FAST PATH: ścieżki publiczne - zwróć NextResponse.next()
   // bez tworzenia klienta Supabase i bez wywołania getUser().
   // ═══════════════════════════════════════════════════════════
   if (isPublicPath(pathname)) {

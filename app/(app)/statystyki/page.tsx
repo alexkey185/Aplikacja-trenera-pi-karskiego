@@ -122,7 +122,7 @@ function formatDataKrotka(iso: string): string {
 function formatZakres(od: string, do_: string): string {
   const d1 = new Date(od + 'T00:00:00');
   const d2 = new Date(do_ + 'T00:00:00');
-  return `${pad2(d1.getDate())}.${pad2(d1.getMonth() + 1)}.${d1.getFullYear()} — ${pad2(d2.getDate())}.${pad2(d2.getMonth() + 1)}.${d2.getFullYear()}`;
+  return `${pad2(d1.getDate())}.${pad2(d1.getMonth() + 1)}.${d1.getFullYear()} - ${pad2(d2.getDate())}.${pad2(d2.getMonth() + 1)}.${d2.getFullYear()}`;
 }
 
 export default async function Statystyki({
@@ -143,7 +143,7 @@ export default async function Statystyki({
   const zakres = getZakres(okres, m);
 
   // ═══════════════════════════════════════════════════════════
-  // JEDNO RPC — cała agregacja w Postgresie.
+  // JEDNO RPC - cała agregacja w Postgresie.
   // Było: 2 zapytania + O(n×m) w JS + ~5000 wierszy przez sieć
   // Jest: 1 RPC + agregacja po stronie bazy, ~50 wierszy
   // ═══════════════════════════════════════════════════════════
@@ -161,7 +161,7 @@ export default async function Statystyki({
     console.error('RPC get_statystyki_druzyny error:', rpcError);
   }
 
-  // Fallback — pusta struktura gdy RPC zawiedzie
+  // Fallback - pusta struktura gdy RPC zawiedzie
   const emptyStats: RpcStats = {
     total_treningi: 0,
     total_wpisy: 0,
@@ -199,7 +199,7 @@ export default async function Statystyki({
   const liczbaDoPoprawy = doPoprawy.length;
   const maLuki = treningiBezWpisow.length > 0;
 
-  // ── Wykres miesięcy — wzbogać label z ISO ──
+  // ── Wykres miesięcy - wzbogać label z ISO ──
   const miesiaceWykres = miesiace.map((mm) => ({
     ...mm,
     label: formatKrotkaMiesiac(mm.iso),
@@ -209,7 +209,7 @@ export default async function Statystyki({
     .filter((mm) => mm.procent !== null)
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
 
-  // ── Dropdown miesięcy — pobieramy tylko daty (bez obecności) ──
+  // ── Dropdown miesięcy - pobieramy tylko daty (bez obecności) ──
   const { data: wszystkieDaty } = await supabase
     .from('treningi')
     .select('data')
@@ -445,7 +445,7 @@ export default async function Statystyki({
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp className="w-4 h-4 text-green-400" />
                   <h3 className="text-xs md:text-sm font-bold text-white/80 uppercase tracking-widest">
-                    Frekwencja — ostatnie 6 miesięcy
+                    Frekwencja - ostatnie 6 miesięcy
                   </h3>
                 </div>
                 <p className="text-xs text-white/50 leading-relaxed max-w-xl">

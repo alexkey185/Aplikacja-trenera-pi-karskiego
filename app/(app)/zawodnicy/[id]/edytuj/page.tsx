@@ -18,7 +18,7 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════
-  // Konkretne kolumny — pomijamy `druzyna_id` i `created_at`,
+  // Konkretne kolumny - pomijamy `druzyna_id` i `created_at`,
   // których formularz nie używa.
   // ═══════════════════════════════════════════════════════
   const { data: zawodnik, error } = await supabase
@@ -73,7 +73,7 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
             name="pozycja"
             defaultValue={zawodnik.pozycja ?? ''}
             options={[
-              { value: '', label: '— wybierz —' },
+              { value: '', label: '- wybierz -' },
               { value: 'Bramkarz', label: '🧤 Bramkarz' },
               { value: 'Obrońca', label: '🛡️ Obrońca' },
               { value: 'Pomocnik', label: '⚙️ Pomocnik' },

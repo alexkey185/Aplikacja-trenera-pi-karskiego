@@ -43,15 +43,15 @@ export function UpdatePasswordForm() {
       // Sukces: pełne wylogowanie + hard redirect na login.
       //
       // Dlaczego nie signOut({ scope: 'others' }):
-      //   — scope: 'others' wylogowuje tylko INNE sesje, bieżąca
+      //   - scope: 'others' wylogowuje tylko INNE sesje, bieżąca
       //     zostaje aktywna. User ląduje na /auth/login, ale
       //     login/page.tsx widzi zalogowanego usera i robi
-      //     redirect('/dashboard') — wygląda jakby wylogowanie
+      //     redirect('/dashboard') - wygląda jakby wylogowanie
       //     nie zadziałało.
       //
       // Dlaczego window.location.href zamiast router.push:
-      //   — hard reload czyści cały stan klienta (loading, cache SW)
-      //   — standard dla operacji logout
+      //   - hard reload czyści cały stan klienta (loading, cache SW)
+      //   - standard dla operacji logout
       // ═══════════════════════════════════════════════════
       await supabase.auth.signOut();
       window.location.href = '/auth/login';

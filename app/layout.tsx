@@ -10,7 +10,7 @@ import { getActiveDruzynaId } from '@/lib/druzyny';
 import './globals.css';
 
 // ═══════════════════════════════════════════════════════════════
-// metadataBase — używane do budowania absolutnych URL w OG/twitter.
+// metadataBase - używane do budowania absolutnych URL w OG/twitter.
 //
 // Priorytet:
 //   1. NEXT_PUBLIC_SITE_URL (produkcja / self-hosted)
@@ -25,7 +25,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Talent — Aplikacja Trenera',
+  title: 'Talent - Aplikacja Trenera',
   description: 'Aplikacja dla trenerów piłki nożnej',
   applicationName: 'Talent',
   appleWebApp: {
@@ -71,7 +71,7 @@ function getDzisISO(): string {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BottomNav — async komponent pobierający user + count.
+// BottomNav - async komponent pobierający user + count.
 // Wydzielony, żeby owinąć w Suspense w RootLayout.
 // ═══════════════════════════════════════════════════════════════
 async function BottomNavServer() {

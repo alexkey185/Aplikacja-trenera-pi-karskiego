@@ -18,8 +18,8 @@ import {
 
 // ═══════════════════════════════════════════════════════
 // Data w strefie Europe/Warsaw (nie UTC!)
-// — o 23:00 czasu polskiego UTC pokazałoby „jutro"
-// — 'sv-SE' locale zwraca format YYYY-MM-DD (ISO)
+// - o 23:00 czasu polskiego UTC pokazałoby „jutro"
+// - 'sv-SE' locale zwraca format YYYY-MM-DD (ISO)
 // ═══════════════════════════════════════════════════════
 function getDzisISO(): string {
   return new Date().toLocaleDateString('sv-SE', {
@@ -55,7 +55,7 @@ export default async function DzienSzczegoly({
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════════
-  // JEDNO zapytanie — treningi z zagnieżdżoną obecnością.
+  // JEDNO zapytanie - treningi z zagnieżdżoną obecnością.
   //
   // Było: 2 zapytania (treningi, potem osobno obecnosc .in(ids))
   // Jest: 1 zapytanie (PostgREST robi LEFT JOIN, RLS per tabela)
@@ -76,7 +76,7 @@ export default async function DzienSzczegoly({
 
   const treningi = (rawTreningi ?? []) as TreningZObecnoscia[];
 
-  // Stats per trening — spłaszczamy z zagnieżdżonej tablicy
+  // Stats per trening - spłaszczamy z zagnieżdżonej tablicy
   const stats = new Map<number, { obecni: number; total: number }>();
   treningi.forEach((t) => {
     const s = stats.get(t.id) ?? { obecni: 0, total: 0 };

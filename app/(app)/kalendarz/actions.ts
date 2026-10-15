@@ -9,10 +9,10 @@ import { revalidatePath } from 'next/cache';
  * Przenosi trening na inną datę (drag & drop w kalendarzu).
  *
  * Bezpieczeństwo:
- *   - filtr po `druzyna_id` (defense-in-depth obok RLS) — bez tego
+ *   - filtr po `druzyna_id` (defense-in-depth obok RLS) - bez tego
  *     każdy zalogowany user mógłby przenieść trening innej drużyny
  *     znając jego `id` (IDOR),
- *   - rate limit 100/h — drag & drop + brak limitu = spam UPDATE-ami,
+ *   - rate limit 100/h - drag & drop + brak limitu = spam UPDATE-ami,
  *   - walidacja daty: format ISO + realne istnienie (round-trip przez Date),
  *     bo sam regex `^\d{4}-\d{2}-\d{2}$` przepuszcza 2026-31-45.
  */
@@ -73,7 +73,7 @@ export async function przeniesTrening(
   }
 
   // Brak wiersza = trening nie istnieje LUB należy do innej drużyny.
-  // Nie rozróżniamy — nie chcemy zdradzać istnienia cudzych treningów.
+  // Nie rozróżniamy - nie chcemy zdradzać istnienia cudzych treningów.
   if (!updated) {
     return { error: 'Nie znaleziono treningu.' };
   }

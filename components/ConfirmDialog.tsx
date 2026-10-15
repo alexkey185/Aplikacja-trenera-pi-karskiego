@@ -15,7 +15,7 @@ type Props = {
   variant?: Variant;
   /** Opcjonalna własna ikona (nadpisuje domyślną dla wariantu) */
   icon?: React.ReactNode;
-  /** Stan ładowania — wyświetla spinner, blokuje przyciski */
+  /** Stan ładowania - wyświetla spinner, blokuje przyciski */
   loading?: boolean;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
@@ -93,7 +93,7 @@ export function ConfirmDialog({
   }, []);
 
   // ESC zamyka + blokada scrolla tła.
-  // Uwaga: tablica zależności ma STAŁY rozmiar [open] — dzięki refom nie musimy
+  // Uwaga: tablica zależności ma STAŁY rozmiar [open] - dzięki refom nie musimy
   // dorzucać `loading` i `onCancel`, co powodowało błąd w HMR.
   useEffect(() => {
     if (!open) return;

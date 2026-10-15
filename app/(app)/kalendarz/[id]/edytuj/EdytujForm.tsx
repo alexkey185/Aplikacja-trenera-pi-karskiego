@@ -67,7 +67,7 @@ export function EdytujForm({ trening }: { trening: Trening }) {
       setFormData(null);
 
       // ═══════════════════════════════════════════════════
-      // TOAST — po sukcesie
+      // TOAST - po sukcesie
       // ═══════════════════════════════════════════════════
       if (result.scope === 'all') {
         toast.success('Cała seria zapisana', {
@@ -233,7 +233,7 @@ export function EdytujForm({ trening }: { trening: Trening }) {
 
             {pendingScope === 'all' && (
               <div className="text-[10px] text-purple-200 bg-purple-500/10 border border-purple-400/30 rounded-lg p-2">
-                ℹ️ Daty poszczególnych treningów <strong>nie zmienią się</strong> — tylko godzina, miejsce i notatki.
+                ℹ️ Daty poszczególnych treningów <strong>nie zmienią się</strong> - tylko godzina, miejsce i notatki.
               </div>
             )}
           </div>

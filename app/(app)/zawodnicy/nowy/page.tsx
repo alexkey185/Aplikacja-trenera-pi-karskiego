@@ -49,7 +49,7 @@ export default function NowyZawodnik() {
             name="pozycja"
             defaultValue=""
             options={[
-              { value: '', label: '— wybierz —' },
+              { value: '', label: '- wybierz -' },
               { value: 'Bramkarz', label: '🧤 Bramkarz' },
               { value: 'Obrońca', label: '🛡️ Obrońca' },
               { value: 'Pomocnik', label: '⚙️ Pomocnik' },

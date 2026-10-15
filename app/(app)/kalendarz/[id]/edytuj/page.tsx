@@ -20,7 +20,7 @@ export default async function EdytujTrening({
   if (!druzynaId) redirect('/druzyny/nowa');
 
   // ═══════════════════════════════════════════════════════
-  // Konkretne kolumny zamiast '*' — lista dokładnie tego,
+  // Konkretne kolumny zamiast '*' - lista dokładnie tego,
   // co konsumuje EdytujForm (żeby zmiana schematu nie
   // cicho nie psuła UI ani nie pomijała pól).
   // ═══════════════════════════════════════════════════════

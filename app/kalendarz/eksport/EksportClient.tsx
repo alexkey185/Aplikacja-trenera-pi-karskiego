@@ -102,7 +102,7 @@ export function EksportClient({
 
   const content = (
     <main className="eksport-shell">
-      {/* Pasek narzędzi — NIE drukuje się */}
+      {/* Pasek narzędzi - NIE drukuje się */}
       <div className="no-print" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
         <div className="flex items-center justify-between mb-6">
           <Link
@@ -135,14 +135,14 @@ export function EksportClient({
       </div>
 
       {/* ═══════════════════════════════════════════ */}
-      {/* A4 — plakat do druku */}
+      {/* A4 - plakat do druku */}
       {/* ═══════════════════════════════════════════ */}
       <div className="a4-page">
         <div className="top-bar" />
 
         <div style={{ padding: '28px 44px 28px' }}>
 
-          {/* HEADER Z LOGO — kompaktowy */}
+          {/* HEADER Z LOGO - kompaktowy */}
           <div
             style={{
               display: 'flex',
@@ -213,7 +213,7 @@ export function EksportClient({
                   lineHeight: 1,
                 }}
               >
-                {zakres.split(' — ')[0]}
+                {zakres.split(' - ')[0]}
               </div>
               <div
                 style={{
@@ -225,7 +225,7 @@ export function EksportClient({
                   marginTop: '2px',
                 }}
               >
-                — {zakres.split(' — ')[1]}
+                - {zakres.split(' - ')[1]}
               </div>
             </div>
           </div>
@@ -347,7 +347,7 @@ export function EksportClient({
             </div>
           )}
 
-          {/* STOPKA — kompaktowa */}
+          {/* STOPKA - kompaktowa */}
           <div
             style={{
               marginTop: '20px',
@@ -387,7 +387,7 @@ export function EksportClient({
       </div>
 
       {/* ═══════════════════════════════════════════ */}
-      {/* STYLE — print + layout A4 */}
+      {/* STYLE - print + layout A4 */}
       {/* ═══════════════════════════════════════════ */}
       <style jsx global>{`
         main.eksport-shell {

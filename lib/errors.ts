@@ -51,7 +51,7 @@ const ERROR_MAP: Array<{ match: string[]; pl: string }> = [
 
   // ── Baza / sieć ──
   { match: ['duplicate key', 'unique constraint'], pl: 'Taki wpis już istnieje' },
-  { match: ['foreign key', 'foreign_key_violation'], pl: 'Nie można wykonać — powiązane dane nie istnieją' },
+  { match: ['foreign key', 'foreign_key_violation'], pl: 'Nie można wykonać - powiązane dane nie istnieją' },
   { match: ['network', 'fetch', 'failed to fetch'], pl: 'Błąd połączenia. Sprawdź internet' },
   { match: ['timeout', 'timed out'], pl: 'Serwer nie odpowiada. Spróbuj ponownie' },
   { match: ['internal server error', 'server error'], pl: 'Błąd serwera. Spróbuj ponownie za chwilę' },
@@ -94,7 +94,7 @@ export function getErrorMessage(error: unknown): string {
     }
   }
 
-  // Fallback — zwróć oryginalny komunikat (nie tracimy informacji)
+  // Fallback - zwróć oryginalny komunikat (nie tracimy informacji)
   return message || 'Wystąpił nieoczekiwany błąd';
 }
 
@@ -137,10 +137,10 @@ export function translateUrlError(raw: string | null | undefined): string {
     }
   }
 
-  // Fallback — najpierw spróbuj tłumaczyć przez ogólną mapę
+  // Fallback - najpierw spróbuj tłumaczyć przez ogólną mapę
   const generic = getErrorMessage({ message: raw });
   if (generic !== raw) return generic;
 
-  // Ostatecznie — pokaż ogólny komunikat (bez surowego tekstu z URL)
+  // Ostatecznie - pokaż ogólny komunikat (bez surowego tekstu z URL)
   return 'Wystąpił błąd podczas weryfikacji. Spróbuj ponownie lub skontaktuj się z pomocą';
 }

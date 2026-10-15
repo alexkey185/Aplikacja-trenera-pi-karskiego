@@ -35,7 +35,7 @@ export function DeleteButton({
       }
 
       // ═══════════════════════════════════════════════════
-      // TOAST — zależnie od tego co usunięto
+      // TOAST - zależnie od tego co usunięto
       // ═══════════════════════════════════════════════════
       if (finalScope === 'all' && result.count > 1) {
         toast.success('Cała seria usunięta', {

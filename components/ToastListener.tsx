@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 // ═══════════════════════════════════════════════════
-// Mapa komunikatów — klucz → { type, title, description? }
+// Mapa komunikatów - klucz → { type, title, description? }
 // ═══════════════════════════════════════════════════
 const MESSAGES: Record<
   string,
@@ -57,7 +57,7 @@ export function ToastListener() {
     // z cleanup-em, ale cleanup kasował timer zanim się wykonał.
     // Efekt: ten sam toast pokazywał się tylko raz na sesję.
     //
-    // Teraz reset następuje naturalnie — po router.replace() URL
+    // Teraz reset następuje naturalnie - po router.replace() URL
     // nie ma już ?toast=..., więc searchParams się zmieni, efekt
     // re-runuje z key === null i czyści ref.
     // ═══════════════════════════════════════════════════

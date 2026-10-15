@@ -32,7 +32,7 @@ export function GoogleSignInButton({
       console.error('Google OAuth error:', error);
       setLoading(false);
     }
-    // Przy sukcesie przeglądarka przekierowuje na Google — nie trzeba resetować loading
+    // Przy sukcesie przeglądarka przekierowuje na Google - nie trzeba resetować loading
   }
 
   return (

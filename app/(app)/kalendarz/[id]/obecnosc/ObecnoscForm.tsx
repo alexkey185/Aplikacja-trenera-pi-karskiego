@@ -75,7 +75,7 @@ export function ObecnoscForm({
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // hasChanges — porównujemy znormalizowane wartości.
+  // hasChanges - porównujemy znormalizowane wartości.
   // „spozniony" z bazy == „obecny" w UI → brak zmiany.
   // ═══════════════════════════════════════════════════════════════
   const hasChanges = useMemo(() => {
@@ -105,7 +105,7 @@ export function ObecnoscForm({
     userTouched && (hasChanges || Object.keys(initialStatus).length === 0);
 
   // ═══════════════════════════════════════════════════════════════
-  // Blokada przed wyjściem — beforeunload, kliki w linki, back/forward.
+  // Blokada przed wyjściem - beforeunload, kliki w linki, back/forward.
   // ═══════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!showExitWarning) return;
@@ -280,7 +280,7 @@ export function ObecnoscForm({
                       opcjaAktywna?.color ?? 'text-white/60'
                     }`}
                   >
-                    {opcjaAktywna?.title ?? '—'}
+                    {opcjaAktywna?.title ?? '-'}
                   </div>
                 </div>
 

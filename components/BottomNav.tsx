@@ -44,7 +44,7 @@ const sekcje = [
   },
 ];
 
-// Ścieżki publiczne — bez sidebara i bottom nav
+// Ścieżki publiczne - bez sidebara i bottom nav
 const HIDDEN_PATHS = ['/', '/auth', '/prywatnosc', '/regulamin'];
 
 function shouldHideNav(pathname: string): boolean {
@@ -77,14 +77,14 @@ export function BottomNav({
     await supabase.auth.signOut();
 
     // ═══════════════════════════════════════════════════════
-    // HARD REDIRECT — pełne przeładowanie strony.
+    // HARD REDIRECT - pełne przeładowanie strony.
     //
     // Dlaczego nie router.push + router.refresh:
     //   - router.push nie zabija stanu komponentów klienta
     //   - router.refresh re-renderuje server components, ale klient
     //     trzyma stary stan (np. logoutLoading = true, otwarty modal)
     //
-    // window.location.href robi hard reload — wszystkie stany czyszczone.
+    // window.location.href robi hard reload - wszystkie stany czyszczone.
     // ═══════════════════════════════════════════════════════
     window.location.href = '/auth/login';
   }
@@ -101,7 +101,7 @@ export function BottomNav({
   return (
     <>
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col z-50 bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
-        {/* Logo — przezroczysty wordmark */}
+        {/* Logo - przezroczysty wordmark */}
         <div className="p-5 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center">
             <img

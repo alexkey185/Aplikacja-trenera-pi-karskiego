@@ -11,7 +11,7 @@ export function UserAvatar() {
   const pathname = usePathname();
 
   // ═══════════════════════════════════════════════════════
-  // Stabilny klient Supabase — bez tego każdy render
+  // Stabilny klient Supabase - bez tego każdy render
   // tworzy nową instancję i resetuje useEffect
   // ═══════════════════════════════════════════════════════
   const supabase = useMemo(() => createClient(), []);
@@ -22,7 +22,7 @@ export function UserAvatar() {
       setEmail(data.user?.email ?? null);
     });
 
-    // 2. Nasłuchuj zmian sesji — logowanie, wylogowanie,
+    // 2. Nasłuchuj zmian sesji - logowanie, wylogowanie,
     //    przełączenie konta, odświeżenie tokenu
     const {
       data: { subscription },
