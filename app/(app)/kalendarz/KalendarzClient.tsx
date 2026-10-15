@@ -500,4 +500,4 @@ function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null 
                   onClick={() => setScope('all')}
                   className={`p-3 rounded-xl border text-left transition-all ${
                     scope === 'all'
-                      ? 'bg-purple-500/15 border-purple-400/60
+? 'bg-purple-500/15 border-purple-400/60 ring-1 ring-purple-400/30'
