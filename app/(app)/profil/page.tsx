@@ -211,8 +211,8 @@ export default async function Profil() {
                 </div>
               </div>
               <div className="text-[10px] font-bold text-green-400 bg-green-500/15 border border-green-400/30 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
-                <Check className="w-2.5 h-2.5" strokeWidth={3} />v
-                {consent.terms_version}
+<Check className="w-2.5 h-2.5" strokeWidth={3} />
+v{consent.terms_version}
               </div>
             </div>
 

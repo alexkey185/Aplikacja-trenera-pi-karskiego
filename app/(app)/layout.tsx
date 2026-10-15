@@ -3,10 +3,17 @@ import { Suspense } from 'react';
 import { ToastListener } from '@/components/ToastListener';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
-// UWAGA: usuwamy `force-dynamic` — strony używające cookies i tak
-// stają się dynamiczne automatycznie. Dzięki temu Next.js może
-// inteligentniej streamować i cache'ować shell.
-// Jeśli widzisz dziwne błędy — przywróć `force-dynamic`.
+// ═══════════════════════════════════════════════════════════════
+// force-dynamic usunięte.
+//
+// Layout nie fetchuje danych — tylko renderuje shell + Suspense.
+// Dynamiczne fragmenty (TopBar, BottomNav) i tak wymuszają
+// dynamic mode przez cookies(), więc każda strona pod tym
+// layoutem pozostaje dynamic. Ale Next może teraz streamować
+// shell zanim dane się załadują.
+//
+// Jeśli widzisz dziwne błędy hydratacji — przywróć `force-dynamic`.
+// ═══════════════════════════════════════════════════════════════
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (

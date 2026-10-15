@@ -9,9 +9,17 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import './globals.css';
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000';
+// ═══════════════════════════════════════════════════════════════
+// metadataBase — używane do budowania absolutnych URL w OG/twitter.
+//
+// Priorytet:
+//   1. NEXT_PUBLIC_SITE_URL (produkcja / self-hosted)
+//   2. VERCEL_URL (auto na Vercel preview + prod)
+//   3. localhost (dev)
+// ═══════════════════════════════════════════════════════════════
+const defaultUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 

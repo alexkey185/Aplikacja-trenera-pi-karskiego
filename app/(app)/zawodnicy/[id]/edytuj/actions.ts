@@ -11,7 +11,7 @@ export async function aktualizujZawodnika(id: number, formData: FormData) {
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej drużyny.');
+    throw new Error('Brak aktywnej druzyny.');
   }
 
   const parsed = parseFormData(dodajZawodnikaSchema, formData);
@@ -53,12 +53,12 @@ export async function usunZawodnika(formData: FormData) {
   const id = parseInt(idStr, 10);
 
   if (!id || isNaN(id)) {
-    throw new Error('Nieprawidłowe ID zawodnika.');
+    throw new Error('Nieprawidlowe ID zawodnika.');
   }
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej drużyny.');
+    throw new Error('Brak aktywnej druzyny.');
   }
 
   const supabase = await createClient();
@@ -71,18 +71,14 @@ export async function usunZawodnika(formData: FormData) {
     .single();
 
   if (errFetch || !zawodnik) {
-    throw new Error('Nie znaleziono zawodnika w aktywnej drużynie.');
+    throw new Error('Nie znaleziono zawodnika w aktywnej druzynie.');
   }
 
-  const { error: errObecnosc } = await supabase
-    .from('obecnosc')
-    .delete()
-    .eq('zawodnik_id', id);
-
-  if (errObecnosc) {
-    console.error('Błąd usuwania obecności:', errObecnosc.message);
-  }
-
+  // ═══════════════════════════════════════════════════════════════
+  // Poprawka: NIE kasujemy obecnosci ręcznie — kaskada FK
+  // (migracja 20261015_fk_cascade.sql) robi to atomowo w bazie.
+  // Ręczne kasowanie było źródłem race conditions i dwóch requestów.
+  // ═══════════════════════════════════════════════════════════════
   const { error, count } = await supabase
     .from('zawodnicy')
     .delete({ count: 'exact' })
@@ -90,11 +86,11 @@ export async function usunZawodnika(formData: FormData) {
     .eq('druzyna_id', druzynaId);
 
   if (error) {
-    throw new Error(`Nie udało się usunąć: ${error.message}`);
+    throw new Error(`Nie udalo sie usunac: ${error.message}`);
   }
 
   if (!count || count === 0) {
-    throw new Error('Nie usunięto żadnego wiersza.');
+    throw new Error('Nie usunieto zadnego wiersza.');
   }
 
   revalidatePath('/kadra');

@@ -2,7 +2,15 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { zapiszObecnosc } from './actions';
-import { Check, X, Save, TrendingUp, RotateCw } from 'lucide-react';
+import {
+  Check,
+  X,
+  Save,
+  TrendingUp,
+  RotateCw,
+  Clock,
+  FileCheck2,
+} from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -22,6 +30,14 @@ const opcje = [
       'bg-gradient-to-br from-green-500 to-green-700 border-green-400 shadow-lg shadow-green-900/50',
   },
   {
+    value: 'spozniony',
+    icon: Clock,
+    title: 'Spóźniony',
+    color: 'text-yellow-400',
+    bgActive:
+      'bg-gradient-to-br from-yellow-500 to-yellow-700 border-yellow-400 shadow-lg shadow-yellow-900/50',
+  },
+  {
     value: 'nieobecny',
     icon: X,
     title: 'Nieobecny',
@@ -29,7 +45,17 @@ const opcje = [
     bgActive:
       'bg-gradient-to-br from-red-500 to-red-700 border-red-400 shadow-lg shadow-red-900/50',
   },
-];
+  {
+    value: 'usprawiedliwiony',
+    icon: FileCheck2,
+    title: 'Usprawiedliwiony',
+    color: 'text-orange-400',
+    bgActive:
+      'bg-gradient-to-br from-orange-500 to-orange-700 border-orange-400 shadow-lg shadow-orange-900/50',
+  },
+] as const;
+
+const DOZWOLONE = new Set(['obecny', 'spozniony', 'nieobecny', 'usprawiedliwiony']);
 
 export function ObecnoscForm({
   treningId,
@@ -44,16 +70,16 @@ export function ObecnoscForm({
   previousStatus?: Record<number, string>;
   typTreningu?: string;
 }) {
+  // ═══════════════════════════════════════════════════════════════
+  // Inicjalizacja: zachowujemy 4 stany. Wcześniej UI sprowadzał
+  // wszystko do 2 wartości i gubił „spozniony"/„usprawiedliwiony".
+  // ═══════════════════════════════════════════════════════════════
   const [statuses, setStatuses] = useState<Record<number, string>>(() => {
     const init: Record<number, string> = {};
     zawodnicy.forEach((z) => {
       const obecny = initialStatus[z.id];
-      if (obecny === 'obecny' || obecny === 'spozniony') {
-        init[z.id] = 'obecny';
-        return;
-      }
-      if (obecny === 'nieobecny' || obecny === 'usprawiedliwiony') {
-        init[z.id] = 'nieobecny';
+      if (obecny && DOZWOLONE.has(obecny)) {
+        init[z.id] = obecny;
         return;
       }
 
@@ -68,22 +94,15 @@ export function ObecnoscForm({
     return init;
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // hasChanges — bez normalizacji, bezpośrednie porównanie.
+  // ═══════════════════════════════════════════════════════════════
   const hasChanges = useMemo(() => {
     const initialCount = Object.keys(initialStatus).length;
     if (initialCount === 0) return false;
 
     for (const z of zawodnicy) {
-      const wBazie = initialStatus[z.id];
-      const wFormularzu = statuses[z.id];
-
-      const znormalizowanyBazowy =
-        wBazie === 'obecny' || wBazie === 'spozniony'
-          ? 'obecny'
-          : wBazie === 'nieobecny' || wBazie === 'usprawiedliwiony'
-          ? 'nieobecny'
-          : null;
-
-      if (znormalizowanyBazowy !== wFormularzu) {
+      if (initialStatus[z.id] !== statuses[z.id]) {
         return true;
       }
     }
@@ -94,6 +113,16 @@ export function ObecnoscForm({
   const showExitWarning =
     userTouched && (hasChanges || Object.keys(initialStatus).length === 0);
 
+  // ═══════════════════════════════════════════════════════════════
+  // Blokada przed wyjściem — działa dla:
+  //   1. zamknięcia karty / reload (beforeunload)
+  //   2. kliknięcia w link wewnętrzny (Link z next/link, BottomNav)
+  //   3. wstecz/dalej przeglądarki (popstate)
+  //
+  // Uwaga: window.confirm jest pragmatycznym wyborem. W przyszłości
+  // można podmienić na ConfirmDialog, ale wymaga to dodatkowego
+  // stanu + kolejki przekierowań — na razie wystarczy.
+  // ═══════════════════════════════════════════════════════════════
   useEffect(() => {
     if (!showExitWarning) return;
 
@@ -102,8 +131,40 @@ export function ObecnoscForm({
       e.returnValue = '';
     };
 
+    const clickHandler = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest('a');
+      if (!target) return;
+      const href = target.getAttribute('href');
+      if (!href) return;
+      if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) return;
+      if (!href.startsWith('/')) return;
+      // Linki wewnętrzne — zapytaj usera
+      const ok = window.confirm('Masz niezapisane zmiany. Opuścić stronę?');
+      if (!ok) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    };
+
+    // Back/forward przeglądarki
+    const popStateHandler = () => {
+      const ok = window.confirm('Masz niezapisane zmiany. Opuścić stronę?');
+      if (!ok) {
+        // Cofnij przejście
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+
     window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
+    document.addEventListener('click', clickHandler, true);
+    window.addEventListener('popstate', popStateHandler);
+
+    return () => {
+      window.removeEventListener('beforeunload', handler);
+      document.removeEventListener('click', clickHandler, true);
+      window.removeEventListener('popstate', popStateHandler);
+    };
   }, [showExitWarning]);
 
   const usesPrevious =
@@ -122,17 +183,23 @@ export function ObecnoscForm({
     return count;
   }, [usesPrevious, previousStatus, zawodnicy]);
 
+  // ═══════════════════════════════════════════════════════════════
+  // Stats — 4 kubełki. Do % liczymy obecny + spozniony.
+  // ═══════════════════════════════════════════════════════════════
   const stats = useMemo(() => {
-    const s = { obecny: 0, nieobecny: 0 };
+    const s = { obecny: 0, spozniony: 0, nieobecny: 0, usprawiedliwiony: 0 };
     Object.values(statuses).forEach((v) => {
       if (v === 'obecny') s.obecny += 1;
+      else if (v === 'spozniony') s.spozniony += 1;
       else if (v === 'nieobecny') s.nieobecny += 1;
+      else if (v === 'usprawiedliwiony') s.usprawiedliwiony += 1;
     });
     return s;
   }, [statuses]);
 
   const total = zawodnicy.length;
-  const procent = total > 0 ? Math.round((stats.obecny / total) * 100) : 0;
+  const obecniRazem = stats.obecny + stats.spozniony;
+  const procent = total > 0 ? Math.round((obecniRazem / total) * 100) : 0;
 
   const zmienStatus = (id: number, status: string) => {
     setStatuses((s) => ({ ...s, [id]: status }));
@@ -156,20 +223,30 @@ export function ObecnoscForm({
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold text-white drop-shadow leading-none">
-                {stats.obecny}
+                {obecniRazem}
               </span>
               <span className="text-white/60 text-sm">/ {total}</span>
-              <span className="text-white/80 text-xs ml-auto font-semibold">
-                {procent}%
-              </span>
+              <span className="text-white/80 text-xs ml-auto font-semibold">{procent}%</span>
             </div>
-            <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2">
-              <span>obecnych na treningu</span>
+            <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2 flex-wrap">
+              <span>obecnych</span>
+              {stats.spozniony > 0 && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <span className="text-yellow-400/80 font-medium">{stats.spozniony} spóźn.</span>
+                </>
+              )}
               {stats.nieobecny > 0 && (
                 <>
                   <span className="text-white/30">·</span>
-                  <span className="text-red-400/80 font-medium">
-                    {stats.nieobecny} nieob.
+                  <span className="text-red-400/80 font-medium">{stats.nieobecny} nieob.</span>
+                </>
+              )}
+              {stats.usprawiedliwiony > 0 && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <span className="text-orange-400/80 font-medium">
+                    {stats.usprawiedliwiony} uspraw.
                   </span>
                 </>
               )}
@@ -211,7 +288,6 @@ export function ObecnoscForm({
               )}`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
-                {/* Avatar z inicjałami */}
                 <div className="relative flex-shrink-0">
                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center font-bold text-white/70 text-[10px] md:text-xs">
                     {inicjaly(z.imie, z.nazwisko)}
@@ -245,7 +321,7 @@ export function ObecnoscForm({
                   </div>
                 </div>
 
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className="flex gap-1 md:gap-1.5 flex-shrink-0">
                   {opcje.map((o) => {
                     const Icon = o.icon;
                     const aktywny = aktualny === o.value;
@@ -254,15 +330,16 @@ export function ObecnoscForm({
                         key={o.value}
                         type="button"
                         title={o.title}
+                        aria-label={o.title}
                         onClick={() => zmienStatus(z.id, o.value)}
-                        className={`relative w-9 h-9 md:w-10 md:h-10 rounded-lg border flex items-center justify-center transition-all ${
+                        className={`relative w-8 h-8 md:w-9 md:h-9 rounded-lg border flex items-center justify-center transition-all ${
                           aktywny
                             ? `${o.bgActive} scale-105`
                             : 'bg-white/5 border-white/15 hover:border-white/30 hover:bg-white/10 hover:scale-105'
                         }`}
                       >
                         <Icon
-                          className={`w-4 h-4 md:w-5 md:h-5 ${
+                          className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
                             aktywny ? 'text-white' : o.color
                           }`}
                           strokeWidth={aktywny ? 3 : 2.5}
@@ -279,15 +356,9 @@ export function ObecnoscForm({
 
       {/* Ukryte pola dla formularza */}
       {Object.entries(statuses).map(([zawodnikId, status]) => (
-        <input
-          key={zawodnikId}
-          type="hidden"
-          name={`status_${zawodnikId}`}
-          value={status}
-        />
+        <input key={zawodnikId} type="hidden" name={`status_${zawodnikId}`} value={status} />
       ))}
 
-      {/* Przycisk zapisu — od razu pod ostatnim zawodnikiem */}
       <button
         type="submit"
         className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-0.5 animate-glow text-sm md:text-base mt-2"

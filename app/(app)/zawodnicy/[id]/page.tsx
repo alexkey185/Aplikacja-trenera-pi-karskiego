@@ -45,7 +45,15 @@ export default async function KartaZawodnika({ params }: { params: Promise<{ id:
         .eq('druzyna_id', druzynaId)
     : { data: [] };
 
-  const treningMap = new Map<number, any>();
+ type TreningRow = {
+  id: number;
+  data: string;
+  godzina: string;
+  typ: string;
+  przeciwnik: string | null;
+};
+
+const treningMap = new Map<number, TreningRow>();
   (treningi ?? []).forEach((t) => treningMap.set(t.id, t));
 
   const stats = { obecny: 0, nieobecny: 0, total: 0 };
