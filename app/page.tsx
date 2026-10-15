@@ -11,19 +11,24 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+type AttendanceStatus = "present" | "late" | "absent" | "excused" | null;
+
 interface Player {
   id: number;
   initials: string;
   name: string;
-  status: "present" | "absent" | null;
+  status: AttendanceStatus;
 }
 
-// Zaktualizowana lista zawodników na podstawie Twojego projektu (image_f3bf26.jpg)
 const initialPlayers: Player[] = [
   { id: 1, initials: "JB", name: "Jan Barański", status: "present" },
   { id: 2, initials: "PB", name: "Paweł Barański", status: "present" },
-  { id: 3, initials: "TH", name: "Tymon Holona", status: "present" },
-  { id: 4, initials: "FK", name: "Franek Kąsek", status: "absent" },
+  { id: 3, initials: "PB", name: "Przemek Blucha", status: "present" },
+  { id: 4, initials: "KB", name: "Kuba Brylewski", status: "present" },
+  { id: 5, initials: "BB", name: "Bartosz Brym", status: "present" },
+  { id: 6, initials: "TH", name: "Tymon Holona", status: "present" },
+  { id: 7, initials: "FK", name: "Franek Kąsek", status: "absent" },
+  { id: 8, initials: "ML", name: "Mikołaj Lukoszek", status: "present" },
 ];
 
 export default function LandingPage() {
@@ -32,13 +37,13 @@ export default function LandingPage() {
   const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const hwRef = useRef<HTMLDivElement>(null);
 
-  const updateStatus = (playerId: number, status: "present" | "absent") => {
+  const updateStatus = (playerId: number, status: AttendanceStatus) => {
     setPlayers((prev) =>
       prev.map((player) => (player.id === playerId ? { ...player, status } : player))
     );
   };
 
-  const presentCount = useMemo(() => players.filter((p) => p.status === "present").length, [players]);
+  const presentCount = useMemo(() => players.filter((p) => p.status === "present" || p.status === "late").length, [players]);
   const absentCount = useMemo(() => players.filter((p) => p.status === "absent").length, [players]);
   const percentage = Math.round((presentCount / players.length) * 100) || 0;
 
@@ -69,6 +74,16 @@ export default function LandingPage() {
     } else {
       setSubmitStatus("success");
       setEmail("");
+    }
+  };
+
+  const getStatusText = (status: AttendanceStatus) => {
+    switch (status) {
+      case "present": return <span style={{ color: "#22c55e" }}>Obecny</span>;
+      case "late": return <span style={{ color: "#eab308" }}>Spóźniony</span>;
+      case "absent": return <span style={{ color: "#ef4444" }}>Nieobecny</span>;
+      case "excused": return <span style={{ color: "#f97316" }}>Zwolniony</span>;
+      default: return <span style={{ color: "#94a3b8" }}>Brak statusu</span>;
     }
   };
 
@@ -138,8 +153,9 @@ export default function LandingPage() {
         .fd { opacity: 0; animation: rise .9s ease forwards; animation-delay: 2.1s; }
         .demo-wrap { perspective: 1200px; opacity: 0; animation: rise 1s cubic-bezier(.2, .8, .2, 1) 2.2s forwards; }
         
-        /* NOWY DESIGN DEMO NA BAZIE ZDJĘCIA */
-        .demo { background: #161c2d; border: 1px solid #2d3748; border-radius: 16px; padding: 20px; box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(34,197,94,.12); }
+        .demo { background: #161c2d; border: 1px solid #2d3748; border-radius: 16px; padding: 20px; box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(34,197,94,.12); max-height: 520px; overflow-y: auto; }
+        .demo::-webkit-scrollbar { width: 6px; }
+        .demo::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
         .demo-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .demo-icon { width: 42px; height: 42px; border-radius: 12px; background: #22c55e; display: flex; align-items: center; justify-content: center; }
         .demo-title h3 { font-size: 20px; margin-bottom: 2px; }
@@ -157,11 +173,14 @@ export default function LandingPage() {
         .demo-nm { flex: 1; line-height: 1.3; }
         .demo-nm b { display: block; color: #fff; font-size: 15px; }
         .demo-nm span { font-size: 12px; font-weight: 600; }
-        .demo-actions { display: flex; gap: 8px; }
-        .demo-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #2d3748; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #a0aec0; }
+        .demo-actions { display: flex; gap: 6px; }
+        .demo-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #2d3748; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #a0aec0; padding: 0; }
         .demo-btn:hover { background: #2d3748; color: #fff; }
+        
         .demo-btn.active-present { background: #16a34a; border-color: #16a34a; color: #fff; box-shadow: 0 0 15px rgba(22, 163, 74, 0.3); }
+        .demo-btn.active-late { background: #ca8a04; border-color: #ca8a04; color: #fff; box-shadow: 0 0 15px rgba(202, 138, 4, 0.3); }
         .demo-btn.active-absent { background: #dc2626; border-color: #dc2626; color: #fff; box-shadow: 0 0 15px rgba(220, 38, 38, 0.3); }
+        .demo-btn.active-excused { background: #ea580c; border-color: #ea580c; color: #fff; box-shadow: 0 0 15px rgba(234, 88, 12, 0.3); }
 
         .form-group { display: flex; gap: 12px; width: 100%; max-width: 400px; margin: 0 auto 16px; }
         .input { flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: #fff; padding: 0 16px; font-size: 16px; outline: none; transition: border-color 0.2s; }
@@ -222,7 +241,6 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="demo-wrap" id="dw">
-                {/* NOWY MODUŁ DEMO ODWZOROWUJĄCY PROJEKT */}
                 <div className="demo">
                   <div className="demo-header">
                     <div className="demo-icon">
@@ -230,7 +248,7 @@ export default function LandingPage() {
                     </div>
                     <div className="demo-title">
                       <h3>Obecność</h3>
-                      <p>🏃 Trening · Dzisiaj, 17:00</p>
+                      <p>🏃 Trening · Piątek, 16 Października</p>
                     </div>
                   </div>
 
@@ -255,29 +273,47 @@ export default function LandingPage() {
                         <div className="demo-av">{p.initials}</div>
                         <div className="demo-nm">
                           <b>{p.name}</b>
-                          {p.status === "present" && <span style={{ color: "#22c55e" }}>Obecny</span>}
-                          {p.status === "absent" && <span style={{ color: "#ef4444" }}>Nieobecny</span>}
-                          {p.status === null && <span style={{ color: "#94a3b8" }}>Brak statusu</span>}
+                          {getStatusText(p.status)}
                         </div>
                         <div className="demo-actions">
-                          {/* Przycisk Obecny [V] */}
+                          {/* Obecny */}
                           <button
                             type="button"
                             className={`demo-btn ${p.status === "present" ? "active-present" : ""}`}
                             onClick={() => updateStatus(p.id, "present")}
                             title="Obecny"
                           >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                           </button>
                           
-                          {/* Przycisk Nieobecny [X] */}
+                          {/* Spóźniony */}
+                          <button
+                            type="button"
+                            className={`demo-btn ${p.status === "late" ? "active-late" : ""}`}
+                            onClick={() => updateStatus(p.id, "late")}
+                            title="Spóźniony"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                          </button>
+                          
+                          {/* Nieobecny */}
                           <button
                             type="button"
                             className={`demo-btn ${p.status === "absent" ? "active-absent" : ""}`}
                             onClick={() => updateStatus(p.id, "absent")}
                             title="Nieobecny"
                           >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          </button>
+
+                          {/* Zwolniony / Usprawiedliwiony */}
+                          <button
+                            type="button"
+                            className={`demo-btn ${p.status === "excused" ? "active-excused" : ""}`}
+                            onClick={() => updateStatus(p.id, "excused")}
+                            title="Zwolniony"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                           </button>
                         </div>
                       </div>
