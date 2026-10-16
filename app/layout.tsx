@@ -9,14 +9,6 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import './globals.css';
 
-// ═══════════════════════════════════════════════════════════════
-// metadataBase — używane do budowania absolutnych URL w OG/twitter.
-//
-// Priorytet:
-//   1. NEXT_PUBLIC_SITE_URL (produkcja / self-hosted)
-//   2. VERCEL_URL (auto na Vercel preview + prod)
-//   3. localhost (dev)
-// ═══════════════════════════════════════════════════════════════
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
@@ -26,7 +18,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: 'Talent - Aplikacja Trenera',
-  description: 'Aplikacja dla trenerów piłki nożnej',
+  description: 'Aplikacja dla trenerow pilki noznej',
   applicationName: 'Talent',
   appleWebApp: {
     capable: true,
@@ -35,6 +27,9 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  verification: {
+    google: 'p2WJ1j4lfdBzEl4jjY20f7JITh2Q2jPirJZvyvDZsdk',
   },
   icons: {
     icon: [
@@ -57,24 +52,18 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-// ─── Geist — lokalny font z next/font/google (działa stabilnie) ───
 const geistSans = Geist({
   variable: '--font-geist-sans',
   display: 'swap',
   subsets: ['latin'],
 });
 
-// ─── Helper: dzisiejsza data w Europe/Warsaw jako "YYYY-MM-DD" ───
 function getDzisISO(): string {
   return new Date().toLocaleDateString('sv-SE', {
     timeZone: 'Europe/Warsaw',
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BottomNav - async komponent pobierający user + count.
-// Wydzielony, żeby owinąć w Suspense w RootLayout.
-// ═══════════════════════════════════════════════════════════════
 async function BottomNavServer() {
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
@@ -118,11 +107,6 @@ export default function RootLayout({
           </>
         )}
 
-        {/* ─── Google Fonts: Space Grotesk (nagłówki) + Manrope (tekst) ───
-            Używamy zwykłego <link> zamiast next/font/google dla tych fontów,
-            bo next/font/google ma problem z buildem (błąd "Cannot read
-            properties of null"). Zwykły link działa identycznie dla
-            użytkownika. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -135,7 +119,6 @@ export default function RootLayout({
       <body className={`${geistSans.variable} antialiased`}>
         <ContentWrapper>{children}</ContentWrapper>
 
-        {/* BottomNav streamuje się po wyrenderowaniu shell */}
         <Suspense fallback={null}>
           <BottomNavServer />
         </Suspense>
