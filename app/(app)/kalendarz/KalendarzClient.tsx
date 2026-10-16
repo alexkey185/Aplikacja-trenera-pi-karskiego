@@ -92,6 +92,8 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
+  // NOWE: klucz do wymuszania remountu kafla (animacja flash)
+  const [flashKey, setFlashKey] = useState(0);
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -149,10 +151,11 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   };
 
   const selectDay = (iso: string) => {
+    if (iso === selectedDate) return;
     setSelectedDate(iso);
-    // Bez auto-scrolla - kafel górny pokazuje kontekst wybranego dnia,
-    // więc user zostaje tam gdzie kliknął.
+    setFlashKey((k) => k + 1);
   };
+
   const goToToday = () => {
     setViewYear(todayDate.getFullYear());
     setViewMonth(todayDate.getMonth());
@@ -358,8 +361,10 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
+          {/* Kafel dnia - animacja flash przy zmianie */}
           <div
-            className={`rounded-2xl p-5 lg:p-4 transition-all animate-fadeIn flex-shrink-0 ${
+            key={flashKey}
+            className={`rounded-2xl p-5 lg:p-4 transition-all flex-shrink-0 animate-flash ${
               isTodaySelected
                 ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
                 : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30'
@@ -544,7 +549,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
 
         <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
-
           {pokazListeDnia ? (
             <ListaDnia
               selectedDate={selectedDate}
