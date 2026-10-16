@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { getDzisISO } from '@/lib/dates';
 import { Suspense } from 'react';
 import { Geist } from 'next/font/google';
 import { Toaster } from 'sonner';
@@ -64,11 +65,7 @@ const geistSans = Geist({
   subsets: ['latin'],
 });
 
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Warsaw',
-  });
-}
+
 
 // ═══════════════════════════════════════════════════════════════
 // BottomNav - async komponent pobierający user + count.

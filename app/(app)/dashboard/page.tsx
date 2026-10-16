@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getDzisISO, getMonday, addDays, toISO, formatMiesiacRok } from '@/lib/dates';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -20,31 +21,7 @@ import {
 // ═════════════════════════════════════════════════════════════
 // Data w strefie Europe/Warsaw (spójne z resztą apki)
 // ═════════════════════════════════════════════════════════════
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Warsaw',
-  });
-}
 
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-}
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function toISO(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${dd}`;
-}
 
 type TreningZObecnoscia = {
   id: number;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getDzisISO } from '@/lib/dates';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -21,11 +22,7 @@ import {
 // - o 23:00 czasu polskiego UTC pokazałoby „jutro"
 // - 'sv-SE' locale zwraca format YYYY-MM-DD (ISO)
 // ═══════════════════════════════════════════════════════
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Warsaw',
-  });
-}
+
 
 // ── Typ treningu z zagnieżdżoną obecnością ──
 type TreningZObecnoscia = {
