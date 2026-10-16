@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { getDzisISO } from '@/lib/dates';
 import { Suspense } from 'react';
 import { Geist } from 'next/font/google';
 import { Toaster } from 'sonner';
@@ -11,7 +10,7 @@ import { getActiveDruzynaId } from '@/lib/druzyny';
 import './globals.css';
 
 // ═══════════════════════════════════════════════════════════════
-// metadataBase - używane do budowania absolutnych URL w OG/twitter.
+// metadataBase — używane do budowania absolutnych URL w OG/twitter.
 //
 // Priorytet:
 //   1. NEXT_PUBLIC_SITE_URL (produkcja / self-hosted)
@@ -54,18 +53,23 @@ export const viewport: Viewport = {
   themeColor: '#0a0e1a',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
   viewportFit: 'cover',
 };
 
+// ─── Geist — lokalny font z next/font/google (działa stabilnie) ───
 const geistSans = Geist({
   variable: '--font-geist-sans',
   display: 'swap',
   subsets: ['latin'],
 });
 
-
+// ─── Helper: dzisiejsza data w Europe/Warsaw jako "YYYY-MM-DD" ───
+function getDzisISO(): string {
+  return new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Warsaw',
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════
 // BottomNav - async komponent pobierający user + count.
@@ -113,6 +117,19 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={supabaseUrl} />
           </>
         )}
+
+        {/* ─── Google Fonts: Space Grotesk (nagłówki) + Manrope (tekst) ───
+            Używamy zwykłego <link> zamiast next/font/google dla tych fontów,
+            bo next/font/google ma problem z buildem (błąd "Cannot read
+            properties of null"). Zwykły link działa identycznie dla
+            użytkownika. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
+          rel="stylesheet"
+        />
+
         <meta name="theme-color" content="#0a0e1a" />
       </head>
       <body className={`${geistSans.variable} antialiased`}>
