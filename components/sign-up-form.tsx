@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -10,6 +10,57 @@ import { SubmitButton } from '@/components/SubmitButton';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { signUpSchema, zodToFieldErrors } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
+
+const STORAGE_KEY = 'talent_signup_draft';
+
+type Draft = {
+  email: string;
+  password: string;
+  repeatPassword: string;
+  acceptedTerms: boolean;
+};
+
+const EMPTY_DRAFT: Draft = {
+  email: '',
+  password: '',
+  repeatPassword: '',
+  acceptedTerms: false,
+};
+
+function loadDraft(): Draft {
+  if (typeof window === 'undefined') return EMPTY_DRAFT;
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return EMPTY_DRAFT;
+    const parsed = JSON.parse(raw);
+    return {
+      email: typeof parsed.email === 'string' ? parsed.email : '',
+      password: typeof parsed.password === 'string' ? parsed.password : '',
+      repeatPassword: typeof parsed.repeatPassword === 'string' ? parsed.repeatPassword : '',
+      acceptedTerms: parsed.acceptedTerms === true,
+    };
+  } catch {
+    return EMPTY_DRAFT;
+  }
+}
+
+function saveDraft(draft: Draft) {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // sessionStorage zablokowane (tryb prywatny) â€” pomiĹ„
+  }
+}
+
+function clearDraft() {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // pomiĹ„
+  }
+}
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -27,6 +78,20 @@ export function SignUpForm() {
   const router = useRouter();
 
   const supabase = useMemo(() => createClient(), []);
+
+  // Wczytaj draft przy montaĹĽu
+  useEffect(() => {
+    const draft = loadDraft();
+    setEmail(draft.email);
+    setPassword(draft.password);
+    setRepeatPassword(draft.repeatPassword);
+    setAcceptedTerms(draft.acceptedTerms);
+  }, []);
+
+  // Zapisz draft przy kaĹĽdej zmianie
+  useEffect(() => {
+    saveDraft({ email, password, repeatPassword, acceptedTerms });
+  }, [email, password, repeatPassword, acceptedTerms]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +114,7 @@ export function SignUpForm() {
 
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
-      setError('Tworzenie konta trwa zbyt długo. Spróbuj odświeżyć stronę.');
+      setError('Tworzenie konta trwa zbyt dlugo. Sprobuj odswiezyc strone.');
     }, 10000);
 
     try {
@@ -72,6 +137,7 @@ export function SignUpForm() {
       if (error) throw error;
 
       clearTimeout(safetyTimer);
+      clearDraft();
       router.push('/auth/sign-up-success');
       router.refresh();
     } catch (err) {
@@ -89,18 +155,16 @@ export function SignUpForm() {
             <UserPlus className="w-7 h-7 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-white drop-shadow-lg">
-            Zarejestruj się
+            Zarejestruj sie
           </h1>
           <p className="text-xs text-white/60 mt-1">
-            Utwórz nowe konto trenera
+            Utworz nowe konto trenera
           </p>
         </div>
 
         <form onSubmit={handleSignUp} noValidate className="space-y-4">
-          {/* Google OAuth */}
           <GoogleSignInButton nextPath="/druzyny/nowa" />
 
-          {/* Separator */}
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10" />
@@ -130,7 +194,7 @@ export function SignUpForm() {
 
           <AuthField
             icon={Lock}
-            label="Hasło"
+            label="Haslo"
             name="password"
             id="signup-password"
             type="password"
@@ -140,13 +204,13 @@ export function SignUpForm() {
               setPassword(v);
               if (fieldErrors.password) setFieldErrors((fe) => ({ ...fe, password: undefined }));
             }}
-            placeholder="Minimum 8 znaków"
+            placeholder="Minimum 8 znakow"
             error={fieldErrors.password}
           />
 
           <AuthField
             icon={Lock}
-            label="Powtórz hasło"
+            label="Powtorz haslo"
             name="repeat-password"
             id="signup-repeat-password"
             type="password"
@@ -156,7 +220,7 @@ export function SignUpForm() {
               setRepeatPassword(v);
               if (fieldErrors.repeatPassword) setFieldErrors((fe) => ({ ...fe, repeatPassword: undefined }));
             }}
-            placeholder="Powtórz hasło"
+            placeholder="Powtorz haslo"
             error={fieldErrors.repeatPassword}
           />
 
@@ -191,7 +255,7 @@ export function SignUpForm() {
                 </div>
               </label>
               <span className="text-xs text-white/60 leading-relaxed">
-                Akceptuję{' '}
+                Akceptuje{' '}
                 <Link
                   href="/regulamin"
                   className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
@@ -203,10 +267,10 @@ export function SignUpForm() {
                   href="/prywatnosc"
                   className="text-green-400 hover:text-green-300 font-semibold underline underline-offset-2"
                 >
-                  Politykę prywatności
+                  Polityke prywatnosci
                 </Link>
-                , a także oświadczam, że jako trener będę przetwarzał dane
-                zawodników zgodnie z przepisami RODO.
+                , a takze oswiadczam, ze jako trener bede przetwarzal dane
+                zawodnikow zgodnie z przepisami RODO.
               </span>
             </div>
             {fieldErrors.acceptedTerms && (
@@ -233,7 +297,7 @@ export function SignUpForm() {
 
           <SubmitButton
             icon={UserPlus}
-            label="Zarejestruj się"
+            label="Zarejestruj sie"
             loadingLabel="Tworzenie konta..."
             loading={isLoading}
           />
@@ -241,12 +305,12 @@ export function SignUpForm() {
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <p className="text-xs text-white/50">
-            Masz już konto?{' '}
+            Masz juz konto?{' '}
             <Link
               href="/auth/login"
               className="text-green-400 hover:text-green-300 font-semibold transition-colors"
             >
-              Zaloguj się
+              Zaloguj sie
             </Link>
           </p>
         </div>
@@ -258,7 +322,7 @@ export function SignUpForm() {
           className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Powrót do strony głównej
+          Powrot do strony glownej
         </Link>
       </div>
     </div>
