@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,7 +38,6 @@ export function Landing() {
 
   return (
     <div ref={rootRef} className={styles.root}>
-      {/* NAVBAR */}
       <nav className={styles.nav}>
         <div className={styles.navInner}>
           <Link href="/" className={styles.logo}>
@@ -56,11 +54,10 @@ export function Landing() {
         </div>
       </nav>
 
-      {/* HERO */}
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.heroContent}>
-            <div className={styles.heroContent}>
+            <div>
               <div className={styles.heroBadge}>
                 <span className={styles.heroBadgeDot} />
                 Wersja testowa — darmowy dostęp
@@ -118,7 +115,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* PROBLEM */}
       <section className={styles.problemSection}>
         <div className={styles.container}>
           <div className={`${styles.problemCard} ${styles.rv}`}>
@@ -141,7 +137,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* FUNKCJE */}
       <section className={styles.features} id="funkcje">
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
@@ -239,7 +234,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* JAK DZIAŁA */}
       <section className={styles.howSection} id="jak">
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
@@ -275,7 +269,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* QUOTE */}
       <section className={styles.quoteSection}>
         <div className={styles.container}>
           <div className={`${styles.quoteCard} ${styles.rv}`}>
@@ -296,7 +289,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* MOBILE */}
       <section className={styles.mobileSection}>
         <div className={styles.container}>
           <div className={styles.mobileGrid}>
@@ -340,7 +332,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className={styles.faqSection}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
@@ -411,7 +402,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
       <section className={styles.ctaSection} id="cennik">
         <div className={styles.container}>
           <div className={`${styles.ctaCard} ${styles.rv}`}>
@@ -440,7 +430,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerInner}>
