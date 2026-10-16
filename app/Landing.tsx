@@ -1,972 +1,467 @@
-/* ═══════════════════════════════════════════════════════════════
-   LANDING — nowa wersja
-   ═══════════════════════════════════════════════════════════════ */
-
-.root {
-  --bg: #0a0e1a;
-  --bg-elev: #0f172a;
-  --bg-card: #111a2e;
-  --border: #1e293b;
-  --border-strong: #334155;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --green: #22c55e;
-  --green-light: #4ade80;
-  --green-dark: #16a34a;
-  --red: #dc2626;
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
-
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-.root h1,
-.root h2,
-.root h3 {
-  font-family: var(--font-display);
-  margin: 0;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-.root p {
-  margin: 0;
-}
-
-.root a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.root img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.container {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 24px;
-  box-sizing: border-box;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   NAVBAR
-   ═══════════════════════════════════════════════════════════════ */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(10, 14, 26, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-
-.navInner {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.logo {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 24px;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-}
-
-.dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  margin-left: 3px;
-}
-
-.navLinks {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-.navLink {
-  font-size: 15px;
-  color: var(--text-muted);
-  transition: color 0.15s;
-}
-
-.navLink:hover {
-  color: #fff;
-}
-
-.navCta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  padding: 0 20px;
-  border-radius: 10px;
-  background: var(--green);
-  color: #052e16;
-  font-weight: 700;
-  font-size: 14px;
-  transition: background 0.15s;
-}
-
-.navCta:hover {
-  background: var(--green-light);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   HERO
-   ═══════════════════════════════════════════════════════════════ */
-.hero {
-  padding: 80px 0 100px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -300px;
-  right: -300px;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 60%);
-  pointer-events: none;
-  filter: blur(60px);
-}
-
-.heroContent {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 64px;
-  align-items: center;
-  position: relative;
-}
-
-.heroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 99px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: var(--green-light);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 24px;
-}
-
-.heroBadgeDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.heroTitle {
-  font-size: clamp(36px, 5vw, 56px);
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 24px;
-  letter-spacing: -0.03em;
-}
-
-.strikeThrough {
-  position: relative;
-  color: var(--text-dim);
-}
-
-.strikeThrough::after {
-  content: '';
-  position: absolute;
-  left: -4px;
-  right: -4px;
-  top: 55%;
-  height: 3px;
-  background: var(--red);
-  transform: rotate(-3deg);
-}
-
-.heroSubtitle {
-  font-size: 19px;
-  color: var(--text-muted);
-  margin-bottom: 36px;
-  max-width: 500px;
-  line-height: 1.55;
-}
-
-.heroCtas {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 32px;
-}
-
-.heroTrust {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.heroTrustItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-.heroTrustIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.heroVisual {
-  position: relative;
-}
-
-.heroVisualGlow {
-  position: absolute;
-  inset: -40px;
-  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.25) 0%, transparent 70%);
-  filter: blur(40px);
-  pointer-events: none;
-}
-
-.heroImageWrapper {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid var(--border-strong);
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(34, 197, 94, 0.15);
-  transform: perspective(1200px) rotateY(-4deg) rotateX(2deg);
-  transition: transform 0.4s ease;
-}
-
-.heroImageWrapper:hover {
-  transform: perspective(1200px) rotateY(0deg) rotateX(0deg);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PROBLEM
-   ═══════════════════════════════════════════════════════════════ */
-.problemSection {
-  padding: 60px 0;
-}
-
-.problemCard {
-  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, transparent 60%);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  border-radius: 24px;
-  padding: 48px;
-  text-align: center;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.problemIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  background: rgba(220, 38, 38, 0.15);
-  color: #f87171;
-  margin-bottom: 24px;
-}
-
-.problemTitle {
-  font-size: 28px;
-  color: #fff;
-  margin-bottom: 16px;
-}
-
-.problemText {
-  font-size: 17px;
-  color: var(--text-muted);
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.problemConclusion {
-  font-size: 17px;
-  color: #fff;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SEKCJE — wspólne
-   ═══════════════════════════════════════════════════════════════ */
-.sectionHeader {
-  text-align: center;
-  max-width: 640px;
-  margin: 0 auto 64px;
-}
-
-.sectionEyebrow {
-  display: inline-block;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--green);
-  margin-bottom: 16px;
-}
-
-.sectionTitle {
-  font-size: clamp(30px, 4vw, 44px);
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 16px;
-}
-
-.sectionSubtitle {
-  font-size: 17px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   FUNKCJE
-   ═══════════════════════════════════════════════════════════════ */
-.features {
-  padding: 80px 0;
-  border-top: 1px solid var(--border);
-}
-
-.featuresGrid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 20px;
-}
-
-.featureCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 28px;
-  transition: border-color 0.2s, transform 0.2s;
-  grid-column: span 2;
-  display: flex;
-  flex-direction: column;
-}
-
-.featureCard:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
-}
-
-.featureCardLarge {
-  grid-column: span 6;
-  padding: 40px;
-}
-
-.featureCardLarge .featureCardText {
-  max-width: 560px;
-  margin-bottom: 32px;
-}
-
-.featureCardHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.featureCardHeader .featureCardTitle {
-  margin: 0;
-  align-self: center;
-}
-
-.featureIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: rgba(34, 197, 94, 0.12);
-  color: var(--green-light);
-  margin-bottom: 20px;
-  flex-shrink: 0;
-}
-
-.featureCardTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 10px;
-}
-
-.featureCardText {
-  font-size: 15px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  flex: 1;
-}
-
-.featureCardImage {
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   JAK DZIAŁA
-   ═══════════════════════════════════════════════════════════════ */
-.howSection {
-  padding: 80px 0;
-  border-top: 1px solid var(--border);
-}
-
-.stepsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-}
-
-.stepCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 32px 28px;
-  position: relative;
-  overflow: hidden;
-}
-
-.stepCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--green), transparent);
-}
-
-.stepNumber {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(34, 197, 94, 0.12);
-  color: var(--green-light);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-
-.stepTitle {
-  font-size: 20px;
-  color: #fff;
-  margin-bottom: 10px;
-}
-
-.stepText {
-  font-size: 15px;
-  color: var(--text-muted);
-  line-height: 1.55;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   QUOTE
-   ═══════════════════════════════════════════════════════════════ */
-.quoteSection {
-  padding: 60px 0;
-}
-
-.quoteCard {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, transparent 60%);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 56px 48px;
-  position: relative;
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-.quoteMark {
-  position: absolute;
-  top: 24px;
-  left: 36px;
-  font-family: var(--font-display);
-  font-size: 96px;
-  line-height: 1;
-  color: var(--green);
-  opacity: 0.3;
-  font-weight: 800;
-}
-
-.quoteText {
-  font-size: 20px;
-  line-height: 1.65;
-  color: var(--text);
-  margin-bottom: 32px;
-  position: relative;
-  font-weight: 500;
-}
-
-.quoteAuthor {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.quoteAvatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--green), var(--green-dark));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 20px;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.quoteName {
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
-}
-
-.quoteRole {
-  font-size: 14px;
-  color: var(--text-dim);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   MOBILE
-   ═══════════════════════════════════════════════════════════════ */
-.mobileSection {
-  padding: 80px 0;
-  border-top: 1px solid var(--border);
-}
-
-.mobileGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
-  align-items: center;
-}
-
-.mobileList {
-  list-style: none;
-  padding: 0;
-  margin: 32px 0 0;
-  display: grid;
-  gap: 16px;
-}
-
-.mobileListItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 16px;
-  color: var(--text-muted);
-  line-height: 1.55;
-}
-
-.mobileListCheck {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--green);
-  font-weight: 700;
-  font-size: 13px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.mobilePhone {
-  display: flex;
-  justify-content: center;
-}
-
-.mobilePhoneFrame {
-  width: 100%;
-  max-width: 320px;
-  border-radius: 32px;
-  overflow: hidden;
-  border: 8px solid #1e293b;
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(34, 197, 94, 0.15);
-  background: var(--bg-elev);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   FAQ
-   ═══════════════════════════════════════════════════════════════ */
-.faqSection {
-  padding: 80px 0;
-  border-top: 1px solid var(--border);
-}
-
-.faq {
-  max-width: 760px;
-  margin: 0 auto;
-  display: grid;
-  gap: 12px;
-}
-
-.faqItem {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-
-.faqItem[open] {
-  border-color: var(--border-strong);
-}
-
-.faqQuestion {
-  cursor: pointer;
-  list-style: none;
-  padding: 22px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-weight: 600;
-  font-size: 17px;
-  color: #fff;
-}
-
-.faqQuestion::-webkit-details-marker {
-  display: none;
-}
-
-.faqChevron {
-  font-size: 24px;
-  color: var(--green);
-  transition: transform 0.2s;
-  font-weight: 400;
-  line-height: 1;
-}
-
-.faqItem[open] .faqChevron {
-  transform: rotate(45deg);
-}
-
-.faqAnswer {
-  padding: 0 24px 24px;
-  color: var(--text-muted);
-  line-height: 1.65;
-  font-size: 15px;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CTA FINAL
-   ═══════════════════════════════════════════════════════════════ */
-.ctaSection {
-  padding: 80px 0 100px;
-}
-
-.ctaCard {
-  position: relative;
-  border-radius: 32px;
-  padding: 80px 48px;
-  background: linear-gradient(180deg, #0f172a 0%, #0b1222 100%);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  text-align: center;
-}
-
-.ctaGlow {
-  position: absolute;
-  top: -100px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, transparent 60%);
-  pointer-events: none;
-  filter: blur(60px);
-}
-
-.ctaContent {
-  position: relative;
-  max-width: 560px;
-  margin: 0 auto;
-}
-
-.ctaTitle {
-  font-size: clamp(30px, 4vw, 42px);
-  color: #fff;
-  margin-bottom: 16px;
-}
-
-.ctaSubtitle {
-  font-size: 17px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin-bottom: 36px;
-}
-
-.ctaActions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.ctaEmail {
-  font-size: 14px;
-  color: var(--text-dim);
-  transition: color 0.15s;
-}
-
-.ctaEmail:hover {
-  color: var(--green-light);
-}
-
-.ctaFooter {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   BUTTONS
-   ═══════════════════════════════════════════════════════════════ */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 28px;
-  border-radius: 12px;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  text-align: center;
-  transition: all 0.2s;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btnLarge {
-  min-height: 56px;
-  padding: 0 36px;
-  font-size: 16px;
-  border-radius: 14px;
-}
-
-.btnPrimary {
-  background: var(--green);
-  color: #052e16;
-}
-
-.btnPrimary:hover {
-  background: var(--green-light);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.35);
-}
-
-.btnSecondary {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border-strong);
-}
-
-.btnSecondary:hover {
-  border-color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   FOOTER
-   ═══════════════════════════════════════════════════════════════ */
-.footer {
-  border-top: 1px solid var(--border);
-  padding: 40px 0;
-}
-
-.footerInner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
-}
-
-.footerBrand {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.footerCopy {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.footerLinks {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.footerLink {
-  font-size: 14px;
-  color: var(--text-dim);
-  transition: color 0.15s;
-}
-
-.footerLink:hover {
-  color: var(--green-light);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   REVEAL ANIMATION
-   ═══════════════════════════════════════════════════════════════ */
-.rv {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.in {
-  opacity: 1;
-  transform: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════════════════ */
-@media (max-width: 900px) {
-  .heroContent {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-
-  .heroTitle {
-    font-size: clamp(32px, 7vw, 44px);
-  }
-
-  .heroSubtitle {
-    font-size: 17px;
-  }
-
-  .heroImageWrapper {
-    transform: none;
-  }
-
-  .featuresGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .featureCard,
-  .featureCardLarge {
-    grid-column: span 1;
-    padding: 28px;
-  }
-
-  .mobileGrid {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-
-  .ctaCard {
-    padding: 56px 28px;
-  }
-
-  .problemCard {
-    padding: 32px 24px;
-  }
-
-  .quoteCard {
-    padding: 40px 28px;
-  }
-
-  .quoteText {
-    font-size: 17px;
-  }
-
-  .footerInner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .heroCtas .btn {
-    width: 100%;
-  }
-
-  .heroTrust {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-@media (max-width: 600px) {
-  .navLinks .navLink {
-    display: none;
-  }
-
-  .container {
-    padding: 0 20px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rv {
-    opacity: 1;
-    transform: none;
-  }
-
-  .heroBadgeDot {
-    animation: none;
-  }
+'use client';
+
+import type { ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import styles from './landing.module.css';
+
+const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595246542172';
+const CONTACT_EMAIL = 'kontakt@talentapp.pl';
+
+const SHOTS = {
+  kadra: { src: '/screenshots/screen1-lista-kadry.webp', w: 1280, h: 800 },
+  kalendarzD: { src: '/screenshots/screen2-kalendarz-desktop.webp', w: 1280, h: 800 },
+  statystyki: { src: '/screenshots/screen3-statystyki.webp', w: 1280, h: 800 },
+  kalendarzM: { src: '/screenshots/screen4-kalendarz-mobile.webp', w: 720, h: 1560 },
+} as const;
+
+export function Landing() {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            (e.target as HTMLElement).classList.add(styles.in);
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 },
+    );
+    root.querySelectorAll<HTMLElement>(`.${styles.rv}`).forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={rootRef} className={styles.root}>
+      {/* NAVBAR */}
+      <nav className={styles.nav}>
+        <div className={styles.navInner}>
+          <Link href="/" className={styles.logo}>
+            talent<span className={styles.dot} />
+          </Link>
+          <div className={styles.navLinks}>
+            <a href="#funkcje" className={styles.navLink}>Funkcje</a>
+            <a href="#jak" className={styles.navLink}>Jak działa</a>
+            <a href="#cennik" className={styles.navLink}>Cennik</a>
+            <Link href="/auth/sign-up" className={styles.navCta}>
+              Zacznij bezpłatnie
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section className={styles.hero}>
+        <div className={styles.container}>
+          <div className={styles.heroContent}>
+            <div className={styles.heroContent}>
+              <div className={styles.heroBadge}>
+                <span className={styles.heroBadgeDot} />
+                Wersja testowa — darmowy dostęp
+              </div>
+
+              <h1 className={styles.heroTitle}>
+                Koniec z <span className={styles.strikeThrough}>Excelem</span> i kartkami na treningach.
+              </h1>
+
+              <p className={styles.heroSubtitle}>
+                Talent to prosta aplikacja dla trenerów piłki nożnej dzieci i młodzieży.
+                Prowadź kadrę, planuj treningi i licz obecność w jednym miejscu.
+              </p>
+
+              <div className={styles.heroCtas}>
+                <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLarge}`}>
+                  Zacznij bezpłatnie
+                </Link>
+                <a href="#jak" className={`${styles.btn} ${styles.btnSecondary} ${styles.btnLarge}`}>
+                  Jak to działa
+                </a>
+              </div>
+
+              <div className={styles.heroTrust}>
+                <div className={styles.heroTrustItem}>
+                  <span className={styles.heroTrustIcon}>✓</span>
+                  Bez karty kredytowej
+                </div>
+                <div className={styles.heroTrustItem}>
+                  <span className={styles.heroTrustIcon}>✓</span>
+                  Bez instalacji
+                </div>
+                <div className={styles.heroTrustItem}>
+                  <span className={styles.heroTrustIcon}>✓</span>
+                  Działa na telefonie
+                </div>
+              </div>
+            </div>
+
+            <div className={`${styles.heroVisual} ${styles.rv}`}>
+              <div className={styles.heroVisualGlow} />
+              <div className={styles.heroImageWrapper}>
+                <Image
+                  src={SHOTS.kalendarzD.src}
+                  alt="Widok kalendarza w aplikacji Talent"
+                  width={SHOTS.kalendarzD.w}
+                  height={SHOTS.kalendarzD.h}
+                  sizes="(max-width: 900px) 100vw, 620px"
+                  quality={85}
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROBLEM */}
+      <section className={styles.problemSection}>
+        <div className={styles.container}>
+          <div className={`${styles.problemCard} ${styles.rv}`}>
+            <div className={styles.problemIcon}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+            </div>
+            <h2 className={styles.problemTitle}>Znasz to?</h2>
+            <p className={styles.problemText}>
+              Lista zawodników w Excelu. Plan treningów w kalendarzu Google.
+              Obecność na kartce. Rozmowy z rodzicami na grupie WhatsApp.
+              A na koniec sezonu — tydzień liczenia frekwencji w arkuszu.
+            </p>
+            <p className={styles.problemConclusion}>
+              <strong>Talent zbiera to wszystko w jedno miejsce.</strong>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FUNKCJE */}
+      <section className={styles.features} id="funkcje">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>Funkcje</div>
+            <h2 className={styles.sectionTitle}>Wszystko, czego potrzebujesz</h2>
+            <p className={styles.sectionSubtitle}>
+              Tylko to, co naprawdę przydaje się przy prowadzeniu drużyny.
+            </p>
+          </div>
+
+          <div className={styles.featuresGrid}>
+            <div className={`${styles.featureCard} ${styles.featureCardLarge} ${styles.rv}`}>
+              <div className={styles.featureCardHeader}>
+                <div className={styles.featureIcon}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <h3 className={styles.featureCardTitle}>Kadra w jednym miejscu</h3>
+              </div>
+              <p className={styles.featureCardText}>
+                Imię, rocznik, pozycja, numer, kontakt do rodzica i notatki trenera.
+                Szukaj, sortuj i filtruj — jak w prawdziwej aplikacji.
+              </p>
+              <div className={styles.featureCardImage}>
+                <Image
+                  src={SHOTS.kadra.src}
+                  alt="Lista zawodników w Talent"
+                  width={SHOTS.kadra.w}
+                  height={SHOTS.kadra.h}
+                  sizes="(max-width: 900px) 100vw, 600px"
+                  quality={80}
+                />
+              </div>
+            </div>
+
+            <div className={`${styles.featureCard} ${styles.rv}`}>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+              </div>
+              <h3 className={styles.featureCardTitle}>Kalendarz treningów</h3>
+              <p className={styles.featureCardText}>
+                Treningi, mecze, sparingi i turnieje w jednym kalendarzu.
+                Każdy typ ma swój kolor.
+              </p>
+            </div>
+
+            <div className={`${styles.featureCard} ${styles.rv}`}>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <path d="M22 4 12 14.01l-3-3" />
+                </svg>
+              </div>
+              <h3 className={styles.featureCardTitle}>Obecność w 2 kliknięcia</h3>
+              <p className={styles.featureCardText}>
+                Otwierasz trening, zaznaczasz kto przyszedł, zapisujesz.
+                Bez kartki, bez Excela.
+              </p>
+            </div>
+
+            <div className={`${styles.featureCard} ${styles.rv}`}>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 20V10M12 20V4M6 20v-6" />
+                </svg>
+              </div>
+              <h3 className={styles.featureCardTitle}>Statystyki frekwencji</h3>
+              <p className={styles.featureCardText}>
+                Widzisz kto przestał przychodzić, zanim zrobi się z tego problem.
+                Ranking, wykresy, alerty.
+              </p>
+            </div>
+
+            <div className={`${styles.featureCard} ${styles.rv}`}>
+              <div className={styles.featureIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3" />
+                </svg>
+              </div>
+              <h3 className={styles.featureCardTitle}>Eksport do PDF</h3>
+              <p className={styles.featureCardText}>
+                Wydrukuj plan tygodnia i powieś w szatni.
+                Albo wyślij rodzicom jako plik.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* JAK DZIAŁA */}
+      <section className={styles.howSection} id="jak">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>Jak to działa</div>
+            <h2 className={styles.sectionTitle}>Trzy kroki do porządku</h2>
+          </div>
+
+          <div className={styles.stepsGrid}>
+            <div className={`${styles.stepCard} ${styles.rv}`}>
+              <div className={styles.stepNumber}>1</div>
+              <h3 className={styles.stepTitle}>Utwórz drużynę</h3>
+              <p className={styles.stepText}>
+                Nazwa, rocznik i kolor. Zajmie Ci to 30 sekund.
+              </p>
+            </div>
+
+            <div className={`${styles.stepCard} ${styles.rv}`}>
+              <div className={styles.stepNumber}>2</div>
+              <h3 className={styles.stepTitle}>Dodaj zawodników</h3>
+              <p className={styles.stepText}>
+                Wpisz imiona i nazwiska, rocznik, pozycję i numer na koszulce.
+              </p>
+            </div>
+
+            <div className={`${styles.stepCard} ${styles.rv}`}>
+              <div className={styles.stepNumber}>3</div>
+              <h3 className={styles.stepTitle}>Planuj i zaznaczaj</h3>
+              <p className={styles.stepText}>
+                Dodaj trening do kalendarza. Po treningu zaznacz obecność w 2 kliknięcia.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* QUOTE */}
+      <section className={styles.quoteSection}>
+        <div className={styles.container}>
+          <div className={`${styles.quoteCard} ${styles.rv}`}>
+            <div className={styles.quoteMark}>"</div>
+            <p className={styles.quoteText}>
+              Prowadzę drużynę dzieci od 4 lat. Przez ten czas przewinęło się przez moje ręce
+              kilka arkuszy, dziesiątki kartek i wiele nieodczytanych wiadomości na grupie.
+              Talent to pierwsze narzędzie, które faktycznie upraszcza, a nie komplikuje.
+            </p>
+            <div className={styles.quoteAuthor}>
+              <div className={styles.quoteAvatar}>A</div>
+              <div>
+                <div className={styles.quoteName}>Adam Pilny</div>
+                <div className={styles.quoteRole}>Trener, twórca Talent</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MOBILE */}
+      <section className={styles.mobileSection}>
+        <div className={styles.container}>
+          <div className={styles.mobileGrid}>
+            <div className={`${styles.mobileContent} ${styles.rv}`}>
+              <div className={styles.sectionEyebrow}>Na boisku i w domu</div>
+              <h2 className={styles.sectionTitle}>Zawsze pod ręką</h2>
+              <p className={styles.sectionSubtitle}>
+                Działa w przeglądarce na telefonie i komputerze. Możesz ją dodać
+                do ekranu głównego — uruchamia się jak zwykła aplikacja.
+              </p>
+
+              <ul className={styles.mobileList}>
+                <li className={styles.mobileListItem}>
+                  <span className={styles.mobileListCheck}>✓</span>
+                  <span>Nie musisz nic instalować ze sklepu</span>
+                </li>
+                <li className={styles.mobileListItem}>
+                  <span className={styles.mobileListCheck}>✓</span>
+                  <span>Działa offline — dane zsynchronizują się później</span>
+                </li>
+                <li className={styles.mobileListItem}>
+                  <span className={styles.mobileListCheck}>✓</span>
+                  <span>Ekran „Dzisiaj" pokazuje plan dnia na pierwszy rzut oka</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className={`${styles.mobilePhone} ${styles.rv}`}>
+              <div className={styles.mobilePhoneFrame}>
+                <Image
+                  src={SHOTS.kalendarzM.src}
+                  alt="Aplikacja Talent na telefonie"
+                  width={SHOTS.kalendarzM.w}
+                  height={SHOTS.kalendarzM.h}
+                  sizes="(max-width: 900px) 70vw, 320px"
+                  quality={85}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className={styles.faqSection}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>FAQ</div>
+            <h2 className={styles.sectionTitle}>Często pytacie</h2>
+          </div>
+
+          <div className={styles.faq}>
+            <details className={`${styles.faqItem} ${styles.rv}`}>
+              <summary className={styles.faqQuestion}>
+                Ile kosztuje Talent?
+                <span className={styles.faqChevron}>+</span>
+              </summary>
+              <div className={styles.faqAnswer}>
+                W tej chwili Talent jest bezpłatny w wersji testowej. Szukam trenerów,
+                którzy zechcą przetestować aplikację i podzielić się opinią.
+                W przyszłości planuję płatne plany dla dużych klubów.
+              </div>
+            </details>
+
+            <details className={`${styles.faqItem} ${styles.rv}`}>
+              <summary className={styles.faqQuestion}>
+                Czy muszę coś instalować?
+                <span className={styles.faqChevron}>+</span>
+              </summary>
+              <div className={styles.faqAnswer}>
+                Nie. Talent działa w przeglądarce — na telefonie i komputerze.
+                Możesz ją dodać do ekranu głównego telefonu (jedno kliknięcie) i będzie
+                uruchamiać się jak zwykła aplikacja, ale nie wymaga instalacji ze sklepu.
+              </div>
+            </details>
+
+            <details className={`${styles.faqItem} ${styles.rv}`}>
+              <summary className={styles.faqQuestion}>
+                Co z danymi mojej drużyny?
+                <span className={styles.faqChevron}>+</span>
+              </summary>
+              <div className={styles.faqAnswer}>
+                Dane są Twoje. Nie sprzedajemy ich, nie udostępniamy nikomu.
+                Możesz je w każdej chwili usunąć, razem z całym kontem.
+                Szczegóły w polityce prywatności.
+              </div>
+            </details>
+
+            <details className={`${styles.faqItem} ${styles.rv}`}>
+              <summary className={styles.faqQuestion}>
+                Czy rodzice mają dostęp do aplikacji?
+                <span className={styles.faqChevron}>+</span>
+              </summary>
+              <div className={styles.faqAnswer}>
+                Na razie aplikacja jest dla trenerów. Dostęp dla rodziców planuję
+                w kolejnych wersjach — najpierw chcę dopracować to co najważniejsze.
+              </div>
+            </details>
+
+            <details className={`${styles.faqItem} ${styles.rv}`}>
+              <summary className={styles.faqQuestion}>
+                Kto tworzy Talent?
+                <span className={styles.faqChevron}>+</span>
+              </summary>
+              <div className={styles.faqAnswer}>
+                Jestem Adam — trener pracujący z dziećmi i młodzieżą.
+                Talent to moje narzędzie, którego brakowało mi w codziennej pracy.
+                Każda funkcja wynika z realnej potrzeby na boisku.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className={styles.ctaSection} id="cennik">
+        <div className={styles.container}>
+          <div className={`${styles.ctaCard} ${styles.rv}`}>
+            <div className={styles.ctaGlow} />
+            <div className={styles.ctaContent}>
+              <h2 className={styles.ctaTitle}>Gotowy uporządkować drużynę?</h2>
+              <p className={styles.ctaSubtitle}>
+                Załóż konto w 30 sekund. Bez karty kredytowej.
+                Zacznij prowadzić kadrę i obecność w jednym miejscu — już dziś.
+              </p>
+
+              <div className={styles.ctaActions}>
+                <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLarge}`}>
+                  Zacznij bezpłatnie
+                </Link>
+                <a href={`mailto:${CONTACT_EMAIL}`} className={styles.ctaEmail}>
+                  lub napisz: {CONTACT_EMAIL}
+                </a>
+              </div>
+
+              <div className={styles.ctaFooter}>
+                Wersja testowa — darmowy dostęp dla pierwszych trenerów.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerInner}>
+            <div className={styles.footerBrand}>
+              <div className={styles.logo}>
+                talent<span className={styles.dot} />
+              </div>
+              <div className={styles.footerCopy}>© 2026 Talent. Wszelkie prawa zastrzeżone.</div>
+            </div>
+
+            <div className={styles.footerLinks}>
+              <Link href="/prywatnosc" className={styles.footerLink}>Polityka prywatności</Link>
+              <Link href="/regulamin" className={styles.footerLink}>Regulamin</Link>
+              <a href={`mailto:${CONTACT_EMAIL}`} className={styles.footerLink}>Kontakt</a>
+              <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className={styles.footerLink}>
+                Facebook
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
