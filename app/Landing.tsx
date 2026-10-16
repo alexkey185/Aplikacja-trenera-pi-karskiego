@@ -12,14 +12,6 @@ type Player = {
   days: number[];
 };
 
-// ── Wymiary screenshotów (podmień na wynik `identify`) ──
-const SHOTS = {
-  kadra: { src: '/screenshots/screen1-lista-kadry.webp', w: 1280, h: 800 },
-  kalendarzD: { src: '/screenshots/screen2-kalendarz-desktop.webp', w: 1280, h: 800 },
-  statystyki: { src: '/screenshots/screen3-statystyki.webp', w: 1280, h: 800 },
-  kalendarzM: { src: '/screenshots/screen4-kalendarz-mobile.webp', w: 720, h: 1560 },
-} as const;
-
 const INITIAL_PLAYERS: Player[] = [
   { name: 'Antoni Adamski', ini: 'AA', meta: '2018 · Pomocnik', days: [1, 1, 0, 1, 1] },
   { name: 'Bruno Bielski', ini: 'BB', meta: '2020 · Napastnik', days: [1, 0, 1, 1, 1] },
@@ -46,6 +38,14 @@ const HINT_INITIAL = { player: 2, dot: 1 };
 const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595246542172';
 const CONTACT_EMAIL = 'kontakt@talentapp.pl';
 const SIGNUP_URL = '/auth/sign-up';
+
+// ── NOWE: wymiary screenshotów (podmień na wynik `identify` po konwersji do WebP) ──
+const SHOTS = {
+  kadra: { src: '/screenshots/screen1-lista-kadry.webp', w: 1280, h: 800 },
+  kalendarzD: { src: '/screenshots/screen2-kalendarz-desktop.webp', w: 1280, h: 800 },
+  statystyki: { src: '/screenshots/screen3-statystyki.webp', w: 1280, h: 800 },
+  kalendarzM: { src: '/screenshots/screen4-kalendarz-mobile.webp', w: 720, h: 1560 },
+} as const;
 
 export function Landing() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -309,7 +309,7 @@ export function Landing() {
             <div>
               <h2 className={`${styles.h2} ${styles.rv}`}>Cała kadra w jednym miejscu</h2>
               <p className={`${styles.sub} ${styles.rv}`}>
-                Imię, rocznik, pozycja i numer - plus kropki z ostatnich treningów obok każdego nazwiska.
+                Imię, rocznik, pozycja i numer — plus kropki z ostatnich treningów obok każdego nazwiska.
                 Wiesz, kto przestał przychodzić, zanim zrobi się z tego problem.
               </p>
               <ul className={styles.ticks}>
@@ -339,7 +339,7 @@ export function Landing() {
             <div>
               <h2 className={`${styles.h2} ${styles.rv}`}>Plan, który nie ginie w wiadomościach</h2>
               <p className={`${styles.sub} ${styles.rv}`}>
-                Treningi, mecze, sparingi i turnieje w jednym kalendarzu. Każdy typ wydarzenia ma swój kolor -
+                Treningi, mecze, sparingi i turnieje w jednym kalendarzu. Każdy typ wydarzenia ma swój kolor —
                 na pierwszy rzut oka wiesz, co się dzieje.
               </p>
               <ul className={styles.ticks}>
@@ -489,42 +489,67 @@ export function Landing() {
         </div>
       </div>
 
+      {/* ═══════════════════════════════════════════════════════════
+          CTA "Dołącz do testów" - przeprojektowane
+          ═══════════════════════════════════════════════════════════ */}
       <div className={styles.sec} id="testy">
         <div className={styles.wrap}>
           <div className={`${styles.ctaBox} ${styles.rv}`}>
-            <h2 className={styles.h2}>Szukam trenerów do testów</h2>
-            <p className={styles.sub}>
-              Dla trenerów pracujących z dziećmi i młodzieżą. W zamian za darmowy dostęp proszę o szczerą opinię,
-              co poprawić.
+            {/* Eyebrow */}
+            <div className={styles.ctaEyebrow}>Zaproszenie do testów</div>
+
+            {/* Nagłówek */}
+            <h2 className={styles.h2} style={{ marginBottom: 16 }}>
+              Dołącz do testów talent.
+            </h2>
+
+            {/* Podtytuł */}
+            <p className={styles.sub} style={{ maxWidth: 560, margin: '0 auto 32px' }}>
+              Szukam trenerów pracujących z dziećmi i młodzieżą, którzy chcą przetestować Talent
+              i podzielić się opinią. W zamian — darmowy dostęp i realny wpływ na rozwój aplikacji.
             </p>
-            <div className={styles.ctas} style={{ justifyContent: 'center' }}>
-              <a className={`${styles.btn} ${styles.btnP}`} href={SIGNUP_URL}>
-                Zarejestruj się
+
+            {/* 3 korzyści */}
+            <div className={styles.ctaBenefits}>
+              <div className={styles.ctaBenefit}>
+                <div className={styles.ctaBenefitIcon}>✓</div>
+                <div>
+                  <div className={styles.ctaBenefitTitle}>Darmowy dostęp</div>
+                  <div className={styles.ctaBenefitDesc}>Pełna wersja bez opłat</div>
+                </div>
+              </div>
+              <div className={styles.ctaBenefit}>
+                <div className={styles.ctaBenefitIcon}>⚡</div>
+                <div>
+                  <div className={styles.ctaBenefitTitle}>Wpływ na rozwój</div>
+                  <div className={styles.ctaBenefitDesc}>Twoje uwagi kształtują apkę</div>
+                </div>
+              </div>
+              <div className={styles.ctaBenefit}>
+                <div className={styles.ctaBenefitIcon}>✉</div>
+                <div>
+                  <div className={styles.ctaBenefitTitle}>Bez spamu</div>
+                  <div className={styles.ctaBenefitDesc}>Jeden mail, żadnych newsletterów</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Formularz */}
+            <div className={styles.ctaForm}>
+              <a
+                className={`${styles.btn} ${styles.btnP} ${styles.ctaBtn}`}
+                href={SIGNUP_URL}
+              >
+                Zarejestruj się za darmo
+              </a>
+              <a className={styles.ctaBtnSecondary} href={`mailto:${CONTACT_EMAIL}`}>
+                lub napisz: {CONTACT_EMAIL}
               </a>
             </div>
-            <p
-              className={styles.sub}
-              style={{
-                marginTop: 20,
-                fontSize: 15,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 16,
-                flexWrap: 'wrap',
-              }}
-            >
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-              <a
-                href={FACEBOOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook talent."
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-              >
-                <FacebookIcon />
-                Facebook
-              </a>
+
+            {/* Social proof */}
+            <p className={styles.ctaFoot}>
+              Zajmie Ci to 30 sekund. Bez karty kredytowej.
             </p>
           </div>
         </div>
