@@ -286,7 +286,7 @@ export function Landing() {
             <div className={styles.hero2}>
               <div>
                 <div className={`${styles.eyebrow} ${styles.fd}`}>
-                  Aplikacja dla trenerów piłki nożnej młodzieżowej
+                  Aplikacja dla trenerów piłki nożnej
                 </div>
                 <h1 className={styles.h1}>
                   <span className={styles.w} style={{ ['--i' as never]: 0 }}>Twoja</span>{' '}
@@ -595,7 +595,7 @@ export function Landing() {
           <div className={styles.ctaBox}>
             <h2 className={styles.h2}>Szukam trenerów do testów</h2>
             <p className={styles.sub}>
-              Dla trenerów pracujących z dziećmi i młodzieżą. W zamian za darmowy dostęp proszę o szczerą opinię, co poprawić.
+              Dla trenerów piłki nożnej. W zamian za darmowy dostęp proszę o szczerą opinię, co poprawić.
             </p>
             <div className={styles.ctas} style={{ justifyContent: 'center' }}>
               <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnP}`}>
