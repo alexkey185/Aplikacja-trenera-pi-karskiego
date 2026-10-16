@@ -607,5 +607,11 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         <Plus className="w-7 h-7 md:w-6 md:h-6 group-hover:rotate-90 transition-transform" strokeWidth={2.5} />
       </button>
 
-      {toast && (
-        <div className="fixed bottom-40 right-5 md:bottom-20 md:right-6 z-50 bg-slate-900/95 backdrop-blur-md border border-green-400/40 rounded-xl px-4 py-2.5 text
+            {toast && (
+        <div className="fixed bottom-40 right-5 md:bottom-20 md:right-6 z-50 bg-slate-900/95 backdrop-blur-md border border-green-400/40 rounded-xl px-4 py-2.5 text-xs text-white shadow-xl animate-fadeIn">
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+}
