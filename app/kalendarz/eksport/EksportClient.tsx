@@ -5,14 +5,8 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { ArrowLeft, Printer } from 'lucide-react';
 
-// ══════════════════════════════════════════════
-// HELPERY
-// ══════════════════════════════════════════════
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-// ══════════════════════════════════════════════
-// TYPY
-// ══════════════════════════════════════════════
 type Trening = {
   id: number;
   data: string;
@@ -30,8 +24,13 @@ type Dzien = {
 };
 
 const DAYS_LONG = [
-  'Niedziela', 'Poniedziałek', 'Wtorek', 'Środa',
-  'Czwartek', 'Piątek', 'Sobota',
+  'Niedziela',
+  'Poniedziałek',
+  'Wtorek',
+  'Środa',
+  'Czwartek',
+  'Piątek',
+  'Sobota',
 ];
 
 const TYP_LABEL: Record<string, string> = {
@@ -103,68 +102,75 @@ export function EksportClient({
   const content = (
     <main className="eksport-shell">
       {/* Pasek narzędzi - NIE drukuje się */}
-      <div className="no-print" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-        <div className="flex items-center justify-between mb-6">
+      <div className="no-print" style={{ padding: '16px', maxWidth: '900px', margin: '0 auto' }}>
+        {/* 
+          Zmiana: pionowy układ na mobile, poziomy na sm+.
+          Przyciski full-width na mobile.
+        */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <Link
             href="/kalendarz"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-semibold transition-all"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-semibold transition-all w-full sm:w-auto"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 flex-shrink-0" />
             Wróć do kalendarza
           </Link>
 
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white text-sm font-bold transition-all shadow-lg shadow-red-500/30"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-br from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white text-sm font-bold transition-all shadow-lg shadow-red-500/30 w-full sm:w-auto"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-4 h-4 flex-shrink-0" />
             Drukuj / Zapisz PDF
           </button>
         </div>
 
-        <div className="bg-slate-900 border border-white/10 rounded-2xl p-4 mb-6 text-xs text-white/60">
-          <div className="font-bold text-white mb-2">💡 Jak zapisać jako PDF:</div>
+        <div className="bg-slate-900 border border-white/10 rounded-2xl p-4 mb-5 text-xs text-white/60">
+          <div className="font-bold text-white mb-2">Jak zapisać jako PDF:</div>
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Kliknij <strong className="text-white">Drukuj / Zapisz PDF</strong></li>
-            <li>W oknie druku wybierz <strong className="text-white">Zapisz jako PDF</strong> (Destination: Save as PDF)</li>
-            <li>Format: <strong className="text-white">A4</strong>, orientacja: <strong className="text-white">pionowa</strong></li>
-            <li>Marginesy: <strong className="text-white">Domyślne</strong> lub <strong className="text-white">Brak</strong></li>
-            <li>Włącz <strong className="text-white">Grafika tła</strong> (Background graphics)</li>
+            <li>
+              Kliknij <strong className="text-white">Drukuj / Zapisz PDF</strong>
+            </li>
+            <li>
+              W oknie druku wybierz <strong className="text-white">Zapisz jako PDF</strong>{' '}
+              (Destination: Save as PDF)
+            </li>
+            <li>
+              Format: <strong className="text-white">A4</strong>, orientacja:{' '}
+              <strong className="text-white">pionowa</strong>
+            </li>
+            <li>
+              Marginesy: <strong className="text-white">Domyślne</strong> lub{' '}
+              <strong className="text-white">Brak</strong>
+            </li>
+            <li>
+              Włącz <strong className="text-white">Grafika tła</strong> (Background graphics)
+            </li>
           </ol>
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════ */}
       {/* A4 - plakat do druku */}
-      {/* ═══════════════════════════════════════════ */}
       <div className="a4-page">
         <div className="top-bar" />
 
         <div style={{ padding: '28px 44px 28px' }}>
-
-          {/* HEADER Z LOGO - kompaktowy */}
+          {/* 
+            HEADER - bez logo Wielopole.
+            Lewa strona: nazwa planu. Prawa: zakres dat.
+          */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '22px',
               paddingBottom: '20px',
               borderBottom: '2px solid #0f172a',
               marginBottom: '20px',
             }}
           >
-            <img
-              src="/logo-wielopole.png"
-              alt="KS Wielopole"
-              style={{
-                width: '80px',
-                height: '80px',
-                objectFit: 'contain',
-                flexShrink: 0,
-              }}
-            />
-
-            <div style={{ flex: 1 }}>
+            <div>
               <div
                 style={{
                   fontSize: '10px',
@@ -175,11 +181,11 @@ export function EksportClient({
                   marginBottom: '5px',
                 }}
               >
-                Klub Sportowy
+                Plan tygodnia
               </div>
               <h1
                 style={{
-                  fontSize: '30px',
+                  fontSize: '34px',
                   fontWeight: 900,
                   letterSpacing: '-0.03em',
                   lineHeight: 1,
@@ -187,11 +193,11 @@ export function EksportClient({
                   margin: 0,
                 }}
               >
-                Wielopole
+                Talent
               </h1>
             </div>
 
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ textAlign: 'right' }}>
               <div
                 style={{
                   fontSize: '9px',
@@ -202,7 +208,7 @@ export function EksportClient({
                   marginBottom: '4px',
                 }}
               >
-                Plan tygodnia
+                Zakres dat
               </div>
               <div
                 style={{
@@ -213,7 +219,7 @@ export function EksportClient({
                   lineHeight: 1,
                 }}
               >
-                {zakres.split(' - ')[0]}
+                {zakres.split(' — ')[0]}
               </div>
               <div
                 style={{
@@ -225,12 +231,12 @@ export function EksportClient({
                   marginTop: '2px',
                 }}
               >
-                - {zakres.split(' - ')[1]}
+                — {zakres.split(' — ')[1]}
               </div>
             </div>
           </div>
 
-          {/* DNI */}
+          {/* Dni */}
           {dni.map((d) => {
             const dzienTyg = DAYS_LONG[d.data.getDay()];
             const dataStr = `${pad2(d.data.getDate())}.${pad2(d.data.getMonth() + 1)}`;
@@ -283,7 +289,7 @@ export function EksportClient({
                           {event.przeciwnik && ` vs ${event.przeciwnik}`}
                         </div>
                         <div className="event-place">
-                          📍 {event.miejsce ?? 'Miejsce do potwierdzenia'}
+                          {event.miejsce ?? 'Miejsce do potwierdzenia'}
                         </div>
                       </div>
 
@@ -302,7 +308,7 @@ export function EksportClient({
             );
           })}
 
-          {/* STATYSTYKI */}
+          {/* Statystyki */}
           {stats.treningi + stats.mecze + stats.sparingi + stats.turnieje > 0 && (
             <div
               style={{
@@ -347,7 +353,7 @@ export function EksportClient({
             </div>
           )}
 
-          {/* STOPKA - kompaktowa */}
+          {/* Stopka */}
           <div
             style={{
               marginTop: '20px',
@@ -386,9 +392,7 @@ export function EksportClient({
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* STYLE - print + layout A4 */}
-      {/* ═══════════════════════════════════════════ */}
+      {/* Style print + layout A4 */}
       <style jsx global>{`
         main.eksport-shell {
           position: fixed !important;
