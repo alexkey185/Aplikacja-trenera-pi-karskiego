@@ -101,12 +101,16 @@ export function EksportClient({
 
   const content = (
     <main className="eksport-shell">
-      {/* Pasek narzędzi - NIE drukuje się */}
-      <div className="no-print" style={{ padding: '16px', maxWidth: '900px', margin: '0 auto' }}>
-        {/* 
-          Zmiana: pionowy układ na mobile, poziomy na sm+.
-          Przyciski full-width na mobile.
-        */}
+      {/* Pasek narzędzi - NIE drukuje się. Padding-top uwzględnia safe area iOS */}
+      <div
+        className="no-print eksport-toolbar"
+        style={{
+          padding: '16px',
+          paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+          maxWidth: '900px',
+          margin: '0 auto',
+        }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <Link
             href="/kalendarz"
@@ -155,10 +159,6 @@ export function EksportClient({
         <div className="top-bar" />
 
         <div style={{ padding: '28px 44px 28px' }}>
-          {/* 
-            HEADER - bez logo Wielopole.
-            Lewa strona: nazwa planu. Prawa: zakres dat.
-          */}
           <div
             style={{
               display: 'flex',
@@ -236,7 +236,6 @@ export function EksportClient({
             </div>
           </div>
 
-          {/* Dni */}
           {dni.map((d) => {
             const dzienTyg = DAYS_LONG[d.data.getDay()];
             const dataStr = `${pad2(d.data.getDate())}.${pad2(d.data.getMonth() + 1)}`;
@@ -308,7 +307,6 @@ export function EksportClient({
             );
           })}
 
-          {/* Statystyki */}
           {stats.treningi + stats.mecze + stats.sparingi + stats.turnieje > 0 && (
             <div
               style={{
@@ -353,7 +351,6 @@ export function EksportClient({
             </div>
           )}
 
-          {/* Stopka */}
           <div
             style={{
               marginTop: '20px',
@@ -392,7 +389,6 @@ export function EksportClient({
         </div>
       </div>
 
-      {/* Style print + layout A4 */}
       <style jsx global>{`
         main.eksport-shell {
           position: fixed !important;
@@ -402,6 +398,13 @@ export function EksportClient({
           overflow-y: auto !important;
           overflow-x: hidden !important;
           -webkit-overflow-scrolling: touch;
+          /* Safe area dla iOS PWA - iPhone z dynamic island */
+          padding-top: env(safe-area-inset-top, 0);
+        }
+
+        /* Dodatkowo chroni toolbar przed status barem na iOS */
+        .eksport-toolbar {
+          padding-top: max(16px, env(safe-area-inset-top, 16px)) !important;
         }
 
         body.eksport-mode {
@@ -535,6 +538,7 @@ export function EksportClient({
             overflow: visible !important;
             background: white !important;
             z-index: auto !important;
+            padding-top: 0 !important;
           }
 
           .no-print {
