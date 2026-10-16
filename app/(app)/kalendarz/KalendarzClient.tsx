@@ -94,7 +94,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
 
   const calendarRef = useRef<HTMLDivElement>(null);
-  const eventsAnchorRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
 
   const eventsByDate = useMemo(() => {
@@ -151,14 +150,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
   const selectDay = (iso: string) => {
     setSelectedDate(iso);
-    const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
-    if (!isDesktop) {
-      setTimeout(() => {
-        eventsAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 80);
-    }
+    // Bez auto-scrolla - kafel górny pokazuje kontekst wybranego dnia,
+    // więc user zostaje tam gdzie kliknął.
   };
-
   const goToToday = () => {
     setViewYear(todayDate.getFullYear());
     setViewMonth(todayDate.getMonth());
@@ -550,7 +544,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
 
         <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
-          <div ref={eventsAnchorRef} className="scroll-mt-4" />
 
           {pokazListeDnia ? (
             <ListaDnia

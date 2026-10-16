@@ -12,9 +12,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ══════════════════════════════════════════════ */
-/* PODSTAWY */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* PODSTAWY                                                        */
+/* ═══════════════════════════════════════════════════════════════ */
 html {
   background: #0a0e1a;
 }
@@ -29,7 +29,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Świecące tło — dwie rozmyte plamy */
 body::before {
   content: '';
   position: fixed;
@@ -66,24 +65,21 @@ main {
   box-sizing: border-box;
 }
 
-/* ══════════════════════════════════════════════ */
-/* SAFE AREA — iOS PWA (dynamic island)          */
-/* ══════════════════════════════════════════════ */
-
-/* Główna zawartość apki — padding górny pod pasek statusu */
+/* ═══════════════════════════════════════════════════════════════ */
+/* SAFE AREA - iOS PWA (dynamic island)                            */
+/* ═══════════════════════════════════════════════════════════════ */
 .app-content {
   padding-top: max(4.5rem, env(safe-area-inset-top));
 }
 
-/* Ekrany auth (logowanie, rejestracja) — wyśrodkowane */
 .auth-content {
   padding-top: max(2rem, env(safe-area-inset-top));
   padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
-/* ══════════════════════════════════════════════ */
-/* ANIMACJE */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* ANIMACJE                                                        */
+/* ═══════════════════════════════════════════════════════════════ */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -124,7 +120,6 @@ main {
   }
 }
 
-/* Delikatny glow dla "dziś" — nie za mocny, ale zauważalny */
 @keyframes today-glow {
   0%, 100% {
     box-shadow:
@@ -135,6 +130,22 @@ main {
     box-shadow:
       0 0 16px rgba(34, 197, 94, 0.55),
       inset 0 0 12px rgba(34, 197, 94, 0.12);
+  }
+}
+
+/* NOWE: Flash highlight kafla przy zmianie dnia */
+@keyframes flash-highlight {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+  30% {
+    transform: scale(1.015);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
   }
 }
 
@@ -152,6 +163,11 @@ main {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* NOWE: klasa animacji flash */
+.animate-flash {
+  animation: flash-highlight 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }
 .stagger-3 { animation-delay: 0.15s; }
@@ -161,9 +177,9 @@ main {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* ══════════════════════════════════════════════ */
-/* KOMPONENTY POMOCNICZE */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* KOMPONENTY POMOCNICZE                                           */
+/* ═══════════════════════════════════════════════════════════════ */
 .glass {
   background: rgba(30, 41, 59, 0.5);
   backdrop-filter: blur(12px);
@@ -183,9 +199,9 @@ main {
   height: 100dvh;
 }
 
-/* ══════════════════════════════════════════════ */
-/* INTERAKCJE */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* INTERAKCJE                                                      */
+/* ═══════════════════════════════════════════════════════════════ */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
   transition-duration: 200ms;
@@ -196,9 +212,9 @@ button:active:not(:disabled), a:active {
   transform: scale(0.97);
 }
 
-/* ══════════════════════════════════════════════ */
-/* SCROLLBAR */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* SCROLLBAR                                                       */
+/* ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -217,11 +233,9 @@ button:active:not(:disabled), a:active {
   background: #475569;
 }
 
-/* ══════════════════════════════════════════════ */
-/* KALENDARZ — komórki dni */
-/* ══════════════════════════════════════════════ */
-
-/* DZIŚ — subtelny zielony tint + delikatny glow + zielona cyfra */
+/* ═══════════════════════════════════════════════════════════════ */
+/* KALENDARZ - komórki dni                                         */
+/* ═══════════════════════════════════════════════════════════════ */
 .day-today {
   background: rgba(34, 197, 94, 0.12) !important;
   border: 1.5px solid rgba(74, 222, 128, 0.55) !important;
@@ -241,7 +255,6 @@ button:active:not(:disabled), a:active {
   opacity: 0.9;
 }
 
-/* WYBRANY (nie dziś) — delikatny niebieski ring */
 .day-selected {
   background: rgba(59, 130, 246, 0.1) !important;
   border: 1.5px solid rgba(96, 165, 250, 0.5) !important;
@@ -255,26 +268,23 @@ button:active:not(:disabled), a:active {
   font-weight: 700 !important;
 }
 
-/* Weekend — subtelny niebieski tint */
 .day-weekend {
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* Święto — czerwony tint */
 .day-holiday {
   background: rgba(239, 68, 68, 0.08);
 }
 
-/* Hover na dzień */
 .day-hoverable:hover {
   background: rgba(255, 255, 255, 0.06) !important;
   transform: scale(1.06);
   z-index: 3;
 }
 
-/* ══════════════════════════════════════════════ */
-/* UKRYJ NATYWNE SPINNERY W POLACH NUMBER */
-/* ══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* UKRYJ NATYWNE SPINNERY W POLACH NUMBER                          */
+/* ═══════════════════════════════════════════════════════════════ */
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -287,9 +297,9 @@ input[type='number'] {
   appearance: textfield;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CHROME AUTOFILL — nadpisanie jasnego tła
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* CHROME AUTOFILL                                                 */
+/* ═══════════════════════════════════════════════════════════════ */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -308,4 +318,17 @@ input:-webkit-autofill:focus {
   box-shadow:
     0 0 0 30px #0f172a inset,
     0 0 0 1px rgba(74, 222, 128, 0.6) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* PREFERS REDUCED MOTION                                          */
+/* ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-flash,
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-glow,
+  .day-today {
+    animation: none !important;
+  }
 }
