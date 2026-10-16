@@ -86,11 +86,6 @@ export default async function KartaZawodnika({
   const obecniRazem = stats.obecny + stats.spozniony;
   const procent = stats.total > 0 ? Math.round((obecniRazem / stats.total) * 100) : 0;
 
-  // ═══════════════════════════════════════════════════════════════
-  // Kluczowa zmiana: użycie type predicate żeby zawęzić typ
-  // i wyeliminować „w.trening possibly undefined" w dalszych
-  // .map / .sort.
-  // ═══════════════════════════════════════════════════════════════
   const wpisyZGrupowane: WpisZTreningiem[] = (wpisy ?? [])
     .map((w) => {
       const trening = treningMap.get(w.trening_id);
@@ -185,17 +180,26 @@ export default async function KartaZawodnika({
         <h1 className="text-xl font-semibold text-white/70 drop-shadow">Karta zawodnika</h1>
       </header>
 
-      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn relative overflow-hidden shadow-2xl shadow-black/60">
+      {/* ═══════════════════════════════════════════════════════════
+          KARTA ZAWODNIKA - nowy layout
+          Mobile: duza litera/numer po lewej, imie+nazwisko pod spodem
+          Desktop: poziomo
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 mb-4 animate-fadeIn relative overflow-hidden shadow-2xl shadow-black/60">
         <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
         <div className="relative flex items-start gap-4">
+          {/* Duza litera / numer */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-3xl shadow-2xl text-white">
-              {zawodnik.numer ?? '-'}
+            <div className="relative w-20 h-20 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center font-bold text-3xl shadow-2xl text-white">
+              {zawodnik.numer ?? '—'}
             </div>
           </div>
+
+          {/* Imie + nazwisko (na mobile zawijaja sie) */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold truncate text-white drop-shadow-lg">
+            <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-lg leading-tight break-words">
               {zawodnik.imie} {zawodnik.nazwisko}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -211,6 +215,8 @@ export default async function KartaZawodnika({
               )}
             </div>
           </div>
+
+          {/* Akcje (edycja + usuwanie) */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
               href={`/zawodnicy/${idNum}/edytuj`}
@@ -222,11 +228,13 @@ export default async function KartaZawodnika({
             <DeleteButton id={idNum} compact />
           </div>
         </div>
+
+        {/* Kontakt do rodzica */}
         {zawodnik.kontakt_rodzica && (
           <div className="relative mt-4 flex items-center gap-2 text-sm text-white/90 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
-            <Phone className="w-4 h-4 text-green-400" />
-            <span className="font-medium">{zawodnik.kontakt_rodzica}</span>
-            <span className="text-xs text-white/50 ml-auto">Rodzic</span>
+            <Phone className="w-4 h-4 text-green-400 flex-shrink-0" />
+            <span className="font-medium truncate">{zawodnik.kontakt_rodzica}</span>
+            <span className="text-xs text-white/50 ml-auto flex-shrink-0">Rodzic</span>
           </div>
         )}
       </div>
