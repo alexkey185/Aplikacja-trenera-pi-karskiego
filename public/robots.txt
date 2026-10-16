@@ -1,0 +1,12 @@
+﻿User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /kadra
+Disallow: /kalendarz
+Disallow: /druzyny
+Disallow: /statystyki
+Disallow: /profil
+Disallow: /zawodnicy
+Disallow: /auth
+
+Sitemap: https://www.talentapp.pl/sitemap.xml
