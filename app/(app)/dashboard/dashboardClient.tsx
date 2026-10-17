@@ -18,7 +18,6 @@ import {
 import { zapiszWynikLubNotatke } from './actions';
 import { toast } from 'sonner';
 
-// ─── Typy ────────────────────────────────────────────────────
 type TreningZObecnoscia = {
   id: number;
   data: string;
@@ -32,7 +31,6 @@ type TreningZObecnoscia = {
 
 type StatsMap = Map<number, { obecni: number; nieobecni: number }>;
 
-// ─── Helpery dat ─────────────────────────────────────────────
 function getDzisISO(): string {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
 }
@@ -46,7 +44,6 @@ function formatDzienTyg(date: Date) {
   return date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
 }
 
-// ─── Style typów ─────────────────────────────────────────────
 const typKolor = (typ: string) => {
   if (typ === 'mecz') return 'bg-red-500';
   if (typ === 'sparing') return 'bg-orange-500';
@@ -90,8 +87,6 @@ export function DashboardClient({
   hasTreningi: boolean;
 }) {
   const dzisStr = getDzisISO();
-  
-  // Domyślnie zaznaczony jest dzisiaj
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
   const [isPending, startTransition] = useTransition();
 
@@ -111,7 +106,6 @@ export function DashboardClient({
     return start;
   })();
 
-  // Funkcja do ręcznego wywołania akcji (poza formularzem, by uniknąć błędów typów)
   const handleSaveNotatka = (id: number, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -182,7 +176,6 @@ export function DashboardClient({
           </Link>
         </div>
 
-        {/* Mobile days */}
         <div className="md:hidden grid grid-cols-3 gap-2">
           {dniMobile.map((d, i) => {
             const dataStr = toISO(d);
@@ -226,7 +219,6 @@ export function DashboardClient({
           })}
         </div>
 
-        {/* Desktop days */}
         <div className="hidden md:grid grid-cols-7 gap-2">
           {dni.map((d, i) => {
             const dataStr = toISO(d);
@@ -277,7 +269,6 @@ export function DashboardClient({
         </div>
       </div>
 
-      {/* SEKCJA WYBRANEGO DNIA */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
         <div className="flex items-center gap-2 mb-4">
           <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
@@ -338,7 +329,6 @@ export function DashboardClient({
                     </Link>
                   </div>
 
-                  {/* FORMULARZ NOTATKI / WYNIKU (poprawiony typ) */}
                   <form onSubmit={(e) => handleSaveNotatka(t.id, e)} className="relative z-10 mt-1 flex gap-2 items-center pointer-events-auto">
                     <input
                       name="notatki"
@@ -361,7 +351,6 @@ export function DashboardClient({
         )}
       </div>
 
-      {/* DOLNE PANELE (Nadchodzące + Frekwencja) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
         <div className="hidden md:block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
