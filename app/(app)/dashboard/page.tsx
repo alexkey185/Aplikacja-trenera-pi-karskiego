@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getDzisISO, getMonday, addDays, toISO, formatMiesiacRok } from '@/lib/dates';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
 import { OnboardingChecklist } from '@/components/OnboardingChecklist';
+import { zapiszWynikLubNotatke } from './actions';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -18,10 +18,31 @@ import {
   Pencil,
 } from 'lucide-react';
 
-// ═════════════════════════════════════════════════════════════
-// Data w strefie Europe/Warsaw (spójne z resztą apki)
-// ═════════════════════════════════════════════════════════════
+function getDzisISO(): string {
+  return new Date().toLocaleDateString('sv-SE', {
+    timeZone: 'Europe/Warsaw',
+  });
+}
 
+function getMonday(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function toISO(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
 
 type TreningZObecnoscia = {
   id: number;
@@ -30,6 +51,7 @@ type TreningZObecnoscia = {
   typ: string;
   przeciwnik: string | null;
   miejsce: string | null;
+  notatki: string | null;
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
@@ -59,14 +81,11 @@ export default async function Dashboard({
   const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
   const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
 
-  // ═════════════════════════════════════════════════════════════
-  // TRZY ZAPYTANIA RÓWNOLEGLE (było: 1 osobno + 2 w Promise.all)
-  // ═════════════════════════════════════════════════════════════
   const [treningiRes, zawodnicyCountRes, treningiCountRes] = await Promise.all([
     supabase
       .from('treningi')
       .select(`
-        id, data, godzina, typ, przeciwnik, miejsce,
+        id, data, godzina, typ, przeciwnik, miejsce, notatki,
         obecnosc (trening_id, status)
       `)
       .eq('druzyna_id', druzynaId)
@@ -223,6 +242,7 @@ export default async function Dashboard({
           </Link>
         </div>
 
+        {/* Mobile days */}
         <div className="md:hidden grid grid-cols-3 gap-2">
           {dniMobile.map((d, i) => {
             const dataStr = toISO(d);
@@ -241,18 +261,10 @@ export default async function Dashboard({
                 }`}
               >
                 <div className="mb-3 pb-2 border-b border-white/10">
-                  <div
-                    className={`text-[10px] uppercase tracking-widest font-bold ${
-                      czyDzis ? 'text-green-300' : 'text-white/40'
-                    }`}
-                  >
+                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>
                     {formatDzienTyg(d)}
                   </div>
-                  <div
-                    className={`text-2xl font-black leading-none mt-1 ${
-                      czyDzis ? 'text-green-400' : 'text-white'
-                    }`}
-                  >
+                  <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : 'text-white'}`}>
                     {d.getDate()}
                   </div>
                   <div className="text-[10px] text-white/40 mt-0.5 capitalize">
@@ -266,9 +278,7 @@ export default async function Dashboard({
                   {eventy.slice(0, 4).map((t) => (
                     <div
                       key={t.id}
-                      className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(
-                        t.typ,
-                      )} bg-white/5`}
+                      className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(t.typ)} bg-white/5`}
                     >
                       <div className="font-bold leading-tight">{t.godzina}</div>
                       <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
@@ -302,6 +312,7 @@ export default async function Dashboard({
           📅 Zobacz cały tydzień
         </Link>
 
+        {/* Desktop days */}
         <div className="hidden md:grid grid-cols-7 gap-2">
           {dni.map((d, i) => {
             const dataStr = toISO(d);
@@ -320,18 +331,10 @@ export default async function Dashboard({
                 }`}
               >
                 <div className="mb-2 flex-shrink-0">
-                  <div
-                    className={`text-[10px] uppercase tracking-widest font-bold ${
-                      czyDzis ? 'text-green-300' : 'text-white/40'
-                    }`}
-                  >
+                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : 'text-white/40'}`}>
                     {formatDzienTyg(d)}
                   </div>
-                  <div
-                    className={`text-2xl font-black leading-none mt-0.5 ${
-                      czyDzis ? 'text-green-400' : 'text-white'
-                    }`}
-                  >
+                  <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : 'text-white'}`}>
                     {d.getDate()}
                   </div>
                 </div>
@@ -339,9 +342,7 @@ export default async function Dashboard({
                   {eventy.slice(0, 3).map((t) => (
                     <div
                       key={t.id}
-                      className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
-                        t.typ,
-                      )} bg-white/5`}
+                      className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(t.typ)} bg-white/5`}
                     >
                       <div className="font-bold leading-tight">{t.godzina}</div>
                       <div className="truncate text-white/70 leading-tight capitalize">{t.typ}</div>
@@ -408,74 +409,90 @@ export default async function Dashboard({
               return (
                 <div
                   key={t.id}
-                  className={`group relative flex items-center gap-2 p-3 rounded-2xl border-l-4 ${typBorder(
-                    t.typ,
-                  )} bg-white/5 hover:bg-white/10 transition-all`}
+                  className={`group relative flex flex-col p-3 rounded-2xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all gap-3`}
                 >
-                  <Link
-                    href={`/kalendarz/${t.id}/obecnosc`}
-                    className="absolute inset-0 z-0 rounded-2xl"
-                    aria-label={`Przejdź do obecności: ${t.typ}`}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/kalendarz/${t.id}/obecnosc`}
+                      className="absolute inset-0 z-0 rounded-2xl"
+                      aria-label={`Przejdź do obecności: ${t.typ}`}
+                    />
 
-                  <div className="relative z-10 pointer-events-none flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="text-lg font-bold text-white leading-none">{t.godzina}</div>
-                    </div>
-                    <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white text-sm truncate capitalize">
-                        {t.typ}
-                        {t.przeciwnik && (
-                          <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>
-                        )}
+                    <div className="relative z-10 pointer-events-none flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                       </div>
-
-                      {t.miejsce ? (
-                        mapsUrl ? (
-                          <a
-                            href={mapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Otwórz w Google Maps"
-                            className="pointer-events-auto text-xs text-white/50 hover:text-green-400 flex items-center gap-1 mt-0.5 w-fit max-w-full transition-colors group/maps"
-                          >
-                            <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{t.miejsce}</span>
-                            <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
-                          </a>
-                        ) : (
-                          <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{t.miejsce}</span>
-                          </div>
-                        )
-                      ) : null}
-
-                      {s && (s.obecni > 0 || s.nieobecni > 0) && (
-                        <div className="text-xs mt-1 flex items-center gap-3">
-                          <span className="text-green-400 font-medium">✓ {s.obecni}</span>
-                          {s.nieobecni > 0 && (
-                            <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>
+                      <div className="flex-shrink-0">
+                        <div className="text-lg font-bold text-white leading-none">{t.godzina}</div>
+                      </div>
+                      <div className="w-px h-10 bg-white/10 flex-shrink-0 hidden sm:block" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white text-sm truncate capitalize">
+                          {t.typ}
+                          {t.przeciwnik && (
+                            <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>
                           )}
                         </div>
-                      )}
+
+                        {t.miejsce ? (
+                          mapsUrl ? (
+                            <a
+                              href={mapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Otwórz w Google Maps"
+                              className="pointer-events-auto text-xs text-white/50 hover:text-green-400 flex items-center gap-1 mt-0.5 w-fit max-w-full transition-colors group/maps"
+                            >
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{t.miejsce}</span>
+                              <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
+                            </a>
+                          ) : (
+                            <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{t.miejsce}</span>
+                            </div>
+                          )
+                        ) : null}
+
+                        {s && (s.obecni > 0 || s.nieobecni > 0) && (
+                          <div className="text-xs mt-1 flex items-center gap-3">
+                            <span className="text-green-400 font-medium">✓ {s.obecni}</span>
+                            {s.nieobecni > 0 && (
+                              <span className="text-red-400 font-medium">✗ {s.nieobecni}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    <Link
+                      href={`/kalendarz/${t.id}/edytuj`}
+                      title="Edytuj wydarzenie"
+                      aria-label="Edytuj wydarzenie"
+                      className="hidden md:flex relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Link>
+
+                    <ChevronRightIcon className="relative z-10 w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 pointer-events-none" />
                   </div>
 
-                  <Link
-                    href={`/kalendarz/${t.id}/edytuj`}
-                    title="Edytuj wydarzenie"
-                    aria-label="Edytuj wydarzenie"
-                    className="hidden md:flex relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Link>
-
-                  <ChevronRightIcon className="relative z-10 w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0 pointer-events-none" />
+                  {/* NOWE: Pole na wynik/notatkę */}
+                  <form action={zapiszWynikLubNotatke.bind(null, t.id)} className="relative z-10 mt-1 flex gap-2 items-center pointer-events-auto">
+                    <input
+                      name="notatki"
+                      defaultValue={t.notatki ?? ''}
+                      placeholder="Wpisz wynik lub notatkę (np. 3:2)..."
+                      className="flex-1 bg-slate-950/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-green-400/50 focus:bg-slate-900 outline-none transition-all"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/40 text-green-300 text-xs font-semibold border border-green-400/30 transition-all hover:scale-105 active:scale-95"
+                    >
+                      Zapisz
+                    </button>
+                  </form>
                 </div>
               );
             })}
@@ -511,9 +528,7 @@ export default async function Dashboard({
                   <Link
                     key={t.id}
                     href={`/kalendarz/${t.id}/obecnosc`}
-                    className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(
-                      t.typ,
-                    )} bg-white/5 hover:bg-white/10 transition-all`}
+                    className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
                   >
                     <div className="flex-shrink-0 text-center w-10">
                       <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
