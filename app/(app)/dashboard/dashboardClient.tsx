@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { TopBar } from '@/components/TopBar';
 import { OnboardingChecklist } from '@/components/OnboardingChecklist';
@@ -13,7 +13,6 @@ import {
   MapPin,
   ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
-  ExternalLink,
   Pencil,
 } from 'lucide-react';
 import { zapiszWynikLubNotatke } from './actions';
@@ -39,11 +38,6 @@ function getDzisISO(): string {
 }
 function toISO(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
 }
 function formatMiesiacRok(date: Date) {
   return date.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
@@ -97,8 +91,9 @@ export function DashboardClient({
 }) {
   const dzisStr = getDzisISO();
   
-  // Domyślnie zaznaczony jest dzisiaj (albo pierwszy dzień z eventem)
+  // Domyślnie zaznaczony jest dzisiaj
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
+  const [isPending, startTransition] = useTransition();
 
   const dni = initialDni;
   const selectedEvents = eventMap[selectedDate] ?? [];
@@ -116,16 +111,20 @@ export function DashboardClient({
     return start;
   })();
 
-  const onSubmitNotatka = async (e: React.FormEvent<HTMLFormElement>, id: number) => {
+  // Funkcja do ręcznego wywołania akcji (poza formularzem, by uniknąć błędów typów)
+  const handleSaveNotatka = (id: number, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const res = await zapiszWynikLubNotatke(id, formData);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     
-    if (res?.error) {
-      toast.error('Błąd zapisu', { description: res.error });
-    } else {
-      toast.success('Zapisano');
-    }
+    startTransition(async () => {
+      const res = await zapiszWynikLubNotatke(id, formData);
+      if (res?.error) {
+        toast.error('Błąd zapisu', { description: res.error });
+      } else {
+        toast.success('Zapisano');
+      }
+    });
   };
 
   return (
@@ -339,8 +338,8 @@ export function DashboardClient({
                     </Link>
                   </div>
 
-                  {/* FORMULARZ NOTATKI / WYNIKU */}
-                  <form onSubmit={(e) => onSubmitNotatka(e, t.id)} className="relative z-10 mt-1 flex gap-2 items-center pointer-events-auto">
+                  {/* FORMULARZ NOTATKI / WYNIKU (poprawiony typ) */}
+                  <form onSubmit={(e) => handleSaveNotatka(t.id, e)} className="relative z-10 mt-1 flex gap-2 items-center pointer-events-auto">
                     <input
                       name="notatki"
                       defaultValue={t.notatki ?? ''}
@@ -349,7 +348,8 @@ export function DashboardClient({
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/40 text-green-300 text-xs font-semibold border border-green-400/30 transition-all hover:scale-105"
+                      disabled={isPending}
+                      className="px-4 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/40 text-green-300 text-xs font-semibold border border-green-400/30 transition-all hover:scale-105 disabled:opacity-50"
                     >
                       Zapisz
                     </button>
