@@ -6,14 +6,14 @@ import { revalidatePath } from 'next/cache';
 
 export async function zapiszWynikLubNotatke(treningId: number, formData: FormData) {
   if (!Number.isInteger(treningId) || treningId <= 0) {
-    throw new Error('Nieprawidłowe ID treningu.');
+    return { error: 'Nieprawidłowe ID treningu.' };
   }
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
   
   if (!druzynaId) {
-    throw new Error('Brak aktywnej drużyny.');
+    return { error: 'Brak aktywnej drużyny.' };
   }
 
   const notatki = formData.get('notatki') as string;
@@ -25,8 +25,9 @@ export async function zapiszWynikLubNotatke(treningId: number, formData: FormDat
     .eq('druzyna_id', druzynaId);
 
   if (error) {
-    throw new Error(error.message);
+    return { error: error.message };
   }
 
   revalidatePath('/dashboard');
+  return { success: true };
 }
