@@ -1,4 +1,3 @@
-$content = @'
 'use client';
 
 import { useState, useRef, useEffect, useTransition } from 'react';
@@ -229,8 +228,3 @@ export function DruzynaSwitcher({
     </>
   );
 }
-'@
-
-$path = Join-Path (Get-Location) "components\DruzynaSwitcher.tsx"
-[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Zapisano: $path"
