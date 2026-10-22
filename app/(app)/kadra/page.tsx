@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { getDzisISO } from '@/lib/dates';
 import { TopBar } from '@/components/TopBar';
-import { Users, Plus, Search, ArrowUpDown } from 'lucide-react';
+import { Users, Plus, Search, ArrowUpDown, Upload } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -205,17 +205,27 @@ export default async function Kadra({
           <TopBar />
         </div>
 
-        <form action="/kadra" method="GET" className="relative">
-          {sort !== 'alpha' && <input type="hidden" name="sort" value={sort} />}
-          <Search className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
-          <input
-            name="q"
-            type="text"
-            defaultValue={q}
-            placeholder="Szukaj zawodnika..."
-            className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg md:rounded-2xl pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 text-xs md:text-sm text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
-          />
-        </form>
+        <div className="flex gap-2">
+  <form action="/kadra" method="GET" className="relative flex-1">
+    {sort !== 'alpha' && <input type="hidden" name="sort" value={sort} />}
+    <Search className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
+    <input
+      name="q"
+      type="text"
+      defaultValue={q}
+      placeholder="Szukaj zawodnika..."
+      className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg md:rounded-2xl pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 text-xs md:text-sm text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
+    />
+  </form>
+  <Link
+    href="/zawodnicy/import"
+    className="inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-2xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-xs md:text-sm font-semibold transition-all flex-shrink-0"
+    title="Import z Excela"
+  >
+    <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+    <span className="hidden sm:inline">Import</span>
+  </Link>
+</div>
       </header>
 
       <div className="mb-3 md:mb-5 animate-fadeIn">

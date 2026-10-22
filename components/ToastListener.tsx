@@ -13,6 +13,7 @@ const MESSAGES: Record<
 > = {
   // ── Zawodnicy ──
   zawodnik_dodany: { type: 'success', title: 'Zawodnik dodany' },
+  zawodnicy_zaimportowani: { type: 'success', title: 'Zawodnicy zaimportowani' },
   zawodnik_zapisany: { type: 'success', title: 'Zawodnik zapisany' },
   zawodnik_usuniety: { type: 'success', title: 'Zawodnik usunięty' },
 
