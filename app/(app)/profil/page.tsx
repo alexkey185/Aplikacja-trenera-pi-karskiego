@@ -1,8 +1,10 @@
-import Image from 'next/image';
+$content = @'
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzyna } from '@/lib/druzyny';
 import { zaktualizujProfil, wyloguj } from './actions';
 import { DeleteAccountButton } from '@/components/DeleteAccountButton';
+import { ClubLogoUpload } from '@/components/ClubLogoUpload';
 import {
   User,
   Mail,
@@ -14,6 +16,8 @@ import {
   AlertTriangle,
   MessageSquare,
   Check,
+  Download,
+  HardDrive,
 } from 'lucide-react';
 
 export default async function Profil() {
@@ -25,6 +29,8 @@ export default async function Profil() {
   if (!user) {
     return null;
   }
+
+  const activeDruzyna = await getActiveDruzyna();
 
   const { data: consent } = await supabase
     .from('user_consents')
@@ -43,7 +49,7 @@ export default async function Profil() {
         month: 'long',
         year: 'numeric',
       })
-    : '\u2014';
+    : '—';
 
   const ostatnieLogowanie = user.last_sign_in_at
     ? new Date(user.last_sign_in_at).toLocaleDateString('pl-PL', {
@@ -53,7 +59,7 @@ export default async function Profil() {
         hour: '2-digit',
         minute: '2-digit',
       })
-    : '\u2014';
+    : '—';
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -96,6 +102,18 @@ export default async function Profil() {
           </div>
         </div>
       </div>
+
+      {activeDruzyna && (
+        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-4 h-4 text-green-400" />
+            <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+              Logo klubu ({activeDruzyna.nazwa})
+            </h3>
+          </div>
+          <ClubLogoUpload currentLogo={activeDruzyna.logo_url} />
+        </div>
+      )}
 
       <form
         action={zaktualizujProfil}
@@ -211,8 +229,8 @@ export default async function Profil() {
                 </div>
               </div>
               <div className="text-[10px] font-bold text-green-400 bg-green-500/15 border border-green-400/30 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
-<Check className="w-2.5 h-2.5" strokeWidth={3} />
-v{consent.terms_version}
+                <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                v{consent.terms_version}
               </div>
             </div>
 
@@ -239,6 +257,27 @@ v{consent.terms_version}
             Brak zapisanej zgody. Skontaktuj się z administratorem.
           </div>
         )}
+      </div>
+
+      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
+        <div className="flex items-center gap-2 mb-3">
+          <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+          <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+            Dane i prywatność
+          </h3>
+        </div>
+        <p className="text-xs text-white/60 mb-4 leading-relaxed">
+          Pobierz kopię zapasową swojej drużyny — wszyscy zawodnicy, treningi i historia obecności
+          w jednym pliku JSON. Zapisz na dysku lub w chmurze.
+        </p>
+        <a
+          href="/api/export/backup"
+          download
+          className="w-full flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/30 hover:border-blue-400/50 text-blue-200 hover:text-blue-100 font-semibold py-3 rounded-xl text-xs transition-all"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Pobierz kopię zapasową (JSON)
+        </a>
       </div>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
@@ -279,10 +318,15 @@ v{consent.terms_version}
         </div>
         <p className="text-xs text-white/50 mb-4 leading-relaxed">
           Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane (zawodnicy, treningi, obecności) zostaną
-          trwale usunięte.
+          trwale usunięte. <strong className="text-white/70">Przed usunięciem pobierz kopię zapasową.</strong>
         </p>
         <DeleteAccountButton />
       </div>
     </div>
   );
 }
+'@
+
+$path = Join-Path (Get-Location) "app\(app)\profil\page.tsx"
+[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
+Write-Host "Zapisano: $path"

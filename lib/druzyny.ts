@@ -13,6 +13,7 @@ export type Druzyna = {
   rocznik: number | null;
   kolor: string;
   created_at: string;
+  logo_url: string | null;  // ← musi być
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -30,11 +31,11 @@ export const ZAWODNICY_CACHE_TAG = 'zawodnicy-counts';
 const _getDruzynyForUser = unstable_cache(
   async (userId: string): Promise<Druzyna[]> => {
     const supabase = createAdminClient();
-    const { data } = await supabase
-      .from('druzyny')
-      .select('id, nazwa, rocznik, kolor, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
+const { data } = await supabase
+  .from('druzyny')
+  .select('id, nazwa, rocznik, kolor, created_at, logo_url')  // ← logo_url musi być
+  .eq('user_id', userId)
+  .order('created_at', { ascending: true });
     return (data ?? []) as Druzyna[];
   },
   ['druzyny-by-user'],
