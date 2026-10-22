@@ -481,12 +481,12 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </Link>
               ) : (
                 <button
-                  onClick={handleFabClick}
-                  className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
-                  title="Dodaj wydarzenie"
-                >
-                  {lewyObszar}
-                </button>
+  onClick={handleFabClick}
+  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-[11px] font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
+>
+  <Plus className="w-3.5 h-3.5" />
+  Dodaj kolejne wydarzenie
+</button>
               )}
 
               {/* Akcje dla 1 wydarzenia (na górze) - gdy jest ich więcej, są w liście poniżej */}
