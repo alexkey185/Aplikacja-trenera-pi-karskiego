@@ -11,15 +11,23 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 export function DeleteEventButton({
   id,
   cyklId,
+  size = 'sm',
 }: {
   id: number;
   cyklId?: string | null;
+  size?: 'sm' | 'md';
 }) {
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<'single' | 'all'>('single');
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const isCyclic = !!cyklId;
+
+  const btnClass =
+    size === 'md'
+      ? 'w-9 h-9 rounded-xl'
+      : 'w-8 h-8 rounded-lg';
+  const iconClass = size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5';
 
   const handleDelete = () => {
     const finalScope = isCyclic ? scope : 'single';
@@ -56,10 +64,11 @@ export function DeleteEventButton({
           setOpen(true);
         }}
         disabled={isPending}
-        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all disabled:opacity-50"
+        className={`${btnClass} bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all disabled:opacity-50`}
         title="Usun wydarzenie"
+        aria-label="Usun wydarzenie"
       >
-        <Trash2 className="w-3.5 h-3.5" />
+        <Trash2 className={iconClass} />
       </button>
 
       <ConfirmDialog

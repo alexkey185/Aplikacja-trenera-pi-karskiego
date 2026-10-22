@@ -12,6 +12,7 @@ type TreningZObecnoscia = {
   przeciwnik: string | null;
   miejsce: string | null;
   notatki: string | null;
+  cykl_id: string | null;
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
@@ -45,7 +46,7 @@ export default async function Dashboard({
     supabase
       .from('treningi')
       .select(`
-        id, data, godzina, typ, przeciwnik, miejsce, notatki,
+        id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
         obecnosc (trening_id, status)
       `)
       .eq('druzyna_id', druzynaId)

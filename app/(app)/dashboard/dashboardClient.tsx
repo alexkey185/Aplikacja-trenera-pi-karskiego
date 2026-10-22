@@ -16,6 +16,7 @@ import {
 import { zapiszWynikLubNotatke } from './actions';
 import { toast } from 'sonner';
 import { getDzisISO, toISO } from '@/lib/dates';
+import { DeleteEventButtonLazy } from '@/components/DeleteEventButtonLazy';
 
 type TreningZObecnoscia = {
   id: number;
@@ -25,6 +26,7 @@ type TreningZObecnoscia = {
   przeciwnik: string | null;
   miejsce: string | null;
   notatki: string | null;
+  cykl_id: string | null;
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
@@ -284,6 +286,9 @@ export function DashboardClient({
                     <Link href={`/kalendarz/${t.id}/edytuj`} className="hidden md:flex relative z-10 pointer-events-auto w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0">
                       <Pencil className="w-4 h-4" />
                     </Link>
+                    <div className="relative z-10 pointer-events-auto flex-shrink-0">
+                      <DeleteEventButtonLazy id={t.id} cyklId={t.cykl_id} size="md" />
+                    </div>
                     <Link href={`/kalendarz/${t.id}/obecnosc`} className="relative z-10 w-5 h-5 text-white/40 hover:text-green-400 transition-all flex-shrink-0">
                       <ChevronRightIcon className="w-5 h-5" />
                     </Link>

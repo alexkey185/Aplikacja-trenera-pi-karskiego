@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
+import { DeleteEventButtonLazy } from '@/components/DeleteEventButtonLazy';
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
@@ -17,14 +18,6 @@ import {
   Plus,
 } from 'lucide-react';
 
-// ═══════════════════════════════════════════════════════
-// Data w strefie Europe/Warsaw (nie UTC!)
-// - o 23:00 czasu polskiego UTC pokazałoby „jutro"
-// - 'sv-SE' locale zwraca format YYYY-MM-DD (ISO)
-// ═══════════════════════════════════════════════════════
-
-
-// ── Typ treningu z zagnieżdżoną obecnością ──
 type TreningZObecnoscia = {
   id: number;
   data: string;
@@ -33,6 +26,7 @@ type TreningZObecnoscia = {
   przeciwnik: string | null;
   miejsce: string | null;
   notatki: string | null;
+  cykl_id: string | null;
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
@@ -51,16 +45,10 @@ export default async function DzienSzczegoly({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  // ═══════════════════════════════════════════════════════════
-  // JEDNO zapytanie - treningi z zagnieżdżoną obecnością.
-  //
-  // Było: 2 zapytania (treningi, potem osobno obecnosc .in(ids))
-  // Jest: 1 zapytanie (PostgREST robi LEFT JOIN, RLS per tabela)
-  // ═══════════════════════════════════════════════════════════
   const { data: rawTreningi, error: errT } = await supabase
     .from('treningi')
     .select(`
-      id, data, godzina, typ, przeciwnik, miejsce, notatki,
+      id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
       obecnosc (trening_id, status)
     `)
     .eq('data', data)
@@ -73,7 +61,6 @@ export default async function DzienSzczegoly({
 
   const treningi = (rawTreningi ?? []) as TreningZObecnoscia[];
 
-  // Stats per trening - spłaszczamy z zagnieżdżonej tablicy
   const stats = new Map<number, { obecni: number; total: number }>();
   treningi.forEach((t) => {
     const s = stats.get(t.id) ?? { obecni: 0, total: 0 };
@@ -98,11 +85,9 @@ export default async function DzienSzczegoly({
     year: 'numeric',
   });
 
-  // ═══ POPRAWKA: strefa Europe/Warsaw, nie UTC ═══
   const dzisStr = getDzisISO();
   const czyDzis = data === dzisStr;
 
-  // ── Poprawna liczba mnoga: 1 wydarzenie / 2-4 wydarzenia / 5+ wydarzeń ──
   const liczbaWydarzen = treningi.length;
   const slowoWydarzen =
     liczbaWydarzen === 1
@@ -187,12 +172,11 @@ export default async function DzienSzczegoly({
                 : 'text-white/50';
 
             return (
-              <Link
+              <div
                 key={t.id}
-                href={`/kalendarz/${t.id}/obecnosc`}
-                className={`group block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:bg-slate-900 hover:border-white/30 transition-all hover:-translate-y-0.5 shadow-xl shadow-black/40 animate-fadeIn stagger-${Math.min(i + 1, 8)}`}
+                className={`group relative bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:bg-slate-900 hover:border-white/30 transition-all hover:-translate-y-0.5 shadow-xl shadow-black/40 animate-fadeIn stagger-${Math.min(i + 1, 8)}`}
               >
-                <div className="p-4">
+                <Link href={`/kalendarz/${t.id}/obecnosc`} className="block p-4 pr-28">
                   <div className="flex items-center gap-4">
                     <div className="relative flex-shrink-0">
                       <div className={`absolute inset-0 bg-gradient-to-br ${info.bg} rounded-2xl blur-md opacity-50 group-hover:opacity-80 transition-opacity`} />
@@ -229,8 +213,6 @@ export default async function DzienSzczegoly({
                         </div>
                       )}
                     </div>
-
-                    <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </div>
 
                   {t.notatki && (
@@ -238,8 +220,19 @@ export default async function DzienSzczegoly({
                       📝 {t.notatki}
                     </div>
                   )}
+                </Link>
+
+                <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                  <DeleteEventButtonLazy id={t.id} cyklId={t.cykl_id} size="md" />
+                  <Link
+                    href={`/kalendarz/${t.id}/obecnosc`}
+                    className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all"
+                    title="Zapisz obecnosc"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Link>
                 </div>
-              </Link>
+              </div>
             );
           })}
 
