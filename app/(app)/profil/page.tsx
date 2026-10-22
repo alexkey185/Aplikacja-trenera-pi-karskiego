@@ -4,6 +4,7 @@ import { getActiveDruzyna } from '@/lib/druzyny';
 import { zaktualizujProfil, wyloguj } from './actions';
 import { DeleteAccountButton } from '@/components/DeleteAccountButton';
 import { ClubLogoUpload } from '@/components/ClubLogoUpload';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import {
   User,
   Mail,
@@ -62,11 +63,14 @@ export default async function Profil() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <header className="mb-6 animate-fadeIn">
-        <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Profil</h1>
-        <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
-          Twoje konto i ustawienia
-        </p>
+      <header className="mb-6 flex items-center gap-3 animate-fadeIn">
+        <PageHeaderLogo icon={User} logoUrl={activeDruzyna?.logo_url ?? null} />
+        <div>
+          <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Profil</h1>
+          <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
+            Twoje konto i ustawienia
+          </p>
+        </div>
       </header>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60 relative overflow-hidden">

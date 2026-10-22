@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
 import { DashboardClient } from './dashboardClient';
 import { TopBar } from '@/components/TopBar';
@@ -39,6 +39,8 @@ export default async function Dashboard({
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
+
+  const activeDruzyna = await getActiveDruzyna();
 
   const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
   const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
@@ -100,6 +102,7 @@ export default async function Dashboard({
         stats={stats}
         wszystkieObecnosci={wszystkieObecnosci}
         topBar={<TopBar />}
+        logoUrl={activeDruzyna?.logo_url ?? null}
       />
     </div>
   );

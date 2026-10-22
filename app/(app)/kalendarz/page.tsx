@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { KalendarzClient } from './KalendarzClient';
 import { TopBar } from '@/components/TopBar';
-import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { toISO } from '@/lib/dates';
 
 type Trening = {
@@ -30,6 +30,8 @@ export default async function KalendarzPage() {
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
+
+  const activeDruzyna = await getActiveDruzyna();
 
   const dzis = new Date();
   const od = new Date(dzis.getFullYear(), dzis.getMonth() - 2, 1);
@@ -75,6 +77,7 @@ export default async function KalendarzPage() {
       treningi={treningi}
       stats={stats}
       topBar={<TopBar />}
+      logoUrl={activeDruzyna?.logo_url ?? null}
     />
   );
 }

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { getDruzyny, getActiveDruzynaId } from '@/lib/druzyny';
+import { getDruzyny, getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import { ArrowLeft, Users, Plus, Pencil, Check } from 'lucide-react';
 
 const KOLORY: Record<string, string> = {
@@ -19,6 +20,7 @@ export default async function DruzynyPage() {
   const supabase = await createClient();
   const druzyny = await getDruzyny();
   const activeId = await getActiveDruzynaId();
+  const activeDruzyna = await getActiveDruzyna();
 
   const { data: zawodnicy } = await supabase.from('zawodnicy').select('druzyna_id');
 
@@ -38,12 +40,7 @@ export default async function DruzynyPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-              <Users className="w-5 h-5 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
+          <PageHeaderLogo icon={Users} logoUrl={activeDruzyna?.logo_url ?? null} />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">Drużyny</h1>
             <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
@@ -92,8 +89,12 @@ export default async function DruzynyPage() {
                     <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r bg-green-500" />
                   )}
 
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 font-black text-lg text-white shadow-lg`}>
-                    {inicjal}
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 font-black text-lg text-white shadow-lg overflow-hidden`}>
+                    {d.logo_url ? (
+                      <img src={d.logo_url} alt="" className="w-full h-full object-contain p-1" />
+                    ) : (
+                      inicjal
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">

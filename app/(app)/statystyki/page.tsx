@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
+import { pad2, toISO } from '@/lib/dates';
 import { TopBar } from '@/components/TopBar';
 import { MiesiacDropdown } from '@/components/MiesiacDropdown';
 import { OkresDropdown } from '@/components/OkresDropdown';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import {
   ArrowLeft,
   BarChart3,
@@ -17,12 +19,8 @@ import {
   Trophy,
 } from 'lucide-react';
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const toISO = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-
 type Zakres = { od: string; do: string; label: string; typ: string };
 
-// ── Typy zwracane z RPC ──
 type RpcStats = {
   total_treningi: number;
   total_wpisy: number;
@@ -54,6 +52,8 @@ type RpcResult = {
   ranking: RpcRankingRow[];
   miesiace: RpcMiesiacRow[];
 };
+
+type RpcMiesiacDruzynyRow = { miesiac: string };
 
 function getZakres(okres: string, m?: string): Zakres {
   const dzis = new Date();
@@ -140,13 +140,10 @@ export default async function Statystyki({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
+  const activeDruzyna = await getActiveDruzyna();
+
   const zakres = getZakres(okres, m);
 
-  // ═══════════════════════════════════════════════════════════
-  // JEDNO RPC - cała agregacja w Postgresie.
-  // Było: 2 zapytania + O(n×m) w JS + ~5000 wierszy przez sieć
-  // Jest: 1 RPC + agregacja po stronie bazy, ~50 wierszy
-  // ═══════════════════════════════════════════════════════════
   const { data: rpcData, error: rpcError } = await supabase.rpc(
     'get_statystyki_druzyny',
     {
@@ -161,7 +158,6 @@ export default async function Statystyki({
     console.error('RPC get_statystyki_druzyny error:', rpcError);
   }
 
-  // Fallback - pusta struktura gdy RPC zawiedzie
   const emptyStats: RpcStats = {
     total_treningi: 0,
     total_wpisy: 0,
@@ -177,7 +173,19 @@ export default async function Statystyki({
 
   const { stats, ranking, miesiace } = result;
 
-  // ═══ Wyprowadzone wartości ═══
+  const { data: miesiaceRaw, error: miesiaceError } = await supabase.rpc(
+    'get_miesiace_druzyny',
+    { p_druzyna_id: druzynaId }
+  );
+
+  if (miesiaceError) {
+    console.error('RPC get_miesiace_druzyny error:', miesiaceError);
+  }
+
+  const unikalneMiesiace = (miesiaceRaw ?? []).map(
+    (r: RpcMiesiacDruzynyRow) => r.miesiac
+  );
+
   const totalTreningi = stats.total_treningi;
   const totalWpisy = stats.total_wpisy;
   const obecniRazem = stats.obecni_razem;
@@ -199,7 +207,6 @@ export default async function Statystyki({
   const liczbaDoPoprawy = doPoprawy.length;
   const maLuki = treningiBezWpisow.length > 0;
 
-  // ── Wykres miesięcy - wzbogać label z ISO ──
   const miesiaceWykres = miesiace.map((mm) => ({
     ...mm,
     label: formatKrotkaMiesiac(mm.iso),
@@ -208,17 +215,6 @@ export default async function Statystyki({
   const najlepszy = miesiaceWykres
     .filter((mm) => mm.procent !== null)
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
-
-  // ── Dropdown miesięcy - pobieramy tylko daty (bez obecności) ──
-  const { data: wszystkieDaty } = await supabase
-    .from('treningi')
-    .select('data')
-    .eq('druzyna_id', druzynaId)
-    .order('data', { ascending: false });
-
-  const unikalneMiesiace = Array.from(
-    new Set((wszystkieDaty ?? []).map((t) => t.data.slice(0, 7)))
-  );
 
   const miesiaceDropdown = unikalneMiesiace.map((mm) => {
     const monthRow = miesiaceWykres.find((x) => x.iso === mm);
@@ -254,12 +250,7 @@ export default async function Statystyki({
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-700 rounded-2xl blur-lg opacity-60" />
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-400 via-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
-              <BarChart3 className="w-5 h-5 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
+          <PageHeaderLogo icon={BarChart3} logoUrl={activeDruzyna?.logo_url ?? null} color="purple" />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold leading-tight text-white drop-shadow-lg">
               Statystyki

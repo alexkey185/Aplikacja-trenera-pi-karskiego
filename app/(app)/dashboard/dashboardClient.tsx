@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
 import { DeleteEventButtonLazy } from '@/components/DeleteEventButtonLazy';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 
 type TreningZObecnoscia = {
   id: number;
@@ -65,6 +66,7 @@ export function DashboardClient({
   stats,
   wszystkieObecnosci,
   topBar,
+  logoUrl,
 }: {
   initialDni: Date[];
   poniedzialekISO: string;
@@ -76,6 +78,7 @@ export function DashboardClient({
   stats: StatsMap;
   wszystkieObecnosci: { trening_id: number; status: string }[];
   topBar: React.ReactNode;
+  logoUrl: string | null;
 }) {
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
@@ -98,15 +101,10 @@ export function DashboardClient({
 
   return (
     <div>
-      {/* NAGŁÓWEK - przywrócony TopBar z nazwą drużyny */}
+      {/* NAGŁÓWEK */}
       <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-            <div className="relative w-10 h-10 lg:w-11 lg:h-11 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-              <Zap className="w-5 h-5 lg:w-5 lg:h-5 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
+          <PageHeaderLogo icon={Zap} logoUrl={logoUrl} />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">
               Dzisiaj

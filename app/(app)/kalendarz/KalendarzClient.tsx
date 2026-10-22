@@ -22,6 +22,7 @@ import { PanelMiesiaca } from './PanelMiesiaca';
 import { UpcomingRow } from './UpcomingRow';
 import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLIDAYS } from './constants';
 import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import type { Trening, StatsMap } from './types';
 
 const DeleteEventButton = dynamic(
@@ -45,9 +46,9 @@ type Props = {
   treningi: Trening[];
   stats: StatsMap;
   topBar: React.ReactNode;
+  logoUrl: string | null;
 };
 
-// Odmiana słowa "wydarzenie" — polska gramatyka
 function liczbaSlowo(n: number): string {
   if (n === 1) return 'wydarzenie';
   if (n >= 2 && n <= 4) return 'wydarzenia';
@@ -68,7 +69,7 @@ const typBorder = (typ: string) => {
   return 'border-l-blue-500';
 };
 
-export function KalendarzClient({ treningi, stats, topBar }: Props) {
+export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
   const router = useRouter();
   const todayISO = useMemo(() => getLocalISO(), []);
   const todayDate = useMemo(() => parseISO(todayISO), [todayISO]);
@@ -312,7 +313,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const pierwszeWydarzenie = selectedEvents[0] ?? null;
   const liczbaWydarzen = selectedEvents.length;
 
-  // Renderowanie pojedynczego wiersza wydarzenia (gdy > 1)
   const renderEventRow = (t: Trening) => {
     const Icon = typIkona(t.typ);
     return (
@@ -360,29 +360,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     );
   };
 
-  // Lewy obszar kafla (klikalny)
   const lewyObszar = (
     <>
-      <div className="relative flex-shrink-0">
-        <div
-          className={`absolute inset-0 rounded-2xl blur-md opacity-60 ${
-            isTodaySelected
-              ? 'bg-gradient-to-br from-green-400 to-green-700'
-              : 'bg-gradient-to-br from-blue-400 to-blue-700'
-          }`}
-        />
-        <div
-          className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
-            isTodaySelected
-              ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
-              : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
-          }`}
-        >
-          <span className="text-white font-black text-lg">
-            {isTodaySelected ? '!' : 'D'}
-          </span>
-        </div>
-      </div>
+      <PageHeaderLogo icon={CalendarIcon} logoUrl={logoUrl} />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
           <span
@@ -428,12 +408,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     <div className="w-full max-w-2xl lg:max-w-screen-2xl mx-auto lg:h-full lg:flex lg:flex-col">
       <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
-            <div className="relative w-10 h-10 lg:w-11 lg:h-11 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
-              <CalendarIcon className="w-5 h-5 lg:w-5 lg:h-5 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
+          <PageHeaderLogo icon={CalendarIcon} logoUrl={logoUrl} />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">
               Kalendarz
@@ -459,7 +434,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-          {/* Kafel dnia */}
           <div
             key={flashKey}
             className={`rounded-2xl p-4 lg:p-4 transition-all flex-shrink-0 animate-flash ${
@@ -487,7 +461,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </button>
               )}
 
-              {/* Akcje dla 1 wydarzenia (na górze) - gdy jest ich więcej, są w liście poniżej */}
               <div className="flex flex-col md:flex-row items-center gap-2 flex-shrink-0">
                 {liczbaWydarzen === 1 && pierwszeWydarzenie && (
                   <>
@@ -519,7 +492,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
               </div>
             </div>
 
-            {/* Lista wszystkich wydarzeń (gdy > 1) */}
             {liczbaWydarzen > 1 && (
               <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
                 {selectedEvents.map(renderEventRow)}
@@ -603,7 +575,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
 
         <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
-          {/* Zawsze pokazujemy PanelMiesiaca, usunieto ListaDnia */}
           <PanelMiesiaca
             monthStats={monthStats}
             monthLabel={`${MONTHS_PL[viewMonth]} ${viewYear}`}
