@@ -45,8 +45,9 @@ export function ImportForm() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={14}
+          wrap="off"
           placeholder={PRZYKLAD}
-          className="w-full min-h-[280px] lg:min-h-[340px] bg-slate-950/60 border border-white/15 focus:border-green-400/60 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all font-mono leading-relaxed"
+          className="w-full min-h-[280px] lg:min-h-[340px] bg-slate-950/60 border border-white/15 focus:border-green-400/60 rounded-xl px-3 md:px-4 py-3 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-all font-mono leading-relaxed overflow-x-auto resize-y"
           spellCheck={false}
         />
         <p className="text-[11px] lg:text-xs text-white/40 mt-2 leading-relaxed">
