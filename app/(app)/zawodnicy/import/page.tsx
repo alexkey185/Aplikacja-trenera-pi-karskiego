@@ -4,7 +4,7 @@ import { ImportForm } from './ImportForm';
 
 export default function ImportZawodnikow() {
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl lg:max-w-4xl mx-auto">
       <header className="mb-8 flex items-center gap-3 animate-fadeIn">
         <Link
           href="/kadra"

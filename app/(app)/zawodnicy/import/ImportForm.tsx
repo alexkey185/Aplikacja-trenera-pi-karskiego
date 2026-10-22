@@ -33,7 +33,7 @@ export function ImportForm() {
           setWysylanie(false);
         }
       }}
-      className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60"
+      className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 lg:p-8 space-y-5 animate-fadeIn shadow-2xl shadow-black/60"
     >
       <div>
         <label className="flex items-center gap-2 text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
@@ -44,12 +44,12 @@ export function ImportForm() {
           name="dane"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={8}
+          rows={14}
           placeholder={PRZYKLAD}
-          className="w-full bg-slate-950/60 border border-white/15 focus:border-green-400/60 rounded-xl px-3 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all font-mono"
+          className="w-full min-h-[280px] lg:min-h-[340px] bg-slate-950/60 border border-white/15 focus:border-green-400/60 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all font-mono leading-relaxed"
           spellCheck={false}
         />
-        <p className="text-[10px] text-white/40 mt-2 leading-relaxed">
+        <p className="text-[11px] lg:text-xs text-white/40 mt-2 leading-relaxed">
           Kolumny oddzielone tabulatorem, przecinkiem lub średnikiem.
           <br />
           Kolejność: <strong className="text-white/70">Imię, Nazwisko, Rocznik, Numer, Pozycja, Kontakt</strong>{' '}
@@ -67,7 +67,7 @@ export function ImportForm() {
           </div>
 
           {rows.length > 0 && (
-            <ul className="space-y-1.5 max-h-56 overflow-y-auto">
+            <ul className="space-y-1.5 max-h-72 overflow-y-auto">
               {rows.slice(0, 20).map((r, i) => (
                 <li
                   key={i}
@@ -119,7 +119,7 @@ export function ImportForm() {
         </div>
       )}
 
-      <div className="flex gap-2 pt-2">
+      <div className="flex flex-col sm:flex-row gap-2 pt-2">
         <Link
           href="/kadra"
           className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
