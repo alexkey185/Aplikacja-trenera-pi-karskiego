@@ -335,16 +335,16 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
           {/* Kafel dnia - animacja flash przy zmianie */}
           <div
             key={flashKey}
-            className={`rounded-2xl p-5 lg:p-4 transition-all flex-shrink-0 animate-flash ${
+            className={`rounded-2xl p-4 lg:p-4 transition-all flex-shrink-0 animate-flash ${
               isTodaySelected
                 ? 'bg-gradient-to-br from-green-500/25 via-green-600/15 to-green-700/5 border border-green-400/50 shadow-lg shadow-green-500/20'
                 : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30'
             }`}
           >
-            <div className="flex items-center gap-4 lg:gap-3">
+            <div className="flex items-start lg:items-center gap-3 lg:gap-3">
               <button
                 onClick={goToToday}
-                className="flex items-center gap-4 lg:gap-3 flex-1 min-w-0 text-left"
+                className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
                 title={isTodaySelected ? 'Dzisiaj' : 'Wróć do dzisiaj'}
               >
                 <div className="relative flex-shrink-0">
@@ -388,16 +388,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                         {selectedEvents.length === 1
                           ? '1 wydarzenie'
                           : `${selectedEvents.length} wydarzenia`}
-                        <span className="text-white/60 font-normal"> · pierwsze o </span>
-                        <span
-                          className={
-                            isTodaySelected
-                              ? 'text-green-300 font-bold'
-                              : 'text-blue-300 font-bold'
-                          }
-                        >
-                          {selectedEvents[0].godzina}
-                        </span>
                       </div>
                       <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5 truncate">
                         {TYP_CONFIG[selectedEvents[0].typ]?.label}
@@ -420,7 +410,8 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </div>
               </button>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Przyciski: na mobile w pionie, na desktopie w poziomie */}
+              <div className="flex flex-col md:flex-row items-center gap-2 flex-shrink-0">
                 {pierwszeWydarzenie ? (
                   <>
                     <Link

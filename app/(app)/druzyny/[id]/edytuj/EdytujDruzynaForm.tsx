@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { aktualizujDruzyna, usunDruzyna } from './actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { FormField } from '@/components/FormField';
 import {
   Users,
   Hash,
@@ -12,6 +12,7 @@ import {
   Check,
   Trash2,
   AlertTriangle,
+  X,
 } from 'lucide-react';
 
 const KOLORY = [
@@ -48,9 +49,6 @@ export function EdytujDruzynaForm({
 
   return (
     <>
-      {/* ════════════════════════════════════════ */}
-      {/* FORMULARZ EDYCJI */}
-      {/* ════════════════════════════════════════ */}
       <form
         action={aktualizujDruzyna.bind(null, druzyna.id)}
         className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60 mb-4"
@@ -124,18 +122,28 @@ export function EdytujDruzynaForm({
           </div>
         </fieldset>
 
-        <button
-          type="submit"
-          className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5"
-        >
-          <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          Zapisz zmiany
-        </button>
+        {/* Zapisz + Anuluj obok siebie */}
+        <div className="flex gap-2 pt-2">
+          <Link
+            href="/druzyny"
+            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
+          >
+            <X className="w-4 h-4 flex-shrink-0" />
+            Anuluj
+          </Link>
+          <button
+            type="submit"
+            className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base"
+          >
+            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <span>
+              Zapisz<span className="hidden sm:inline"> zmiany</span>
+            </span>
+          </button>
+        </div>
       </form>
 
-      {/* ════════════════════════════════════════ */}
-      {/* STREFA NIEBEZPIECZNA - USUWANIE */}
-      {/* ════════════════════════════════════════ */}
+      {/* Strefa niebezpieczna - usuwanie */}
       <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle className="w-4 h-4 text-red-400" />
@@ -162,9 +170,6 @@ export function EdytujDruzynaForm({
         <input type="hidden" name="id" value={druzyna.id} />
       </form>
 
-      {/* ════════════════════════════════════════ */}
-      {/* MODAL POTWIERDZENIA USUNIĘCIA */}
-      {/* ════════════════════════════════════════ */}
       <ConfirmDialog
         open={openDelete}
         title="Usunąć drużynę?"

@@ -6,7 +6,7 @@ import { aktualizujZawodnika } from './actions';
 import { DeleteButton } from './DeleteButton';
 import { Select } from '@/components/Select';
 import { FormField } from '@/components/FormField';
-import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil } from 'lucide-react';
+import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil, X } from 'lucide-react';
 
 export default async function EdytujZawodnika({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,10 +17,6 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  // ═══════════════════════════════════════════════════════
-  // Konkretne kolumny - pomijamy `druzyna_id` i `created_at`,
-  // których formularz nie używa.
-  // ═══════════════════════════════════════════════════════
   const { data: zawodnik, error } = await supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
@@ -76,7 +72,7 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
               { value: '', label: '- wybierz -' },
               { value: 'Bramkarz', label: '🧤 Bramkarz' },
               { value: 'Obrońca', label: '🛡️ Obrońca' },
-              { value: 'Pomocnik', label: '⚙️ Pomocnik' },
+              { value: 'Pomocnik', label: '⚽ Pomocnik' },
               { value: 'Napastnik', label: '⚡ Napastnik' },
             ]}
           />
@@ -90,10 +86,20 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
           <textarea name="notatki" rows={3} defaultValue={zawodnik.notatki ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2 resize-none" />
         </FormField>
 
-        <div className="flex gap-3 pt-2">
-          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5">
-            <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            Zapisz zmiany
+        {/* Anuluj + Zapisz zmiany + Usuń */}
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          <Link
+            href={`/zawodnicy/${idNum}`}
+            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
+          >
+            <X className="w-4 h-4 flex-shrink-0" />
+            Anuluj
+          </Link>
+          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base">
+            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <span>
+              Zapisz<span className="hidden sm:inline"> zmiany</span>
+            </span>
           </button>
           <DeleteButton id={idNum} />
         </div>

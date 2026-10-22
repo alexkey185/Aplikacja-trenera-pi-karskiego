@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { dodajZawodnika } from './actions';
 import { Select } from '@/components/Select';
 import { FormField } from '@/components/FormField';
-import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Users } from 'lucide-react';
+import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Users, X } from 'lucide-react';
 
 export default function NowyZawodnik() {
   return (
@@ -52,7 +52,7 @@ export default function NowyZawodnik() {
               { value: '', label: '- wybierz -' },
               { value: 'Bramkarz', label: '🧤 Bramkarz' },
               { value: 'Obrońca', label: '🛡️ Obrońca' },
-              { value: 'Pomocnik', label: '⚙️ Pomocnik' },
+              { value: 'Pomocnik', label: '⚽ Pomocnik' },
               { value: 'Napastnik', label: '⚡ Napastnik' },
             ]}
           />
@@ -66,10 +66,22 @@ export default function NowyZawodnik() {
           <textarea name="notatki" rows={3} placeholder="np. Dobra gra lewą nogą" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none" />
         </FormField>
 
-        <button type="submit" className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5">
-          <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          Zapisz zawodnika
-        </button>
+        {/* Zapisz + Anuluj */}
+        <div className="flex gap-2 pt-2">
+          <Link
+            href="/kadra"
+            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
+          >
+            <X className="w-4 h-4 flex-shrink-0" />
+            Anuluj
+          </Link>
+          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base">
+            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
+            <span>
+              Zapisz<span className="hidden sm:inline"> zawodnika</span>
+            </span>
+          </button>
+        </div>
       </form>
     </div>
   );
