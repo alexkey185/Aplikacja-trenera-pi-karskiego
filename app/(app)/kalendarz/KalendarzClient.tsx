@@ -12,6 +12,9 @@ import {
   Printer,
   Pencil,
   Trash2,
+  Trophy,
+  Flame,
+  Target,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
 import { CompactStat } from './CompactStat';
@@ -51,6 +54,20 @@ function liczbaSlowo(n: number): string {
   if (n >= 2 && n <= 4) return 'wydarzenia';
   return 'wydarzeń';
 }
+
+const typIkona = (typ: string) => {
+  if (typ === 'mecz') return Trophy;
+  if (typ === 'sparing') return Flame;
+  if (typ === 'turniej') return Target;
+  return CalendarIcon;
+};
+
+const typBorder = (typ: string) => {
+  if (typ === 'mecz') return 'border-l-red-500';
+  if (typ === 'sparing') return 'border-l-orange-500';
+  if (typ === 'turniej') return 'border-l-purple-500';
+  return 'border-l-blue-500';
+};
 
 export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const router = useRouter();
@@ -297,8 +314,55 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const pokazListeDnia = selectedEvents.length > 1;
   const liczbaWydarzen = selectedEvents.length;
 
-  // Cały lewy obszar kafla: link do obecności (jeśli jest wydarzenie),
-  // albo do dodawania nowego (jeśli brak). Bez osobnego przycisku "Obecność".
+  // Renderowanie pojedynczego wiersza wydarzenia (gdy > 1)
+  const renderEventRow = (t: Trening) => {
+    const Icon = typIkona(t.typ);
+    return (
+      <div
+        key={t.id}
+        className={`flex items-center gap-2 p-2 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
+      >
+        <Link
+          href={`/kalendarz/${t.id}/obecnosc`}
+          className="flex-1 flex items-center gap-2 min-w-0"
+          title="Otwórz obecność"
+        >
+          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
+            <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          </div>
+          <div className="flex-shrink-0 text-xs font-bold text-white tabular-nums">
+            {t.godzina}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-semibold text-white truncate capitalize">
+              {TYP_CONFIG[t.typ]?.label}
+              {t.przeciwnik && <span className="text-white/60"> vs {t.przeciwnik}</span>}
+            </div>
+            {t.miejsce && (
+              <div className="text-[10px] text-white/50 truncate">{t.miejsce}</div>
+            )}
+          </div>
+        </Link>
+        <Link
+          href={`/kalendarz/${t.id}/edytuj`}
+          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
+          title="Edytuj"
+        >
+          <Pencil className="w-3 h-3" />
+        </Link>
+        <DeleteEventButton id={t.id} cyklId={t.cykl_id} size="sm" />
+        <Link
+          href={`/kalendarz/${t.id}/obecnosc`}
+          className="w-5 h-5 text-white/40 hover:text-green-400 transition-all flex-shrink-0"
+          title="Przejdź do obecności"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  };
+
+  // Lewy obszar kafla (klikalny)
   const lewyObszar = (
     <>
       <div className="relative flex-shrink-0">
@@ -397,7 +461,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-          {/* Kafel dnia - cały lewy obszar = klik do obecności / dodawania */}
+          {/* Kafel dnia */}
           <div
             key={flashKey}
             className={`rounded-2xl p-4 lg:p-4 transition-all flex-shrink-0 animate-flash ${
@@ -425,9 +489,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </button>
               )}
 
-              {/* Akcje: tylko Edytuj i Usuń (bez Obecność - klik w kafel ją otwiera) */}
+              {/* Akcje dla 1 wydarzenia (na górze) - gdy jest ich więcej, są w liście poniżej */}
               <div className="flex flex-col md:flex-row items-center gap-2 flex-shrink-0">
-                {pierwszeWydarzenie && (
+                {liczbaWydarzen === 1 && pierwszeWydarzenie && (
                   <>
                     <Link
                       href={`/kalendarz/${pierwszeWydarzenie.id}/edytuj`}
@@ -445,15 +509,38 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                     />
                   </>
                 )}
+                {liczbaWydarzen === 0 && (
+                  <button
+                    onClick={handleFabClick}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Dodaj</span>
+                  </button>
+                )}
               </div>
             </div>
+
+            {/* Lista wszystkich wydarzeń (gdy > 1) */}
+            {liczbaWydarzen > 1 && (
+              <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                {selectedEvents.map(renderEventRow)}
+                <button
+                  onClick={handleFabClick}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-dashed border-white/20 hover:border-white/40 text-white/50 hover:text-white text-[11px] font-semibold transition-all"
+                >
+                  <Plus className="w-3 h-3" />
+                  Dodaj kolejne wydarzenie
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-4 gap-2 lg:gap-3 animate-fadeIn flex-shrink-0">
-            <CompactStat icon="T" color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
-            <CompactStat icon="M" color="text-red-400" bg="from-red-500/20 to-red-700/10" border="border-red-400/30" label="Mecze" value={monthStats.mecze} />
-            <CompactStat icon="S" color="text-orange-400" bg="from-orange-500/20 to-orange-700/10" border="border-orange-400/30" label="Sparingi" value={monthStats.sparingi} />
-            <CompactStat icon="T" color="text-purple-400" bg="from-purple-500/20 to-purple-700/10" border="border-purple-400/30" label="Turnieje" value={monthStats.turnieje} />
+            <CompactStat icon={CalendarIcon} color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
+            <CompactStat icon={Trophy} color="text-red-400" bg="from-red-500/20 to-red-700/10" border="border-red-400/30" label="Mecze" value={monthStats.mecze} />
+            <CompactStat icon={Flame} color="text-orange-400" bg="from-orange-500/20 to-orange-700/10" border="border-orange-400/30" label="Sparingi" value={monthStats.sparingi} />
+            <CompactStat icon={Target} color="text-purple-400" bg="from-purple-500/20 to-purple-700/10" border="border-purple-400/30" label="Turnieje" value={monthStats.turnieje} />
           </div>
 
           <div
