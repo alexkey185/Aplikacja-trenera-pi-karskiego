@@ -10,7 +10,6 @@ import {
   Plus,
   Calendar as CalendarIcon,
   Printer,
-  Users,
   Pencil,
   Trash2,
 } from 'lucide-react';
@@ -31,7 +30,7 @@ const DeleteEventButton = dynamic(
       <button
         type="button"
         disabled
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/20 text-xs font-semibold"
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/5 border border-red-400/20 text-red-400/30 text-xs font-semibold"
       >
         <Trash2 className="w-3.5 h-3.5" />
         <span className="hidden md:inline">Usuń</span>
@@ -45,6 +44,13 @@ type Props = {
   stats: StatsMap;
   topBar: React.ReactNode;
 };
+
+// Odmiana słowa "wydarzenie" — polska gramatyka
+function liczbaSlowo(n: number): string {
+  if (n === 1) return 'wydarzenie';
+  if (n >= 2 && n <= 4) return 'wydarzenia';
+  return 'wydarzeń';
+}
 
 export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const router = useRouter();
@@ -114,12 +120,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     if (iso === selectedDate) return;
     setSelectedDate(iso);
     setFlashKey((k) => k + 1);
-  };
-
-  const goToToday = () => {
-    setViewYear(todayDate.getFullYear());
-    setViewMonth(todayDate.getMonth());
-    selectDay(todayISO);
   };
 
   const showToast = (msg: string) => {
@@ -296,7 +296,71 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const pierwszeWydarzenie = selectedEvents[0] ?? null;
   const pokazListeDnia = selectedEvents.length > 1;
   const liczbaWydarzen = selectedEvents.length;
-  const liczbaBadge = liczbaWydarzen > 9 ? '9+' : String(liczbaWydarzen);
+
+  // Cały lewy obszar kafla: link do obecności (jeśli jest wydarzenie),
+  // albo do dodawania nowego (jeśli brak). Bez osobnego przycisku "Obecność".
+  const lewyObszar = (
+    <>
+      <div className="relative flex-shrink-0">
+        <div
+          className={`absolute inset-0 rounded-2xl blur-md opacity-60 ${
+            isTodaySelected
+              ? 'bg-gradient-to-br from-green-400 to-green-700'
+              : 'bg-gradient-to-br from-blue-400 to-blue-700'
+          }`}
+        />
+        <div
+          className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
+            isTodaySelected
+              ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
+              : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
+          }`}
+        >
+          <span className="text-white font-black text-lg">
+            {isTodaySelected ? '!' : 'D'}
+          </span>
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
+          <span
+            className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest ${
+              isTodaySelected ? 'text-green-400' : 'text-blue-400'
+            }`}
+          >
+            {isTodaySelected ? 'Dzisiaj' : selectedDayLabel}
+          </span>
+          <span className="text-[10px] lg:text-xs text-white/50 capitalize">
+            · {selectedDateObj.getDate()} {selectedMonthLabel}
+            {selectedDateObj.getFullYear() !== todayDate.getFullYear() &&
+              ` ${selectedDateObj.getFullYear()}`}
+          </span>
+          {liczbaWydarzen > 0 && (
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isTodaySelected
+                  ? 'bg-green-500/20 text-green-300 border border-green-400/40'
+                  : 'bg-blue-500/20 text-blue-300 border border-blue-400/40'
+              }`}
+            >
+              {liczbaWydarzen} {liczbaSlowo(liczbaWydarzen)}
+            </span>
+          )}
+        </div>
+        {selectedEvents.length > 0 ? (
+          <div className="text-xs lg:text-sm text-white/70 mt-0.5 truncate font-medium">
+            {TYP_CONFIG[selectedEvents[0].typ]?.label}
+            {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
+            {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
+          </div>
+        ) : (
+          <div className="text-xs lg:text-sm text-white/50 mt-0.5">
+            {isTodaySelected ? 'Nic nie zaplanowano na dziś' : 'Nic nie zaplanowano na ten dzień'}
+          </div>
+        )}
+      </div>
+    </>
+  );
 
   return (
     <div className="w-full max-w-2xl lg:max-w-screen-2xl mx-auto lg:h-full lg:flex lg:flex-col">
@@ -333,7 +397,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0">
         <div className="lg:col-span-3 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 space-y-4 lg:space-y-0">
-          {/* Kafel dnia - animacja flash przy zmianie */}
+          {/* Kafel dnia - cały lewy obszar = klik do obecności / dodawania */}
           <div
             key={flashKey}
             className={`rounded-2xl p-4 lg:p-4 transition-all flex-shrink-0 animate-flash ${
@@ -342,89 +406,32 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 : 'bg-gradient-to-br from-blue-500/15 via-slate-900/60 to-slate-900/80 border border-blue-400/30'
             }`}
           >
-            <div className="flex items-start lg:items-center gap-3 lg:gap-3">
-              <button
-                onClick={goToToday}
-                className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
-                title={isTodaySelected ? 'Dzisiaj' : 'Wróć do dzisiaj'}
-              >
-                {/* Ikona z badge licznika */}
-                <div className="relative flex-shrink-0">
-                  <div
-                    className={`absolute inset-0 rounded-2xl blur-md opacity-60 animate-pulse ${
-                      isTodaySelected
-                        ? 'bg-gradient-to-br from-green-400 to-green-700'
-                        : 'bg-gradient-to-br from-blue-400 to-blue-700'
-                    }`}
-                  />
-                  <div
-                    className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isTodaySelected
-                        ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
-                        : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
-                    }`}
-                  >
-                    <span className="text-white font-black text-lg">
-                      {isTodaySelected ? '!' : 'D'}
-                    </span>
-                  </div>
-                  {/* Badge z liczbą wydarzeń */}
-                  {liczbaWydarzen > 0 && (
-                    <div
-                      className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 rounded-full flex items-center justify-center text-[11px] font-black text-white shadow-lg border-2 ${
-                        isTodaySelected
-                          ? 'bg-green-500 border-green-300 shadow-green-500/50'
-                          : 'bg-blue-500 border-blue-300 shadow-blue-500/50'
-                      }`}
-                      title={`${liczbaWydarzen} ${liczbaWydarzen === 1 ? 'wydarzenie' : 'wydarzenia'}`}
-                    >
-                      {liczbaBadge}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
-                    <span
-                      className={`text-[10px] lg:text-xs font-bold uppercase tracking-widest ${
-                        isTodaySelected ? 'text-green-400' : 'text-blue-400'
-                      }`}
-                    >
-                      {isTodaySelected ? 'Dzisiaj' : selectedDayLabel}
-                    </span>
-                    <span className="text-[10px] lg:text-xs text-white/50 capitalize">
-                      · {selectedDateObj.getDate()} {selectedMonthLabel}
-                      {selectedDateObj.getFullYear() !== todayDate.getFullYear() &&
-                        ` ${selectedDateObj.getFullYear()}`}
-                    </span>
-                  </div>
-                  {selectedEvents.length > 0 ? (
-                    <div className="text-xs lg:text-sm text-white/70 mt-0.5 truncate font-medium">
-                      {TYP_CONFIG[selectedEvents[0].typ]?.label}
-                      {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
-                      {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
-                    </div>
-                  ) : (
-                    <div className="text-xs lg:text-sm text-white/50 mt-0.5">
-                      {isTodaySelected ? 'Nic nie zaplanowano na dziś' : 'Nic nie zaplanowano na ten dzień'}
-                    </div>
-                  )}
-                </div>
-              </button>
+            <div className="flex items-center gap-3 lg:gap-3">
+              {pierwszeWydarzenie ? (
+                <Link
+                  href={`/kalendarz/${pierwszeWydarzenie.id}/obecnosc`}
+                  className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left hover:opacity-90 transition-opacity"
+                  title="Otwórz obecność"
+                >
+                  {lewyObszar}
+                </Link>
+              ) : (
+                <button
+                  onClick={handleFabClick}
+                  className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
+                  title="Dodaj wydarzenie"
+                >
+                  {lewyObszar}
+                </button>
+              )}
 
-              {/* Przyciski: na mobile w pionie, na desktopie w poziomie */}
+              {/* Akcje: tylko Edytuj i Usuń (bez Obecność - klik w kafel ją otwiera) */}
               <div className="flex flex-col md:flex-row items-center gap-2 flex-shrink-0">
-                {pierwszeWydarzenie ? (
+                {pierwszeWydarzenie && (
                   <>
                     <Link
-                      href={`/kalendarz/${pierwszeWydarzenie.id}/obecnosc`}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-green-500/15 border border-white/10 hover:border-green-400/40 text-white/70 hover:text-green-300 text-xs font-semibold transition-all"
-                      title="Zapisz obecność"
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span className="hidden md:inline">Obecność</span>
-                    </Link>
-                    <Link
                       href={`/kalendarz/${pierwszeWydarzenie.id}/edytuj`}
+                      onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-blue-500/15 border border-white/10 hover:border-blue-400/40 text-white/70 hover:text-blue-300 text-xs font-semibold transition-all"
                       title="Edytuj wydarzenie"
                     >
@@ -437,14 +444,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                       variant="tile"
                     />
                   </>
-                ) : (
-                  <button
-                    onClick={handleFabClick}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">Dodaj</span>
-                  </button>
                 )}
               </div>
             </div>
