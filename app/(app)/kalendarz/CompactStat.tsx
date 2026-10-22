@@ -1,13 +1,16 @@
-// app/(app)/kalendarz/CompactStat.tsx
+'use client';
+
+import type { LucideIcon } from 'lucide-react';
+
 export function CompactStat({
-  icon,
+  icon: Icon,
   color,
   bg,
   border,
   label,
   value,
 }: {
-  icon: string;
+  icon: LucideIcon;
   color: string;
   bg: string;
   border: string;
@@ -16,18 +19,25 @@ export function CompactStat({
 }) {
   return (
     <div
-      className={`bg-slate-900/80 backdrop-blur-md rounded-xl lg:rounded-2xl p-3 lg:px-4 lg:py-3 bg-gradient-to-br ${bg} border ${border} animate-fadeIn shadow-lg shadow-black/30 flex flex-col lg:flex-row lg:items-center lg:gap-3`}
+      className={`relative overflow-hidden bg-slate-900/80 backdrop-blur-md rounded-xl lg:rounded-2xl p-3 lg:p-4 bg-gradient-to-br ${bg} border ${border} animate-fadeIn shadow-lg shadow-black/30 flex flex-col justify-between h-full`}
     >
-      <div className={`${color} text-base lg:text-2xl lg:flex-shrink-0 font-black`}>
-        {icon}
-      </div>
-      <div className="lg:flex-1 lg:min-w-0">
-        <div className="text-2xl lg:text-3xl font-bold text-white drop-shadow leading-tight">
+      <div className="flex items-start justify-between w-full">
+        {/* Ikona - lewy górny róg */}
+        <div
+          className={`w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0 ${color}`}
+        >
+          <Icon className="w-4 h-4 lg:w-4.5 lg:h-4.5" strokeWidth={2.5} />
+        </div>
+        
+        {/* Liczba - prawy górny róg (tam gdzie wskazują strzałki) */}
+        <div className="text-2xl lg:text-3xl font-bold text-white drop-shadow leading-none tabular-nums text-right">
           {value}
         </div>
-        <div className="text-xs lg:text-xs text-white/60 lg:uppercase lg:tracking-wider lg:font-semibold mt-0.5 lg:mt-0 leading-tight">
-          {label}
-        </div>
+      </div>
+      
+      {/* Etykieta - dół */}
+      <div className="text-[10px] lg:text-xs text-white/60 uppercase tracking-wider font-semibold mt-3 text-left w-full truncate">
+        {label}
       </div>
     </div>
   );
