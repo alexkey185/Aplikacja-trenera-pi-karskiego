@@ -1,8 +1,8 @@
-// app/(app)/kalendarz/KalendarzClient.tsx
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   Printer,
   Users,
   Pencil,
+  Trash2,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
 import { CompactStat } from './CompactStat';
@@ -21,6 +22,24 @@ import { UpcomingRow } from './UpcomingRow';
 import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLIDAYS } from './constants';
 import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
 import type { Trening, StatsMap } from './types';
+
+// Lazy load - chunk z ConfirmDialog ładuje się dopiero gdy user kliknie kosz
+const DeleteEventButton = dynamic(
+  () => import('./DeleteEventButton').then((m) => m.DeleteEventButton),
+  {
+    ssr: false,
+    loading: () => (
+      <button
+        type="button"
+        disabled
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/20 text-xs font-semibold"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+        <span className="hidden md:inline">Usuń</span>
+      </button>
+    ),
+  }
+);
 
 type Props = {
   treningi: Trening[];
@@ -153,7 +172,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     const id = draggedId;
     setDraggedId(null);
     const result = await przeniesTrening(id, iso);
-    if (result?.error) showToast(`Blad: ${result.error}`);
+    if (result?.error) showToast(`Błąd: ${result.error}`);
     else {
       showToast(`Przeniesiono na ${formatShort(iso)}`);
       setSelectedDate(iso);
@@ -216,7 +235,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
         {isToday && (
           <div className="text-[7px] lg:text-[9px] day-label uppercase tracking-wider leading-none mt-0.5 hidden lg:block">
-            Dzis
+            Dziś
           </div>
         )}
         {events.length > 0 && (
@@ -293,7 +312,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
               Kalendarz
             </h1>
             <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">
-              {monthStats.total} {monthStats.total === 1 ? 'wydarzenie' : 'wydarzen'} w tym miesiacu
+              {monthStats.total} {monthStats.total === 1 ? 'wydarzenie' : 'wydarzeń'} w tym miesiącu
             </p>
           </div>
         </div>
@@ -326,7 +345,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
               <button
                 onClick={goToToday}
                 className="flex items-center gap-4 lg:gap-3 flex-1 min-w-0 text-left"
-                title={isTodaySelected ? 'Dzisiaj' : 'Wroc do dzisiaj'}
+                title={isTodaySelected ? 'Dzisiaj' : 'Wróć do dzisiaj'}
               >
                 <div className="relative flex-shrink-0">
                   <div
@@ -389,12 +408,12 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                   ) : (
                     <>
                       <div className="text-white font-bold text-base lg:text-base leading-tight">
-                        Brak wydarzen
+                        Brak wydarzeń
                       </div>
                       <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">
                         {isTodaySelected
-                          ? 'Nic nie zaplanowano na dzis'
-                          : 'Nic nie zaplanowano na ten dzien'}
+                          ? 'Nic nie zaplanowano na dziś'
+                          : 'Nic nie zaplanowano na ten dzień'}
                       </div>
                     </>
                   )}
@@ -407,10 +426,10 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                     <Link
                       href={`/kalendarz/${pierwszeWydarzenie.id}/obecnosc`}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-green-500/15 border border-white/10 hover:border-green-400/40 text-white/70 hover:text-green-300 text-xs font-semibold transition-all"
-                      title="Zapisz obecnosc"
+                      title="Zapisz obecność"
                     >
                       <Users className="w-3.5 h-3.5" />
-                      <span className="hidden md:inline">Obecnosc</span>
+                      <span className="hidden md:inline">Obecność</span>
                     </Link>
                     <Link
                       href={`/kalendarz/${pierwszeWydarzenie.id}/edytuj`}
@@ -420,6 +439,11 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                       <Pencil className="w-3.5 h-3.5" />
                       <span className="hidden md:inline">Edytuj</span>
                     </Link>
+                    <DeleteEventButton
+                      id={pierwszeWydarzenie.id}
+                      cyklId={pierwszeWydarzenie.cykl_id}
+                      variant="tile"
+                    />
                   </>
                 ) : (
                   <button
@@ -458,7 +482,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </div>
                 {viewYear === todayDate.getFullYear() && viewMonth === todayDate.getMonth() && (
                   <div className="text-[10px] lg:text-xs text-green-400 font-bold uppercase tracking-widest">
-                    Biezacy miesiac
+                    Bieżący miesiąc
                   </div>
                 )}
               </div>
@@ -472,7 +496,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
             <div className="lg:hidden flex items-center justify-center gap-2 mb-3 text-white/30 text-[10px]">
               <span>←</span>
-              <span className="uppercase tracking-widest">przesun palcem</span>
+              <span className="uppercase tracking-widest">przesuń palcem</span>
               <span>→</span>
             </div>
 
@@ -529,7 +553,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
               <div className="flex items-center gap-2 mb-4 lg:mb-3">
                 <span className="text-white/40 text-sm">+</span>
                 <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-                  Najblizsze 3 wydarzenia
+                  Najbliższe 3 wydarzenia
                 </h2>
               </div>
               <div className="space-y-2">
