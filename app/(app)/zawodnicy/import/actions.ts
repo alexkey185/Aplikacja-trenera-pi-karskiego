@@ -1,4 +1,3 @@
-$content = @'
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -57,8 +56,3 @@ export async function importZawodnicy(formData: FormData) {
   revalidatePath('/kadra');
   redirect('/kadra?toast=zawodnicy_zaimportowani');
 }
-'@
-
-$path = Join-Path (Get-Location) "app\(app)\zawodnicy\import\actions.ts"
-[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Zapisano: $path"

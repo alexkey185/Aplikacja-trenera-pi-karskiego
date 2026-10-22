@@ -1,4 +1,3 @@
-$content = @'
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -144,8 +143,3 @@ export function ImportForm() {
     </form>
   );
 }
-'@
-
-$path = Join-Path (Get-Location) "app\(app)\zawodnicy\import\ImportForm.tsx"
-[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Zapisano: $path"

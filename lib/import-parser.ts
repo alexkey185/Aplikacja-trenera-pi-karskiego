@@ -1,4 +1,3 @@
-// lib/import-parser.ts
 import { dodajZawodnikaSchema } from './schemas';
 
 export type ParsedRow = {
