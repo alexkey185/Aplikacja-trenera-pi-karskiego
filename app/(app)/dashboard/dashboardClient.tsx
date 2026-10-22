@@ -322,6 +322,15 @@ export function DashboardClient({
                 </div>
               );
             })}
+
+            {/* Dodaj kolejne wydarzenie - zawsze widoczne, gdy są już wydarzenia */}
+            <Link
+              href={`/kalendarz/nowy?data=${selectedDate}`}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-white/20 hover:border-white/40 text-white/60 hover:text-white text-xs font-semibold transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Dodaj kolejne wydarzenie
+            </Link>
           </div>
         )}
       </div>
