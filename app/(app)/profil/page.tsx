@@ -1,4 +1,3 @@
-$content = @'
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzyna } from '@/lib/druzyny';
@@ -325,8 +324,3 @@ export default async function Profil() {
     </div>
   );
 }
-'@
-
-$path = Join-Path (Get-Location) "app\(app)\profil\page.tsx"
-[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Zapisano: $path"
