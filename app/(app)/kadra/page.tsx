@@ -5,7 +5,7 @@ import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO } from '@/lib/dates';
 import { TopBar } from '@/components/TopBar';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
-import { Users, Plus, Search, ArrowUpDown, Upload, Download } from 'lucide-react';
+import { Users, Plus, Search, ArrowUpDown, Upload } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -197,15 +197,6 @@ export default async function Kadra({
               className="w-full bg-slate-900/70 backdrop-blur-md border border-white/10 rounded-lg md:rounded-2xl pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-3 text-xs md:text-sm text-white placeholder:text-white/40 outline-none focus:border-green-400/50 transition-all"
             />
           </form>
-          <a
-            href="/api/export/kadra"
-            download
-            className="inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/30 hover:border-blue-400/50 text-blue-300 hover:text-blue-200 text-xs md:text-sm font-semibold transition-all flex-shrink-0"
-            title="Eksportuj kadrę do CSV"
-          >
-            <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Eksport</span>
-          </a>
           <Link
             href="/zawodnicy/import"
             className="inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-2xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-xs md:text-sm font-semibold transition-all flex-shrink-0"
