@@ -1,83 +1,79 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { KalendarzClient } from './KalendarzClient';
-import { TopBar } from '@/components/TopBar';
-import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
-import { toISO } from '@/lib/dates';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { notFound, redirect } from 'next/navigation';
+import { pad2, toISO, getMonday, addDays } from '@/lib/dates';
+import { EksportClient } from './EksportClient';
 
-type Trening = {
-  id: number;
-  data: string;
-  godzina: string;
-  typ: string;
-  przeciwnik: string | null;
-  miejsce: string | null;
-  notatki: string | null;
-  cykl_id: string | null;
-};
+export default async function EksportPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ w?: string }>;
+}) {
+  const params = await searchParams;
 
-type TreningZObecnoscia = Trening & {
-  obecnosc: { trening_id: number; status: string }[] | null;
-};
+  const teraz = new Date();
+  let poniedzialek = getMonday(teraz);
+  if (params.w) {
+    const parsed = new Date(params.w + 'T00:00:00');
+    if (!isNaN(parsed.getTime())) {
+      poniedzialek = getMonday(parsed);
+    }
+  }
 
-type StatsMap = Record<
-  number,
-  { obecni: number; nieobecni: number; total: number }
->;
+  const niedziela = addDays(poniedzialek, 6);
+  const poniedzialekISO = toISO(poniedzialek);
+  const niedzielaISO = toISO(niedziela);
 
-export default async function KalendarzPage() {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(poniedzialekISO)) notFound();
+
   const supabase = await createClient();
-
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  const activeDruzyna = await getActiveDruzyna();
-
-  const dzis = new Date();
-  const od = new Date(dzis.getFullYear(), dzis.getMonth() - 2, 1);
-  const do_ = new Date(dzis.getFullYear(), dzis.getMonth() + 3, 0);
-
-  const { data: rawTreningi } = await supabase
+  const { data: treningi } = await supabase
     .from('treningi')
-    .select(`
-      id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
-      obecnosc (trening_id, status)
-    `)
+    .select('id, data, godzina, typ, przeciwnik, miejsce, notatki')
     .eq('druzyna_id', druzynaId)
-    .gte('data', toISO(od))
-    .lte('data', toISO(do_))
-    .order('data', { ascending: true });
+    .gte('data', poniedzialekISO)
+    .lte('data', niedzielaISO)
+    .order('data', { ascending: true })
+    .order('godzina', { ascending: true });
 
-  const lista = (rawTreningi ?? []) as TreningZObecnoscia[];
+  const { data: user } = await supabase.auth.getUser();
 
-  const stats: StatsMap = {};
-  lista.forEach((t) => {
-    let obecni = 0;
-    let nieobecni = 0;
-    for (const o of t.obecnosc ?? []) {
-      if (o.status === 'obecny' || o.status === 'spozniony') obecni++;
-      else nieobecni++;
-    }
-    stats[t.id] = { obecni, nieobecni, total: obecni + nieobecni };
+  const events = treningi ?? [];
+  const stats = {
+    treningi: events.filter((t) => t.typ === 'trening').length,
+    mecze: events.filter((t) => t.typ === 'mecz').length,
+    sparingi: events.filter((t) => t.typ === 'sparing').length,
+    turnieje: events.filter((t) => t.typ === 'turniej').length,
+  };
+
+  const zakres = `${pad2(poniedzialek.getDate())}.${pad2(
+    poniedzialek.getMonth() + 1
+  )} - ${pad2(niedziela.getDate())}.${pad2(niedziela.getMonth() + 1)}`;
+
+  const dni = Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(poniedzialek, i);
+    const iso = toISO(d);
+    return {
+      iso,
+      data: d,
+      events: events.filter((e) => e.data === iso),
+    };
   });
 
-  const treningi: Trening[] = lista.map((t) => ({
-    id: t.id,
-    data: t.data,
-    godzina: t.godzina,
-    typ: t.typ,
-    przeciwnik: t.przeciwnik,
-    miejsce: t.miejsce,
-    notatki: t.notatki,
-    cykl_id: t.cykl_id,
-  }));
+  const dataGen = `${pad2(teraz.getDate())}.${pad2(teraz.getMonth() + 1)}.${teraz.getFullYear()}`;
 
   return (
-    <KalendarzClient
-      treningi={treningi}
+    <EksportClient
+      dni={dni}
       stats={stats}
-      topBar={<TopBar />}
-      logoUrl={activeDruzyna?.logo_url ?? null}
+      zakres={zakres}
+      dataGen={dataGen}
+      poniedzialek={poniedzialekISO}
+      niedziela={niedzielaISO}
+      email={user?.user?.email ?? ''}
     />
   );
 }
