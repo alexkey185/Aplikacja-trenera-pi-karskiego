@@ -182,8 +182,8 @@ export default async function Statystyki({
     console.error('RPC get_miesiace_druzyny error:', miesiaceError);
   }
 
-  const unikalneMiesiace = (miesiaceRaw ?? []).map(
-    (r: RpcMiesiacDruzynyRow) => r.miesiac
+  const unikalneMiesiace: string[] = ((miesiaceRaw ?? []) as RpcMiesiacDruzynyRow[]).map(
+    (r) => r.miesiac
   );
 
   const totalTreningi = stats.total_treningi;
@@ -216,7 +216,7 @@ export default async function Statystyki({
     .filter((mm) => mm.procent !== null)
     .sort((a, b) => (b.procent ?? 0) - (a.procent ?? 0))[0];
 
-  const miesiaceDropdown = unikalneMiesiace.map((mm) => {
+  const miesiaceDropdown = unikalneMiesiace.map((mm: string) => {
     const monthRow = miesiaceWykres.find((x) => x.iso === mm);
     return {
       iso: mm,
