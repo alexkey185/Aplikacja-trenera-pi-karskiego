@@ -23,7 +23,6 @@ import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLID
 import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
 import type { Trening, StatsMap } from './types';
 
-// Lazy load - chunk z ConfirmDialog ładuje się dopiero gdy user kliknie kosz
 const DeleteEventButton = dynamic(
   () => import('./DeleteEventButton').then((m) => m.DeleteEventButton),
   {
@@ -296,6 +295,8 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const selectedMonthLabel = MONTHS_PL_GENITIVE[selectedDateObj.getMonth()];
   const pierwszeWydarzenie = selectedEvents[0] ?? null;
   const pokazListeDnia = selectedEvents.length > 1;
+  const liczbaWydarzen = selectedEvents.length;
+  const liczbaBadge = liczbaWydarzen > 9 ? '9+' : String(liczbaWydarzen);
 
   return (
     <div className="w-full max-w-2xl lg:max-w-screen-2xl mx-auto lg:h-full lg:flex lg:flex-col">
@@ -347,6 +348,7 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
                 title={isTodaySelected ? 'Dzisiaj' : 'Wróć do dzisiaj'}
               >
+                {/* Ikona z badge licznika */}
                 <div className="relative flex-shrink-0">
                   <div
                     className={`absolute inset-0 rounded-2xl blur-md opacity-60 animate-pulse ${
@@ -366,6 +368,19 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                       {isTodaySelected ? '!' : 'D'}
                     </span>
                   </div>
+                  {/* Badge z liczbą wydarzeń */}
+                  {liczbaWydarzen > 0 && (
+                    <div
+                      className={`absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 rounded-full flex items-center justify-center text-[11px] font-black text-white shadow-lg border-2 ${
+                        isTodaySelected
+                          ? 'bg-green-500 border-green-300 shadow-green-500/50'
+                          : 'bg-blue-500 border-blue-300 shadow-blue-500/50'
+                      }`}
+                      title={`${liczbaWydarzen} ${liczbaWydarzen === 1 ? 'wydarzenie' : 'wydarzenia'}`}
+                    >
+                      {liczbaBadge}
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
@@ -383,29 +398,15 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                     </span>
                   </div>
                   {selectedEvents.length > 0 ? (
-                    <>
-                      <div className="text-white font-bold text-base lg:text-base leading-tight">
-                        {selectedEvents.length === 1
-                          ? '1 wydarzenie'
-                          : `${selectedEvents.length} wydarzenia`}
-                      </div>
-                      <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5 truncate">
-                        {TYP_CONFIG[selectedEvents[0].typ]?.label}
-                        {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
-                        {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
-                      </div>
-                    </>
+                    <div className="text-xs lg:text-sm text-white/70 mt-0.5 truncate font-medium">
+                      {TYP_CONFIG[selectedEvents[0].typ]?.label}
+                      {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
+                      {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
+                    </div>
                   ) : (
-                    <>
-                      <div className="text-white font-bold text-base lg:text-base leading-tight">
-                        Brak wydarzeń
-                      </div>
-                      <div className="text-xs lg:text-sm text-white/60 mt-1 lg:mt-0.5">
-                        {isTodaySelected
-                          ? 'Nic nie zaplanowano na dziś'
-                          : 'Nic nie zaplanowano na ten dzień'}
-                      </div>
-                    </>
+                    <div className="text-xs lg:text-sm text-white/50 mt-0.5">
+                      {isTodaySelected ? 'Nic nie zaplanowano na dziś' : 'Nic nie zaplanowano na ten dzień'}
+                    </div>
                   )}
                 </div>
               </button>

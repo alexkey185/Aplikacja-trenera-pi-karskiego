@@ -27,7 +27,9 @@ const formatDisplay = (iso: string) => {
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
 };
 
-const PANEL_HEIGHT = 420; // przybliżona wysokość panelu
+const PANEL_HEIGHT = 420;
+const PANEL_MIN_WIDTH = 300;
+const MARGIN = 8;
 
 export function DatePicker({
   name,
@@ -72,6 +74,29 @@ export function DatePicker({
     setMounted(true);
   }, []);
 
+  const updateCoords = () => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const panelHeight = panelRef.current?.offsetHeight ?? PANEL_HEIGHT;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const placeAbove = spaceBelow < panelHeight + 20 && rect.top > panelHeight + 20;
+
+    // Szerokość panelu: co najmniej PANEL_MIN_WIDTH, żeby siatka 7 dni
+    // się nie rozjeżdżała na wąskich przyciskach (np. w gridzie 2-kolumnowym).
+    const panelWidth = Math.max(rect.width, PANEL_MIN_WIDTH);
+
+    // Clamp lewej krawędzi, żeby panel nie wychodził poza viewport.
+    const maxLeft = window.innerWidth - panelWidth - MARGIN;
+    const clampedLeft = Math.max(MARGIN, Math.min(rect.left, maxLeft));
+
+    setCoords({
+      top: placeAbove ? rect.top - panelHeight - 8 : rect.bottom + 8,
+      left: clampedLeft,
+      width: panelWidth,
+      placeAbove,
+    });
+  };
+
   useEffect(() => {
     if (!open) return;
     updateCoords();
@@ -95,21 +120,6 @@ export function DatePicker({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
-
-  const updateCoords = () => {
-    if (!buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    const panelHeight = panelRef.current?.offsetHeight ?? PANEL_HEIGHT;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const placeAbove = spaceBelow < panelHeight + 20 && rect.top > panelHeight + 20;
-
-    setCoords({
-      top: placeAbove ? rect.top - panelHeight - 8 : rect.bottom + 8,
-      left: rect.left,
-      width: rect.width,
-      placeAbove,
-    });
-  };
 
   const setValue = (iso: string) => {
     if (!isControlled) setInternalValue(iso);
