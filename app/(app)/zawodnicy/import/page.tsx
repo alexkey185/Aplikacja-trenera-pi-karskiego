@@ -1,4 +1,3 @@
-$content = @'
 import Link from 'next/link';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { ImportForm } from './ImportForm';
@@ -35,8 +34,3 @@ export default function ImportZawodnikow() {
     </div>
   );
 }
-'@
-
-$path = Join-Path (Get-Location) "app\(app)\zawodnicy\import\page.tsx"
-[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Zapisano: $path"
