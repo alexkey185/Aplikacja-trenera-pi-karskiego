@@ -248,13 +248,14 @@ export function DashboardClient({
         {selectedEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="text-white/40 text-sm mb-4">Brak wydarzeń tego dnia</div>
-            <Link
-              href={`/kalendarz/nowy?data=${selectedDate}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Dodaj wydarzenie
-            </Link>
+           {/* Dodaj kolejne wydarzenie - zawsze widoczne, gdy są już wydarzenia */}
+<Link
+  href={`/kalendarz/nowy?data=${selectedDate}`}
+  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-xs font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
+>
+  <Plus className="w-3.5 h-3.5" />
+  Dodaj kolejne wydarzenie
+</Link>
           </div>
         ) : (
           <div className="space-y-3">
