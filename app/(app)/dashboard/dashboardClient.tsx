@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar as CalendarIcon,
@@ -12,9 +12,8 @@ import {
   ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
   Pencil,
+  ExternalLink,
 } from 'lucide-react';
-import { zapiszWynikLubNotatke } from './actions';
-import { toast } from 'sonner';
 import { getDzisISO, toISO } from '@/lib/dates';
 import { DeleteEventButtonLazy } from '@/components/DeleteEventButtonLazy';
 
@@ -76,7 +75,6 @@ export function DashboardClient({
 }) {
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
-  const [isPending, startTransition] = useTransition();
 
   const dni = initialDni;
   const selectedEvents = eventMap[selectedDate] ?? [];
@@ -93,21 +91,6 @@ export function DashboardClient({
     }
     return start;
   })();
-
-  const handleSaveNotatka = (id: number, e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    startTransition(async () => {
-      const res = await zapiszWynikLubNotatke(id, formData);
-      if (res?.error) {
-        toast.error('Błąd zapisu', { description: res.error });
-      } else {
-        toast.success('Zapisano');
-      }
-    });
-  };
 
   return (
     <div>
@@ -150,17 +133,25 @@ export function DashboardClient({
                 onClick={() => setSelectedDate(dataStr)}
                 className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${
                   czyDzis
-                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20'
                     : czyWybrany
-                    ? 'bg-slate-800/80 border border-white/30 shadow-md'
+                    ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20'
                     : 'bg-slate-800/60 border border-white/10 hover:border-white/20'
                 }`}
               >
                 <div className="mb-3 pb-2 border-b border-white/10">
-                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-white' : 'text-white/40'}`}>
+                  <div
+                    className={`text-[10px] uppercase tracking-widest font-bold ${
+                      czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'
+                    }`}
+                  >
                     {formatDzienTyg(d)}
                   </div>
-                  <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : 'text-white'}`}>
+                  <div
+                    className={`text-2xl font-black leading-none mt-1 ${
+                      czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'
+                    }`}
+                  >
                     {d.getDate()}
                   </div>
                 </div>
@@ -175,6 +166,9 @@ export function DashboardClient({
                 </div>
                 {czyDzis && (
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                )}
+                {czyWybrany && !czyDzis && (
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />
                 )}
               </button>
             );
@@ -193,17 +187,25 @@ export function DashboardClient({
                 onClick={() => setSelectedDate(dataStr)}
                 className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col text-left ${
                   czyDzis
-                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/40 shadow-lg shadow-green-500/20'
+                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20'
                     : czyWybrany
-                    ? 'bg-slate-800/80 border border-white/30 shadow-md'
+                    ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20'
                     : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
                 }`}
               >
                 <div className="mb-2 flex-shrink-0">
-                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-white' : 'text-white/40'}`}>
+                  <div
+                    className={`text-[10px] uppercase tracking-widest font-bold ${
+                      czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'
+                    }`}
+                  >
                     {formatDzienTyg(d)}
                   </div>
-                  <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : 'text-white'}`}>
+                  <div
+                    className={`text-2xl font-black leading-none mt-0.5 ${
+                      czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'
+                    }`}
+                  >
                     {d.getDate()}
                   </div>
                 </div>
@@ -224,6 +226,9 @@ export function DashboardClient({
                 )}
                 {czyDzis && (
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
+                )}
+                {czyWybrany && !czyDzis && (
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />
                 )}
               </button>
             );
@@ -266,15 +271,6 @@ export function DashboardClient({
                           {t.typ}
                           {t.przeciwnik && <span className="text-white/60 font-normal"> vs {t.przeciwnik}</span>}
                         </div>
-                        {t.miejsce ? (
-                          mapsUrl ? (
-                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="pointer-events-auto text-xs text-white/50 hover:text-green-400 flex items-center gap-1 mt-0.5 w-fit max-w-full">
-                              <MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{t.miejsce}</span>
-                            </a>
-                          ) : (
-                            <div className="text-xs text-white/50 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" /><span>{t.miejsce}</span></div>
-                          )
-                        ) : null}
                         {s && (s.obecni > 0 || s.nieobecni > 0) && (
                           <div className="text-xs mt-1 flex items-center gap-3">
                             <span className="text-green-400 font-medium">✓ {s.obecni}</span>
@@ -294,21 +290,25 @@ export function DashboardClient({
                     </Link>
                   </div>
 
-                  <form onSubmit={(e) => handleSaveNotatka(t.id, e)} className="relative z-10 mt-1 flex gap-2 items-center pointer-events-auto">
-                    <input
-                      name="notatki"
-                      defaultValue={t.notatki ?? ''}
-                      placeholder="Wpisz wynik lub notatkę (np. 3:2)..."
-                      className="flex-1 bg-slate-950/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-green-400/50 outline-none transition-all"
-                    />
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className="px-4 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/40 text-green-300 text-xs font-semibold border border-green-400/30 transition-all hover:scale-105 disabled:opacity-50"
+                  {/* Adres treningu - klikalny link do Google Maps */}
+                  {mapsUrl ? (
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 pointer-events-auto flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-green-500/10 border border-white/10 hover:border-green-400/30 text-white/70 hover:text-green-300 transition-all text-xs font-medium"
+                      title="Otwórz w Google Maps"
                     >
-                      Zapisz
-                    </button>
-                  </form>
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-green-400" />
+                      <span className="truncate flex-1">{t.miejsce}</span>
+                      <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-50" />
+                    </a>
+                  ) : (
+                    <div className="relative z-10 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-dashed border-white/10 text-white/40 text-xs">
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>Brak adresu — dodaj w edycji wydarzenia</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
