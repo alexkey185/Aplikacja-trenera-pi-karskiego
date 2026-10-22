@@ -107,11 +107,11 @@ export function parseImportText(text: string): ParseResult {
     rows.push({
       imie: result.data.imie,
       nazwisko: result.data.nazwisko,
-      rocznik: result.data.rocznik,
-      numer: result.data.numer,
-      pozycja: result.data.pozycja,
-      kontakt_rodzica: result.data.kontakt_rodzica,
-      notatki: result.data.notatki,
+      rocznik: result.data.rocznik ?? null,
+      numer: result.data.numer ?? null,
+      pozycja: result.data.pozycja ?? null,
+      kontakt_rodzica: result.data.kontakt_rodzica ?? null,
+      notatki: result.data.notatki ?? null,
     });
   }
 
