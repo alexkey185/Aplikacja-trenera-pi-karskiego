@@ -1,33 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { notFound, redirect } from 'next/navigation';
+import { pad2, toISO, getMonday, addDays } from '@/lib/dates';
 import { EksportClient } from './EksportClient';
-
-// ═══════════════════════════════════════════════════════════════
-// Helpery
-// ═══════════════════════════════════════════════════════════════
-function pad2(n: number) {
-  return String(n).padStart(2, '0');
-}
-
-function toISO(date: Date) {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-function getMonday(date: Date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
 
 export default async function EksportPage({
   searchParams,
@@ -55,9 +30,6 @@ export default async function EksportPage({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  // ═══════════════════════════════════════════════════════════
-  // POPRAWKA: filtr po druzyna_id - wcześniej mieszał drużyny
-  // ═══════════════════════════════════════════════════════════
   const { data: treningi } = await supabase
     .from('treningi')
     .select('id, data, godzina, typ, przeciwnik, miejsce, notatki')

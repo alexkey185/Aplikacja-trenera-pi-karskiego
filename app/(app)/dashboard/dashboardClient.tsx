@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { zapiszWynikLubNotatke } from './actions';
 import { toast } from 'sonner';
+import { getDzisISO, toISO } from '@/lib/dates';
 
 type TreningZObecnoscia = {
   id: number;
@@ -29,12 +30,6 @@ type TreningZObecnoscia = {
 
 type StatsMap = Map<number, { obecni: number; nieobecni: number }>;
 
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
-}
-function toISO(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
 function formatDzienTyg(date: Date) {
   return date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
 }
@@ -84,7 +79,7 @@ export function DashboardClient({
   const dni = initialDni;
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
-  
+
   const dniMobile = (() => {
     const startIdx = dni.findIndex((d) => toISO(d) === dzisStr);
     if (startIdx === -1) return dni.slice(0, 3);
@@ -101,7 +96,7 @@ export function DashboardClient({
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-    
+
     startTransition(async () => {
       const res = await zapiszWynikLubNotatke(id, formData);
       if (res?.error) {
@@ -241,7 +236,7 @@ export function DashboardClient({
             {selectedDate === dzisStr ? 'Dzisiaj' : 'Wybrany dzień'} · {selectedDateObj.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
           </h2>
         </div>
-        
+
         {selectedEvents.length === 0 ? (
           <div className="text-center py-6 text-white/40 text-sm">Brak wydarzeń tego dnia</div>
         ) : (

@@ -1,19 +1,41 @@
-import Image from 'next/image';
 import { Suspense } from 'react';
+import { Toaster } from 'sonner';
 import { ToastListener } from '@/components/ToastListener';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { AppBackground } from '@/components/AppBackground';
+import { BottomNav } from '@/components/BottomNav';
+import { BottomNavSkeleton } from '@/components/BottomNavSkeleton';
+import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getDzisISO } from '@/lib/dates';
 
-// ═══════════════════════════════════════════════════════════════
-// force-dynamic usunięte.
-//
-// Layout nie fetchuje danych - tylko renderuje shell + Suspense.
-// Dynamiczne fragmenty (TopBar, BottomNav) i tak wymuszają
-// dynamic mode przez cookies(), więc każda strona pod tym
-// layoutem pozostaje dynamic. Ale Next może teraz streamować
-// shell zanim dane się załadują.
-//
-// Jeśli widzisz dziwne błędy hydratacji - przywróć `force-dynamic`.
-// ═══════════════════════════════════════════════════════════════
+async function BottomNavServer() {
+  const supabase = await createClient();
+  const druzynaId = await getActiveDruzynaId();
+
+  const [userResult, dzisiajResult] = await Promise.all([
+    supabase.auth.getUser(),
+    druzynaId
+      ? supabase
+          .from('treningi')
+          .select('*', { count: 'exact', head: true })
+          .eq('druzyna_id', druzynaId)
+          .eq('data', getDzisISO())
+      : Promise.resolve({ count: 0, data: null, error: null }),
+  ]);
+
+  const user = userResult.data.user;
+  const dzisiajCount = dzisiajResult.count ?? 0;
+
+  return (
+    <BottomNav
+      dzisiajCount={dzisiajCount}
+      userEmail={user?.email ?? null}
+      userImie={(user?.user_metadata?.imie as string | undefined) ?? null}
+      userNazwisko={(user?.user_metadata?.nazwisko as string | undefined) ?? null}
+    />
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,38 +44,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ToastListener />
       </Suspense>
 
-      <div className="fixed inset-0 z-0 md:hidden">
-        <Image
-          src="/talent-bg-mobile.webp"
-          alt=""
-          fill
-          priority
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
-      </div>
+      <AppBackground priority />
 
-      <div className="fixed inset-0 z-0 hidden md:block">
-        <Image
-          src="/talent-bg.webp"
-          alt=""
-          fill
-          quality={75}
-          sizes="100vw"
-          className="object-cover object-center"
-          aria-hidden
-        />
-      </div>
-
-      <div className="fixed inset-0 z-10 bg-slate-950/70 md:backdrop-blur-sm" />
-
-      <div className="app-content relative z-20 px-4 md:px-6 lg:px-8 pb-28 md:pt-6 lg:pt-8">
+      <div className="app-content relative z-20 px-4 md:px-6 lg:px-8 md:pt-6 lg:pt-8">
         {children}
       </div>
 
+      <Suspense fallback={<BottomNavSkeleton />}>
+        <BottomNavServer />
+      </Suspense>
+
       <PWAInstallPrompt />
+
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        duration={3500}
+        toastOptions={{
+          style: {
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: 'white',
+            backdropFilter: 'blur(16px)',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            boxShadow: '0 20px 60px -15px rgba(0,0,0,0.6)',
+          },
+        }}
+      />
     </main>
   );
 }

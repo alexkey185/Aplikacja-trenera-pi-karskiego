@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getDzisISO } from '@/lib/dates';
 import { TopBar } from '@/components/TopBar';
 import { Users, Plus, Search, ArrowUpDown } from 'lucide-react';
 
@@ -25,9 +26,9 @@ const SORT_LABELS: Record<SortKey, string> = {
   numer: 'Numer',
 };
 
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // Kolor kropki obecności
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 function kolorKropki(status: string): string {
   if (status === 'obecny' || status === 'spozniony') return 'bg-green-400';
   if (status === 'nieobecny' || status === 'usprawiedliwiony') return 'bg-red-400';
@@ -58,12 +59,10 @@ export default async function Kadra({
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // Krok 1: ostatnie 5 wydarzeń KTÓRE SIĘ ODBYŁY
-  // ═══════════════════════════════════════════════════════════════
-  const dzisISO = new Date().toLocaleDateString('sv-SE', {
-    timeZone: 'Europe/Warsaw',
-  });
+  // ═══════════════════════════════════════════════════════════════════
+  const dzisISO = getDzisISO();
 
   const { data: ostatnieWydarzenia } = await supabase
     .from('treningi')
@@ -77,12 +76,12 @@ export default async function Kadra({
   const last5 = ostatnieWydarzenia ?? [];
   const last5Ids = last5.map((t) => t.id);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // Krok 2: 3 zapytania RÓWNOLEGLE:
   //   a) zawodnicy (bez zagnieżdżonej obecności!)
   //   b) obecności tylko dla last5
   //   c) RPC frekwencji per zawodnik
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   let zawQuery = supabase
     .from('zawodnicy')
     .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
@@ -110,9 +109,9 @@ export default async function Kadra({
   const error = zawodnicyRes.error;
   const zawodnicy = (zawodnicyRes.data ?? []) as Zawodnik[];
 
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // Mapa: zawodnikId → treningId → status (dla ostatnich 5)
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   const statusMap = new Map<number, Map<number, string>>();
   for (const o of obecnosciRes.data ?? []) {
     if (!statusMap.has(o.zawodnik_id)) statusMap.set(o.zawodnik_id, new Map());
@@ -128,9 +127,9 @@ export default async function Kadra({
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // Mapa frekwencji (do sortowania) - z RPC
-  // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   const frekwencjaMap = new Map<number, { obecni: number; total: number }>();
   for (const row of (frekwencjaRes.data ?? []) as {
     zawodnik_id: number;

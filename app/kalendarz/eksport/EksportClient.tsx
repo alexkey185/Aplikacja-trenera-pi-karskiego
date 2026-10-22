@@ -56,39 +56,17 @@ export function EksportClient({
 }) {
   const [mounted, setMounted] = useState(false);
 
+  // ═══════════════════════════════════════════════════════════════
+  // Tryb eksportu: dodaj klasę do body. Ukrywanie reszty shellu
+  // robi CSS (`body.eksport-mode > *:not(.eksport-shell)`) —
+  // zero iteracji po DOM, zero getComputedStyle, zero wymuszania
+  // layoutu. Oszczędność ~100-500 ms na mobile.
+  // ═══════════════════════════════════════════════════════════════
   useEffect(() => {
     setMounted(true);
     document.body.classList.add('eksport-mode');
 
-    const hidden: { el: HTMLElement; origDisplay: string }[] = [];
-
-    const hideElement = (el: Element) => {
-      if (!(el instanceof HTMLElement)) return;
-      if (el.classList.contains('eksport-shell')) return;
-      if (el.closest('.eksport-shell')) return;
-
-      const tag = el.tagName;
-      if (['SCRIPT', 'STYLE', 'LINK', 'META', 'TITLE', 'HEAD'].includes(tag)) return;
-
-      hidden.push({ el, origDisplay: el.style.display });
-      el.style.display = 'none';
-    };
-
-    Array.from(document.body.children).forEach(hideElement);
-    document.querySelectorAll('nav, aside').forEach(hideElement);
-    document.querySelectorAll('body *').forEach((el) => {
-      if (!(el instanceof HTMLElement)) return;
-      if (el.closest('.eksport-shell')) return;
-      const style = window.getComputedStyle(el);
-      if (style.position === 'fixed') {
-        hideElement(el);
-      }
-    });
-
     return () => {
-      hidden.forEach(({ el, origDisplay }) => {
-        el.style.display = origDisplay;
-      });
       document.body.classList.remove('eksport-mode');
     };
   }, []);
@@ -405,10 +383,6 @@ export function EksportClient({
         /* Dodatkowo chroni toolbar przed status barem na iOS */
         .eksport-toolbar {
           padding-top: max(16px, env(safe-area-inset-top, 16px)) !important;
-        }
-
-        body.eksport-mode {
-          overflow: hidden !important;
         }
 
         .no-print {

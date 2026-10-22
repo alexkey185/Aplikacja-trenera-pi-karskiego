@@ -1,85 +1,32 @@
+// app/(app)/kalendarz/KalendarzClient.tsx
 'use client';
 
-import { useState, useMemo, useRef, useEffect, useTransition } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  MapPin,
-  Trash2,
-  Pencil,
   Calendar as CalendarIcon,
   Printer,
-  ExternalLink,
   Users,
-  TrendingUp,
-  Award,
+  Pencil,
 } from 'lucide-react';
 import { przeniesTrening } from './actions';
-import { usunTreningZakres } from './[id]/edytuj/actions';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { toast } from 'sonner';
-
-type Trening = {
-  id: number;
-  data: string;
-  godzina: string;
-  typ: string;
-  przeciwnik: string | null;
-  miejsce: string | null;
-  notatki: string | null;
-  cykl_id: string | null;
-};
-
-type StatsMap = Record<number, { obecni: number; nieobecni: number; total: number }>;
+import { CompactStat } from './CompactStat';
+import { PanelMiesiaca } from './PanelMiesiaca';
+import { ListaDnia } from './ListaDnia';
+import { UpcomingRow } from './UpcomingRow';
+import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLIDAYS } from './constants';
+import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
+import type { Trening, StatsMap } from './types';
 
 type Props = {
   treningi: Trening[];
   stats: StatsMap;
   topBar: React.ReactNode;
 };
-
-const MONTHS_PL = ['Styczen', 'Luty', 'Marzec', 'Kwiecien', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpien', 'Wrzesien', 'Pazdziernik', 'Listopad', 'Grudzien'];
-const MONTHS_PL_GENITIVE = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'wrzesnia', 'pazdziernika', 'listopada', 'grudnia'];
-const DAYS_SHORT = ['Pn', 'Wt', 'Sr', 'Cz', 'Pt', 'Sb', 'Nd'];
-const DAYS_LONG = ['Niedziela', 'Poniedzialek', 'Wtorek', 'Sroda', 'Czwartek', 'Piatek', 'Sobota'];
-
-const HOLIDAYS = new Set(['2026-01-01', '2026-01-06', '2026-04-06', '2026-05-01', '2026-05-03', '2026-06-04', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25', '2026-12-26']);
-
-const TYP_CONFIG: Record<string, { color: string; bg: string; border: string; gradient: string; icon: string; label: string }> = {
-  trening: { color: 'bg-blue-500', bg: 'bg-blue-500/15', border: 'border-blue-400/40', gradient: 'from-blue-400 to-blue-600', icon: 'T', label: 'Trening' },
-  mecz: { color: 'bg-red-500', bg: 'bg-red-500/15', border: 'border-red-400/40', gradient: 'from-red-400 to-red-600', icon: 'M', label: 'Mecz' },
-  sparing: { color: 'bg-orange-500', bg: 'bg-orange-500/15', border: 'border-orange-400/40', gradient: 'from-orange-400 to-orange-600', icon: 'S', label: 'Sparing' },
-  turniej: { color: 'bg-purple-500', bg: 'bg-purple-500/15', border: 'border-purple-400/40', gradient: 'from-purple-400 to-purple-600', icon: 'T', label: 'Turniej' },
-};
-
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const toISO = (y: number, m: number, d: number) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
-const getLocalISO = (date: Date = new Date()) => toISO(date.getFullYear(), date.getMonth(), date.getDate());
-const parseISO = (iso: string) => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d);
-};
-const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
-const firstWeekdayMon = (y: number, m: number) => {
-  const d = new Date(y, m, 1).getDay();
-  return d === 0 ? 6 : d - 1;
-};
-const formatShort = (iso: string) => {
-  const d = parseISO(iso);
-  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
-};
-
-function getMonday(date: Date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
 
 export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const router = useRouter();
@@ -92,7 +39,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
-  // NOWE: klucz do wymuszania remountu kafla (animacja flash)
   const [flashKey, setFlashKey] = useState(0);
 
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -104,7 +50,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
       if (!map[t.data]) map[t.data] = [];
       map[t.data].push(t);
     });
-    Object.values(map).forEach((arr) => arr.sort((a, b) => a.godzina.localeCompare(b.godzina)));
+    Object.values(map).forEach((arr) =>
+      arr.sort((a, b) => a.godzina.localeCompare(b.godzina))
+    );
     return map;
   }, [treningi]);
 
@@ -138,14 +86,8 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const changeMonth = (delta: number) => {
     let m = viewMonth + delta;
     let y = viewYear;
-    if (m > 11) {
-      m = 0;
-      y++;
-    }
-    if (m < 0) {
-      m = 11;
-      y--;
-    }
+    if (m > 11) { m = 0; y++; }
+    if (m < 0) { m = 11; y--; }
     setViewMonth(m);
     setViewYear(y);
   };
@@ -224,7 +166,11 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
     return `/kalendarz/eksport?w=${getLocalISO(monday)}`;
   }, [selectedDate]);
 
-  const renderDayCell = (dayNum: number, otherMonth: boolean, iso: string | null) => {
+  const renderDayCell = (
+    dayNum: number,
+    otherMonth: boolean,
+    iso: string | null
+  ) => {
     if (otherMonth || !iso) {
       return (
         <div className="aspect-square lg:aspect-auto lg:h-16 rounded-lg border border-transparent flex flex-col items-center justify-center p-1 opacity-30">
@@ -278,7 +224,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
             {events.slice(0, 3).map((e, i) => (
               <span
                 key={i}
-                className={`w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full ${TYP_CONFIG[e.typ]?.color ?? 'bg-slate-500'}`}
+                className={`w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full ${
+                  TYP_CONFIG[e.typ]?.color ?? 'bg-slate-500'
+                }`}
               />
             ))}
             {events.length > 3 && (
@@ -304,7 +252,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
     for (let i = firstDay - 1; i >= 0; i--) {
       const dayNum = prevMonthDays - i;
-      cells.push(<div key={`prev-${dayNum}`}>{renderDayCell(dayNum, true, null)}</div>);
+      cells.push(
+        <div key={`prev-${dayNum}`}>{renderDayCell(dayNum, true, null)}</div>
+      );
     }
 
     for (let d = 1; d <= totalDays; d++) {
@@ -314,7 +264,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
 
     const remaining = (7 - (cells.length % 7)) % 7;
     for (let d = 1; d <= remaining; d++) {
-      cells.push(<div key={`next-${d}`}>{renderDayCell(d, true, null)}</div>);
+      cells.push(
+        <div key={`next-${d}`}>{renderDayCell(d, true, null)}</div>
+      );
     }
 
     return cells;
@@ -420,7 +372,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                         <span className="text-white/60 font-normal"> · pierwsze o </span>
                         <span
                           className={
-                            isTodaySelected ? 'text-green-300 font-bold' : 'text-blue-300 font-bold'
+                            isTodaySelected
+                              ? 'text-green-300 font-bold'
+                              : 'text-blue-300 font-bold'
                           }
                         >
                           {selectedEvents[0].godzina}
@@ -602,488 +556,5 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
       )}
     </div>
-  );
-}
-
-function CompactStat({
-  icon,
-  color,
-  bg,
-  border,
-  label,
-  value,
-}: {
-  icon: string;
-  color: string;
-  bg: string;
-  border: string;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div
-      className={`bg-slate-900/80 backdrop-blur-md rounded-xl lg:rounded-2xl p-3 lg:px-4 lg:py-3 bg-gradient-to-br ${bg} border ${border} animate-fadeIn shadow-lg shadow-black/30 flex flex-col lg:flex-row lg:items-center lg:gap-3`}
-    >
-      <div className={`${color} text-base lg:text-2xl lg:flex-shrink-0 font-black`}>{icon}</div>
-      <div className="lg:flex-1 lg:min-w-0">
-        <div className="text-2xl lg:text-3xl font-bold text-white drop-shadow leading-tight">
-          {value}
-        </div>
-        <div className="text-xs lg:text-xs text-white/60 lg:uppercase lg:tracking-wider lg:font-semibold mt-0.5 lg:mt-0 leading-tight">
-          {label}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PanelMiesiaca({
-  monthStats,
-  monthLabel,
-  treningi,
-  stats,
-  monthPrefix,
-  onAddClick,
-}: {
-  monthStats: { treningi: number; mecze: number; sparingi: number; turnieje: number; total: number };
-  monthLabel: string;
-  treningi: Trening[];
-  stats: StatsMap;
-  monthPrefix: string;
-  onAddClick: () => void;
-}) {
-  const frekwencja = useMemo(() => {
-    const inMonth = treningi.filter((t) => t.data.startsWith(monthPrefix));
-    let obecni = 0;
-    let total = 0;
-    inMonth.forEach((t) => {
-      const s = stats[t.id];
-      if (s) {
-        obecni += s.obecni;
-        total += s.total;
-      }
-    });
-    const procent = total > 0 ? Math.round((obecni / total) * 100) : 0;
-    return { obecni, total, procent };
-  }, [treningi, stats, monthPrefix]);
-
-  const kolorProcent = (p: number) => {
-    if (p >= 80) return { text: 'text-green-400', bg: 'from-green-500 to-green-400' };
-    if (p >= 60) return { text: 'text-yellow-400', bg: 'from-yellow-500 to-yellow-400' };
-    return { text: 'text-red-400', bg: 'from-red-500 to-red-400' };
-  };
-
-  const kol = kolorProcent(frekwencja.procent);
-
-  return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-5 animate-fadeIn shadow-2xl shadow-black/60">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-3.5 h-3.5 text-green-400" />
-        <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">{monthLabel}</h2>
-      </div>
-
-      <div className="mb-5">
-        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2">
-          Frekwencja
-        </div>
-        {frekwencja.total > 0 ? (
-          <>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className={`text-4xl font-black leading-none ${kol.text}`}>
-                {frekwencja.procent}
-              </span>
-              <span className="text-lg text-white/40 font-bold">%</span>
-            </div>
-            <div className="w-full h-2 bg-slate-950/60 rounded-full overflow-hidden mb-2">
-              <div
-                className={`h-full rounded-full bg-gradient-to-r ${kol.bg}`}
-                style={{ width: `${frekwencja.procent}%` }}
-              />
-            </div>
-            <div className="text-[10px] text-white/50">
-              {frekwencja.obecni} obecnych z {frekwencja.total} wpisow
-            </div>
-          </>
-        ) : (
-          <div className="text-xs text-white/40 py-2">Brak wpisow obecnosci</div>
-        )}
-      </div>
-
-      <div className="mb-5 pt-4 border-t border-white/10">
-        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2">
-          Rozklad
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-blue-500/10 border border-blue-400/20">
-            <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Treningi</span>
-            <span className="text-xs font-bold text-white">{monthStats.treningi}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-400/20">
-            <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Mecze</span>
-            <span className="text-xs font-bold text-white">{monthStats.mecze}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-orange-500/10 border border-orange-400/20">
-            <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Sparingi</span>
-            <span className="text-xs font-bold text-white">{monthStats.sparingi}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-purple-500/10 border border-purple-400/20">
-            <span className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Turnieje</span>
-            <span className="text-xs font-bold text-white">{monthStats.turnieje}</span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={onAddClick}
-        className="group w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
-      >
-        <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-        Dodaj wydarzenie
-      </button>
-
-      <Link
-        href="/statystyki"
-        className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-semibold transition-all"
-      >
-        <Award className="w-3.5 h-3.5" />
-        Pelne statystyki
-      </Link>
-    </div>
-  );
-}
-
-function DeleteEventButton({ id, cyklId }: { id: number; cyklId?: string | null }) {
-  const [open, setOpen] = useState(false);
-  const [scope, setScope] = useState<'single' | 'all'>('single');
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-  const isCyclic = !!cyklId;
-
-  const handleDelete = () => {
-    const finalScope = isCyclic ? scope : 'single';
-    setOpen(false);
-    startTransition(async () => {
-      const result = await usunTreningZakres(id, finalScope);
-
-      if ('error' in result) {
-        toast.error('Nie udalo sie usunac', {
-          description: result.error,
-        });
-        return;
-      }
-
-      if (finalScope === 'all' && result.count > 1) {
-        toast.success('Cala seria usunieta', {
-          description: `Usunieto ${result.count} treningow z cyklu`,
-        });
-      } else {
-        toast.success('Trening usuniety');
-      }
-
-      router.refresh();
-    });
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        disabled={isPending}
-        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-400/40 flex items-center justify-center text-white/40 hover:text-red-400 transition-all disabled:opacity-50"
-        title="Usun wydarzenie"
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-      </button>
-
-      <ConfirmDialog
-        open={open}
-        title={isCyclic ? 'Usunac z serii?' : 'Usunac to wydarzenie?'}
-        variant="danger"
-        confirmLabel={isPending ? 'Usuwanie...' : isCyclic && scope === 'all' ? 'Usun serie' : 'Usun'}
-        loading={isPending}
-        onCancel={() => setOpen(false)}
-        onConfirm={handleDelete}
-        message={
-          isCyclic ? (
-            <div className="space-y-3">
-              <p className="text-sm">
-                Ten trening jest czescia <span className="font-bold text-white">cyklu</span>. Co
-                chcesz usunac?
-              </p>
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <button
-                  type="button"
-                  onClick={() => setScope('single')}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    scope === 'single'
-                      ? 'bg-blue-500/15 border-blue-400/60 ring-1 ring-blue-400/30'
-                      : 'bg-white/5 border-white/10 hover:border-white/30'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white mb-1">Tylko ten dzien</div>
-                  <div className="text-[10px] text-white/60 leading-tight">
-                    Usuwa wybrany trening
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setScope('all')}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    scope === 'all'
-                      ? 'bg-purple-500/15 border-purple-400/60 ring-1 ring-purple-400/30'
-                      : 'bg-white/5 border-white/10 hover:border-white/30'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white mb-1">Cala seria</div>
-                  <div className="text-[10px] text-white/60 leading-tight">
-                    Usuwa wszystkie z cyklu
-                  </div>
-                </button>
-              </div>
-              <div className="bg-red-500/10 border border-red-400/30 rounded-lg p-2 text-xs text-red-200">
-                Zostana usuniete tez wpisy obecnosci.{' '}
-                <strong>Tej operacji nie mozna cofnac.</strong>
-              </div>
-            </div>
-          ) : (
-            <>
-              Usuna sie tez wszystkie wpisy obecnosci dla tego treningu.
-              <br />
-              <br />
-              <span style={{ color: '#f87171' }}>Tej operacji nie mozna cofnac.</span>
-            </>
-          )
-        }
-      />
-    </>
-  );
-}
-
-function EventCard({
-  trening,
-  stats,
-  onDragStart,
-  isDragging,
-  highlighted = false,
-}: {
-  trening: Trening;
-  stats: StatsMap;
-  onDragStart?: (e: React.DragEvent, id: number) => void;
-  isDragging?: boolean;
-  highlighted?: boolean;
-}) {
-  const router = useRouter();
-  const cfg = TYP_CONFIG[trening.typ] ?? TYP_CONFIG.trening;
-  const s = stats[trening.id];
-  const proc = s && s.total > 0 ? Math.round((s.obecni / s.total) * 100) : 0;
-
-  const mapsUrl = trening.miejsce?.trim()
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trening.miejsce.trim())}`
-    : null;
-
-  const goToAttendance = () => {
-    router.push(`/kalendarz/${trening.id}/obecnosc`);
-  };
-
-  return (
-    <div
-      className={`group relative rounded-xl transition-all ${isDragging ? 'opacity-50' : ''} ${
-        highlighted
-          ? 'bg-green-500/[0.06] border-[1.5px] border-green-400/55 shadow-[0_0_12px_rgba(34,197,94,0.25)]'
-          : 'bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20'
-      }`}
-    >
-      <div
-        onClick={goToAttendance}
-        draggable={!!onDragStart}
-        onDragStart={(e) => onDragStart?.(e, trening.id)}
-        className="block p-2.5 cursor-pointer"
-      >
-        <div className="flex items-center gap-2.5">
-          <div
-            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-md text-white text-sm font-black flex-shrink-0`}
-          >
-            {cfg.icon}
-          </div>
-          <div className="flex-shrink-0 w-12">
-            <div className="text-sm font-bold text-white">{trening.godzina}</div>
-          </div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="flex-1 min-w-0 pr-24">
-            <div className="font-semibold text-white text-xs truncate">
-              {cfg.label}
-              {trening.przeciwnik && (
-                <span className="text-white/60 font-medium"> vs {trening.przeciwnik}</span>
-              )}
-            </div>
-            {trening.miejsce ? (
-              mapsUrl ? (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  draggable={false}
-                  onDragStart={(e) => e.preventDefault()}
-                  title="Otworz w Google Maps"
-                  className="text-[10px] text-white/50 hover:text-green-400 mt-0.5 flex items-center gap-1 group/maps transition-colors w-fit max-w-full"
-                >
-                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{trening.miejsce}</span>
-                  <ExternalLink className="w-2.5 h-2.5 flex-shrink-0 opacity-60 group-hover/maps:opacity-100" />
-                </a>
-              ) : (
-                <div className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1">
-                  <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate">{trening.miejsce}</span>
-                </div>
-              )
-            ) : (
-              <div className="text-[10px] text-white/50 mt-0.5">Brak lokalizacji</div>
-            )}
-            {s && s.total > 0 ? (
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[10px] text-white/60">
-                  Obecni {s.obecni}/{s.total}
-                </span>
-                <div className="flex-1 max-w-[60px] h-0.5 bg-slate-950/60 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${proc}%` }} />
-                </div>
-              </div>
-            ) : (
-              <div className="text-[10px] text-white/40 mt-1">Brak wpisow</div>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Link
-            href={`/kalendarz/${trening.id}/edytuj`}
-            onClick={(e) => e.stopPropagation()}
-            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center text-white/40 hover:text-white transition-all"
-            title="Edytuj wydarzenie"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <div className="pointer-events-auto">
-          <DeleteEventButton id={trening.id} cyklId={trening.cykl_id} />
-        </div>
-        <ChevronRight
-          className={`w-4 h-4 transition-all flex-shrink-0 ${
-            highlighted ? 'text-green-400' : 'text-white/40'
-          }`}
-        />
-      </div>
-    </div>
-  );
-}
-
-function ListaDnia({
-  selectedDate,
-  todayISO,
-  events,
-  stats,
-  onAddClick,
-  onDragStart,
-  draggedId,
-}: {
-  selectedDate: string;
-  todayISO: string;
-  events: Trening[];
-  stats: StatsMap;
-  onAddClick: () => void;
-  onDragStart: (e: React.DragEvent, id: number) => void;
-  draggedId: number | null;
-}) {
-  const dateObj = parseISO(selectedDate);
-  const isToday = selectedDate === todayISO;
-  const monthGenitive = MONTHS_PL_GENITIVE[dateObj.getMonth()];
-
-  return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-5 animate-fadeIn shadow-2xl shadow-black/60">
-      <div className="mb-4 lg:mb-4 flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <div className="text-2xl lg:text-3xl font-black text-white">{pad2(dateObj.getDate())}</div>
-          <div>
-            <div className="text-sm lg:text-base font-bold text-white/90">
-              {DAYS_LONG[dateObj.getDay()]}
-            </div>
-            <div className="text-xs lg:text-sm text-white/50 capitalize">
-              {monthGenitive} {dateObj.getFullYear()}
-            </div>
-          </div>
-        </div>
-        {isToday && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-500/10 border border-green-400/30 rounded-full px-2.5 py-1">
-            Dzisiaj
-          </span>
-        )}
-      </div>
-      <div className="space-y-2">
-        {events.map((t) => (
-          <EventCard
-            key={t.id}
-            trening={t}
-            stats={stats}
-            onDragStart={onDragStart}
-            isDragging={draggedId === t.id}
-            highlighted
-          />
-        ))}
-      </div>
-      <button
-        onClick={onAddClick}
-        className="group w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 hover:border-white/40 text-white/50 hover:text-white text-xs font-semibold transition-all"
-      >
-        <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-        Dodaj kolejne wydarzenie
-      </button>
-    </div>
-  );
-}
-
-function UpcomingRow({ trening }: { trening: Trening }) {
-  const cfg = TYP_CONFIG[trening.typ] ?? TYP_CONFIG.trening;
-  const d = parseISO(trening.data);
-  return (
-    <Link
-      href={`/kalendarz/${trening.id}/obecnosc`}
-      className="group block bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl p-2.5 transition-all"
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shadow-md text-white text-sm font-black flex-shrink-0`}
-        >
-          {cfg.icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-xs flex-wrap">
-            <span className="font-bold text-white">
-              {pad2(d.getDate())}.{pad2(d.getMonth() + 1)}
-            </span>
-            <span className="text-white/50">·</span>
-            <span className="font-semibold text-white">{trening.godzina}</span>
-          </div>
-          <div className="text-[10px] text-white/60 mt-0.5 truncate">
-            {cfg.label}
-            {trening.przeciwnik && ` vs ${trening.przeciwnik}`}
-          </div>
-        </div>
-        <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-green-400 transition-all flex-shrink-0" />
-      </div>
-    </Link>
   );
 }

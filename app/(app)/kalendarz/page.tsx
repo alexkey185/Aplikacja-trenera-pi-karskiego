@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { KalendarzClient } from './KalendarzClient';
 import { TopBar } from '@/components/TopBar';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { toISO } from '@/lib/dates';
 
 type Trening = {
   id: number;
@@ -33,11 +34,6 @@ export default async function KalendarzPage() {
   const dzis = new Date();
   const od = new Date(dzis.getFullYear(), dzis.getMonth() - 2, 1);
   const do_ = new Date(dzis.getFullYear(), dzis.getMonth() + 3, 0);
-
-  const toISO = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-      d.getDate()
-    ).padStart(2, '0')}`;
 
   const { data: rawTreningi } = await supabase
     .from('treningi')

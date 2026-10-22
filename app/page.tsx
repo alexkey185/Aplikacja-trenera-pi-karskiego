@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Landing } from './Landing';
 
-// Wymusza renderowanie przy każdym żądaniu - bez cache HTML
-export const dynamic = 'force-dynamic';
+// Statyczny render + ISR co 1h.
+// Landing jest marketingowy - nie potrzebuje świeżości co request.
+// Usunięcie force-dynamic = szybszy TTFB na mobile (zimny start).
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'talent. – aplikacja dla trenerów piłki nożnej',

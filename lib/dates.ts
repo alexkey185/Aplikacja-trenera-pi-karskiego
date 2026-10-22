@@ -1,6 +1,20 @@
 ﻿// lib/dates.ts
 export const TIMEZONE = 'Europe/Warsaw' as const;
 
+// ═══════════════════════════════════════════════════════════════
+// CACHE FORMATTERÓW Intl
+//
+// `toLocaleDateString('sv-SE', { timeZone })` tworzy nowy
+// Intl.DateTimeFormat przy KAŻDYM wywołaniu. To ~5-10x wolniejsze
+// niż reużycie formattera. Na mobile (wolny CPU) odczuwalne
+// przy renderach list z wieloma datami.
+//
+// `format()` dla 'sv-SE' zwraca dokładnie YYYY-MM-DD (ISO).
+// ═══════════════════════════════════════════════════════════════
+const DZIS_FORMATTER = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: TIMEZONE,
+});
+
 export const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 export function toISO(date: Date): string {
@@ -8,7 +22,7 @@ export function toISO(date: Date): string {
 }
 
 export function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: TIMEZONE });
+  return DZIS_FORMATTER.format(new Date());
 }
 
 export function parseISO(iso: string): Date {

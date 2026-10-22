@@ -1,28 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
 import { DashboardClient } from './DashboardClient';
-
-function getDzisISO(): string {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
-}
-
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-}
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function toISO(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
 
 type TreningZObecnoscia = {
   id: number;
@@ -61,7 +41,7 @@ export default async function Dashboard({
   const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
   const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
 
-  const [treningiRes, zawodnicyCountRes, treningiCountRes] = await Promise.all([
+  const [treningiRes] = await Promise.all([
     supabase
       .from('treningi')
       .select(`
@@ -73,16 +53,6 @@ export default async function Dashboard({
       .lte('data', toISO(doD))
       .order('data', { ascending: true })
       .order('godzina', { ascending: true }),
-
-    supabase
-      .from('zawodnicy')
-      .select('id', { count: 'exact', head: true })
-      .eq('druzyna_id', druzynaId),
-
-    supabase
-      .from('treningi')
-      .select('id', { count: 'exact', head: true })
-      .eq('druzyna_id', druzynaId),
   ]);
 
   if (treningiRes.error) {
@@ -90,9 +60,6 @@ export default async function Dashboard({
   }
 
   const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
-
-  const hasZawodnicy = (zawodnicyCountRes.count ?? 0) > 0;
-  const hasTreningi = (treningiCountRes.count ?? 0) > 0;
 
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
@@ -119,16 +86,16 @@ export default async function Dashboard({
     dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
 
   return (
-      <DashboardClient
-        initialDni={dni}
-        poniedzialekISO={toISO(poniedzialek)}
-        niedzielaISO={toISO(niedziela)}
-        prevWeek={toISO(addDays(poniedzialek, -7))}
-        nextWeek={toISO(addDays(poniedzialek, 7))}
-        jestWTygodniu={jestWTygodniu}
-        eventMap={eventMap}
-        stats={stats}
-        wszystkieObecnosci={wszystkieObecnosci}
-      />
+    <DashboardClient
+      initialDni={dni}
+      poniedzialekISO={toISO(poniedzialek)}
+      niedzielaISO={toISO(niedziela)}
+      prevWeek={toISO(addDays(poniedzialek, -7))}
+      nextWeek={toISO(addDays(poniedzialek, 7))}
+      jestWTygodniu={jestWTygodniu}
+      eventMap={eventMap}
+      stats={stats}
+      wszystkieObecnosci={wszystkieObecnosci}
+    />
   );
 }

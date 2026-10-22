@@ -16,9 +16,12 @@ export type Druzyna = {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// Cache tag - używany w revalidateTag po mutacji drużyn.
+// Cache tagi - używane w revalidateTag po mutacji.
+// - DRUZYNY_CACHE_TAG   → lista drużyn usera
+// - ZAWODNICY_CACHE_TAG → liczba zawodników per drużyna (TopBar)
 // ═══════════════════════════════════════════════════════════════
 export const DRUZYNY_CACHE_TAG = 'druzyny';
+export const ZAWODNICY_CACHE_TAG = 'zawodnicy-counts';
 
 // ═══════════════════════════════════════════════════════════════
 // Cache WEWNĘTRZNY - nie czyta cookies, więc może być
@@ -36,6 +39,48 @@ const _getDruzynyForUser = unstable_cache(
   },
   ['druzyny-by-user'],
   { tags: [DRUZYNY_CACHE_TAG], revalidate: 60 }
+);
+
+// ═══════════════════════════════════════════════════════════════
+// Liczba zawodników per drużyna - cache cross-request.
+//
+// NIE używamy RPC `get_zawodnicy_counts`, bo prawdopodobnie
+// filtruje po auth.uid() (RLS), a createAdminClient nie ma sesji.
+// Zamiast tego: 2 zapytania (druzyny + zawodnicy) + count w JS.
+//
+// Cache 60s + tag ZAWODNICY_CACHE_TAG, revalidowany w mutacjach.
+// ═══════════════════════════════════════════════════════════════
+const _getZawodnicyCountsForUser = unstable_cache(
+  async (userId: string): Promise<Record<string, number>> => {
+    const supabase = createAdminClient();
+
+    // 1. Pobierz ID drużyn usera
+    const { data: druzyny } = await supabase
+      .from('druzyny')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (!druzyny || druzyny.length === 0) return {};
+
+    const druzynaIds = druzyny.map((d) => d.id);
+
+    // 2. Pobierz zawodników tych drużyn
+    const { data: zawodnicy } = await supabase
+      .from('zawodnicy')
+      .select('druzyna_id')
+      .in('druzyna_id', druzynaIds);
+
+    // 3. Zlicz w JS (tanio - kilkadziesiąt wierszy)
+    const counts: Record<string, number> = {};
+    (zawodnicy ?? []).forEach((z) => {
+      if (z.druzyna_id) {
+        counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
+      }
+    });
+    return counts;
+  },
+  ['zawodnicy-counts-by-user'],
+  { tags: [ZAWODNICY_CACHE_TAG], revalidate: 60 }
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -73,22 +118,17 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// Liczba zawodników per drużyna - RPC.
+// Liczba zawodników per drużyna - publiczne API.
+// React cache() dedupuje w obrębie requestu,
+// unstable_cache() cache'uje między requestami.
 // ═══════════════════════════════════════════════════════════════
 export const getZawodnicyCounts = cache(
   async (): Promise<Record<string, number>> => {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc('get_zawodnicy_counts');
-
-    if (error) {
-      console.error('RPC get_zawodnicy_counts error:', error);
-      return {};
-    }
-
-    const counts: Record<string, number> = {};
-    (data ?? []).forEach((row: { druzyna_id: string; cnt: number }) => {
-      counts[row.druzyna_id] = Number(row.cnt);
-    });
-    return counts;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return {};
+    return _getZawodnicyCountsForUser(user.id);
   }
 );

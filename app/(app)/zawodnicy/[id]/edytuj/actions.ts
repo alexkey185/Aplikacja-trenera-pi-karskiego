@@ -1,10 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId } from '@/lib/druzyny';
+import {
+  getActiveDruzynaId,
+  ZAWODNICY_CACHE_TAG,
+} from '@/lib/druzyny';
 import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function aktualizujZawodnika(id: number, formData: FormData) {
   const supabase = await createClient();
@@ -43,6 +46,7 @@ export async function aktualizujZawodnika(id: number, formData: FormData) {
     throw new Error(error.message);
   }
 
+  // Aktualizacja nie zmienia liczby zawodników → nie revalidujemy counts
   revalidatePath('/kadra');
   revalidatePath(`/zawodnicy/${id}`);
   redirect(`/zawodnicy/${id}?toast=zawodnik_zapisany`);
@@ -74,11 +78,7 @@ export async function usunZawodnika(formData: FormData) {
     throw new Error('Nie znaleziono zawodnika w aktywnej druzynie.');
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Poprawka: NIE kasujemy obecnosci ręcznie - kaskada FK
-  // (migracja 20261015_fk_cascade.sql) robi to atomowo w bazie.
-  // Ręczne kasowanie było źródłem race conditions i dwóch requestów.
-  // ═══════════════════════════════════════════════════════════════
+  // Kaskada FK (migracja 20261015_fk_cascade.sql) usuwa obecności atomowo.
   const { error, count } = await supabase
     .from('zawodnicy')
     .delete({ count: 'exact' })
@@ -93,6 +93,8 @@ export async function usunZawodnika(formData: FormData) {
     throw new Error('Nie usunieto zadnego wiersza.');
   }
 
+  // Usunięty zawodnik → liczba w TopBar musi się odświeżyć
+  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/kadra');
   revalidatePath('/kalendarz');
   revalidatePath('/statystyki');

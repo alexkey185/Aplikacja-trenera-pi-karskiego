@@ -29,6 +29,9 @@ body {
   overflow-x: hidden;
 }
 
+/* Zamiast dwóch pełnoekranowych `filter: blur(80px)` (zabójca FPS
+   przy scrollu na mobile) — dwa radial-gradienty bez `filter`.
+   Wizualnie prawie identyczne, koszt renderu ~0. */
 body::before {
   content: '';
   position: fixed;
@@ -37,10 +40,9 @@ body::before {
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
 }
 
 body::after {
@@ -51,10 +53,9 @@ body::after {
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
 }
 
 main {
@@ -70,6 +71,10 @@ main {
 /* ═══════════════════════════════════════════════════════════════ */
 .app-content {
   padding-top: max(4.5rem, env(safe-area-inset-top));
+  /* Safe area na dole (iPhone home indicator).
+     Bez tego content wchodzi pod pasek.
+     7rem = pb-28 (Tailwind), + safe-area-inset-bottom. */
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 }
 
 .auth-content {
@@ -133,7 +138,7 @@ main {
   }
 }
 
-/* NOWE: Flash highlight kafla przy zmianie dnia */
+/* Flash highlight kafla przy zmianie dnia */
 @keyframes flash-highlight {
   0% {
     transform: scale(1);
@@ -163,7 +168,6 @@ main {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* NOWE: klasa animacji flash */
 .animate-flash {
   animation: flash-highlight 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -331,4 +335,23 @@ input:-webkit-autofill:focus {
   .day-today {
     animation: none !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* EKSPORT - UKRYWANIE SHELLA APLIKACJI                            */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Zamiast iterować po DOM w JS (getComputedStyle wymusza layout,  */
+/* wolne na stronach z wieloma elementami) — ukrywamy w CSS.       */
+/* `eksport-shell` jest bezpośrednim dzieckiem body (createPortal),*/
+/* więc reguła `body > *:not(.eksport-shell)` wystarcza.           */
+/* Reguła jest aktywna tylko gdy body ma klasę `eksport-mode`      */
+/* (dodawaną przez EksportClient w useEffect).                     */
+body.eksport-mode > *:not(.eksport-shell) {
+  display: none !important;
+}
+
+/* Blokada scrolla tła w trybie eksportu (na ekranie).            */
+/* W @media print i tak ustawiamy overflow: visible.              */
+body.eksport-mode {
+  overflow: hidden !important;
 }

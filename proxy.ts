@@ -8,6 +8,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|_next/data|favicon.ico|manifest\\.json|sw\\.js|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|js|mjs|css|woff|woff2|ttf|otf|map)$).*)',
+    // Wyklucz:
+    //  - /api/* (API routes mają własną auth, nie chcemy ich blokować)
+    //  - statyki Next.js
+    //  - plików publicznych
+    '/((?!api|_next/static|_next/image|_next/data|favicon.ico|manifest\\.json|sw\\.js|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|js|mjs|css|woff|woff2|ttf|otf|map)$).*)',
   ],
 };

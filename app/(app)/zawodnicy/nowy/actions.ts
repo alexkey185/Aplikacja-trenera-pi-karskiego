@@ -1,11 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId } from '@/lib/druzyny';
+import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function dodajZawodnika(formData: FormData) {
   const supabase = await createClient();
@@ -46,6 +46,8 @@ export async function dodajZawodnika(formData: FormData) {
     throw new Error(error.message);
   }
 
+  // Nowy zawodnik → liczba w TopBar musi się odświeżyć
+  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/kadra');
   redirect('/kadra?toast=zawodnik_dodany');
 }
