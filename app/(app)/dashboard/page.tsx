@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
 import { DashboardClient } from './dashboardClient';
+import { TopBar } from '@/components/TopBar';
 
 type TreningZObecnoscia = {
   id: number;
@@ -87,16 +88,19 @@ export default async function Dashboard({
     dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
 
   return (
-    <DashboardClient
-      initialDni={dni}
-      poniedzialekISO={toISO(poniedzialek)}
-      niedzielaISO={toISO(niedziela)}
-      prevWeek={toISO(addDays(poniedzialek, -7))}
-      nextWeek={toISO(addDays(poniedzialek, 7))}
-      jestWTygodniu={jestWTygodniu}
-      eventMap={eventMap}
-      stats={stats}
-      wszystkieObecnosci={wszystkieObecnosci}
-    />
+    <div className="max-w-2xl mx-auto">
+      <DashboardClient
+        initialDni={dni}
+        poniedzialekISO={toISO(poniedzialek)}
+        niedzielaISO={toISO(niedziela)}
+        prevWeek={toISO(addDays(poniedzialek, -7))}
+        nextWeek={toISO(addDays(poniedzialek, 7))}
+        jestWTygodniu={jestWTygodniu}
+        eventMap={eventMap}
+        stats={stats}
+        wszystkieObecnosci={wszystkieObecnosci}
+        topBar={<TopBar />}
+      />
+    </div>
   );
 }

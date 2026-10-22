@@ -14,6 +14,7 @@ import {
   Pencil,
   ExternalLink,
   Plus,
+  Zap,
 } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
 import { DeleteEventButtonLazy } from '@/components/DeleteEventButtonLazy';
@@ -63,6 +64,7 @@ export function DashboardClient({
   eventMap,
   stats,
   wszystkieObecnosci,
+  topBar,
 }: {
   initialDni: Date[];
   poniedzialekISO: string;
@@ -73,6 +75,7 @@ export function DashboardClient({
   eventMap: Record<string, TreningZObecnoscia[]>;
   stats: StatsMap;
   wszystkieObecnosci: { trening_id: number; status: string }[];
+  topBar: React.ReactNode;
 }) {
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
@@ -95,6 +98,29 @@ export function DashboardClient({
 
   return (
     <div>
+      {/* NAGŁÓWEK - przywrócony TopBar z nazwą drużyny */}
+      <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-2xl blur-lg opacity-60" />
+            <div className="relative w-10 h-10 lg:w-11 lg:h-11 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-green-700 flex items-center justify-center shadow-lg">
+              <Zap className="w-5 h-5 lg:w-5 lg:h-5 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">
+              Dzisiaj
+            </h1>
+            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">
+              Twój plan na najbliższe dni
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {topBar}
+        </div>
+      </header>
+
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
           <Link
@@ -248,14 +274,13 @@ export function DashboardClient({
         {selectedEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="text-white/40 text-sm mb-4">Brak wydarzeń tego dnia</div>
-           {/* Dodaj kolejne wydarzenie - zawsze widoczne, gdy są już wydarzenia */}
-<Link
-  href={`/kalendarz/nowy?data=${selectedDate}`}
-  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-xs font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
->
-  <Plus className="w-3.5 h-3.5" />
-  Dodaj kolejne wydarzenie
-</Link>
+            <Link
+              href={`/kalendarz/nowy?data=${selectedDate}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Dodaj wydarzenie
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
@@ -301,7 +326,6 @@ export function DashboardClient({
                     </Link>
                   </div>
 
-                  {/* Adres treningu - klikalny link do Google Maps */}
                   {mapsUrl ? (
                     <a
                       href={mapsUrl}
@@ -324,14 +348,13 @@ export function DashboardClient({
               );
             })}
 
-            {/* Dodaj kolejne wydarzenie - zawsze widoczne, gdy są już wydarzenia */}
             <Link
-  href={`/kalendarz/nowy?data=${selectedDate}`}
-  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20"
->
-  <Plus className="w-3.5 h-3.5" />
-  Dodaj kolejne wydarzenie
-</Link>
+              href={`/kalendarz/nowy?data=${selectedDate}`}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Dodaj kolejne wydarzenie
+            </Link>
           </div>
         )}
       </div>
