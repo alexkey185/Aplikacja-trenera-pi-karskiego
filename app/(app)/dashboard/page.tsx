@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
-import { DashboardClient } from './DashboardClient';
+import { DashboardClient } from './dashboardClient';
 
 type TreningZObecnoscia = {
   id: number;
