@@ -19,7 +19,6 @@ import {
 import { przeniesTrening } from './actions';
 import { CompactStat } from './CompactStat';
 import { PanelMiesiaca } from './PanelMiesiaca';
-import { ListaDnia } from './ListaDnia';
 import { UpcomingRow } from './UpcomingRow';
 import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLIDAYS } from './constants';
 import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
@@ -311,7 +310,6 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
   const selectedDayLabel = DAYS_LONG[selectedDateObj.getDay()];
   const selectedMonthLabel = MONTHS_PL_GENITIVE[selectedDateObj.getMonth()];
   const pierwszeWydarzenie = selectedEvents[0] ?? null;
-  const pokazListeDnia = selectedEvents.length > 1;
   const liczbaWydarzen = selectedEvents.length;
 
   // Renderowanie pojedynczego wiersza wydarzenia (gdy > 1)
@@ -481,12 +479,12 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 </Link>
               ) : (
                 <button
-  onClick={handleFabClick}
-  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-[11px] font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
->
-  <Plus className="w-3.5 h-3.5" />
-  Dodaj kolejne wydarzenie
-</button>
+                  onClick={handleFabClick}
+                  className="flex items-center gap-3 lg:gap-3 flex-1 min-w-0 text-left"
+                  title="Dodaj wydarzenie"
+                >
+                  {lewyObszar}
+                </button>
               )}
 
               {/* Akcje dla 1 wydarzenia (na górze) - gdy jest ich więcej, są w liście poniżej */}
@@ -527,9 +525,9 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
                 {selectedEvents.map(renderEventRow)}
                 <button
                   onClick={handleFabClick}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-dashed border-white/20 hover:border-white/40 text-white/50 hover:text-white text-[11px] font-semibold transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-[11px] font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                   Dodaj kolejne wydarzenie
                 </button>
               </div>
@@ -605,26 +603,15 @@ export function KalendarzClient({ treningi, stats, topBar }: Props) {
         </div>
 
         <div className="lg:col-span-1 lg:flex lg:flex-col lg:gap-4 min-w-0 lg:min-h-0 lg:overflow-y-auto space-y-4 lg:space-y-0">
-          {pokazListeDnia ? (
-            <ListaDnia
-              selectedDate={selectedDate}
-              todayISO={todayISO}
-              events={selectedEvents}
-              stats={stats}
-              onAddClick={handleFabClick}
-              onDragStart={handleDragStart}
-              draggedId={draggedId}
-            />
-          ) : (
-            <PanelMiesiaca
-              monthStats={monthStats}
-              monthLabel={`${MONTHS_PL[viewMonth]} ${viewYear}`}
-              treningi={treningi}
-              stats={stats}
-              monthPrefix={monthPrefix}
-              onAddClick={handleFabClick}
-            />
-          )}
+          {/* Zawsze pokazujemy PanelMiesiaca, usunieto ListaDnia */}
+          <PanelMiesiaca
+            monthStats={monthStats}
+            monthLabel={`${MONTHS_PL[viewMonth]} ${viewYear}`}
+            treningi={treningi}
+            stats={stats}
+            monthPrefix={monthPrefix}
+            onAddClick={handleFabClick}
+          />
 
           {upcoming.length > 0 && (
             <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-4 animate-fadeIn shadow-2xl shadow-black/60">
