@@ -360,9 +360,29 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
     );
   };
 
+  // Lewy obszar kafla (klikalny) - PRZYWRÓCONA LITERA "D" / "!"
   const lewyObszar = (
     <>
-      <PageHeaderLogo icon={CalendarIcon} logoUrl={logoUrl} />
+      <div className="relative flex-shrink-0">
+        <div
+          className={`absolute inset-0 rounded-2xl blur-md opacity-60 ${
+            isTodaySelected
+              ? 'bg-gradient-to-br from-green-400 to-green-700'
+              : 'bg-gradient-to-br from-blue-400 to-blue-700'
+          }`}
+        />
+        <div
+          className={`relative w-12 h-12 lg:w-11 lg:h-11 rounded-2xl flex items-center justify-center shadow-lg ${
+            isTodaySelected
+              ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-700'
+              : 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700'
+          }`}
+        >
+          <span className="text-white font-black text-lg">
+            {isTodaySelected ? '!' : 'D'}
+          </span>
+        </div>
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-1 lg:mb-0.5 flex-wrap">
           <span
