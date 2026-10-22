@@ -88,7 +88,7 @@ export default async function Dashboard({
     dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full max-w-screen-2xl mx-auto">
       <DashboardClient
         initialDni={dni}
         poniedzialekISO={toISO(poniedzialek)}
