@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import { dodajZawodnika } from './actions';
-import { Select } from '@/components/Select';
-import { FormField } from '@/components/FormField';
-import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Users, X } from 'lucide-react';
+import { NowyZawodnikForm } from './NowyZawodnikForm';
+import { ArrowLeft, Users } from 'lucide-react';
 
 export default function NowyZawodnik() {
   return (
@@ -25,64 +23,7 @@ export default function NowyZawodnik() {
         </div>
       </header>
 
-      <form action={dodajZawodnika} className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField icon={User} label="Imię" required>
-            <input name="imie" required placeholder="np. Kamil" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
-          </FormField>
-          <FormField icon={User} label="Nazwisko" required>
-            <input name="nazwisko" required placeholder="np. Nowak" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
-          </FormField>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField icon={Trophy} label="Rocznik">
-            <input name="rocznik" type="number" placeholder="2012" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
-          </FormField>
-          <FormField icon={Hash} label="Numer">
-            <input name="numer" type="number" placeholder="7" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
-          </FormField>
-        </div>
-
-        <FormField icon={Trophy} label="Pozycja">
-          <Select
-            name="pozycja"
-            defaultValue=""
-            options={[
-              { value: '', label: '- wybierz -' },
-              { value: 'Bramkarz', label: '🧤 Bramkarz' },
-              { value: 'Obrońca', label: '🛡️ Obrońca' },
-              { value: 'Pomocnik', label: '⚽ Pomocnik' },
-              { value: 'Napastnik', label: '⚡ Napastnik' },
-            ]}
-          />
-        </FormField>
-
-        <FormField icon={Phone} label="Kontakt do rodzica">
-          <input name="kontakt_rodzica" type="tel" placeholder="600 100 200" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
-        </FormField>
-
-        <FormField icon={FileText} label="Notatki">
-          <textarea name="notatki" rows={3} placeholder="np. Dobra gra lewą nogą" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none" />
-        </FormField>
-
-        {/* Zapisz + Anuluj */}
-        <div className="flex gap-2 pt-2">
-          <Link
-            href="/kadra"
-            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
-          >
-            <X className="w-4 h-4 flex-shrink-0" />
-            Anuluj
-          </Link>
-          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base">
-            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
-            <span>
-              Zapisz<span className="hidden sm:inline"> zawodnika</span>
-            </span>
-          </button>
-        </div>
-      </form>
+      <NowyZawodnikForm />
     </div>
   );
 }

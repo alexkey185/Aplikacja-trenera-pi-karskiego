@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { dodajDruzyna } from './actions';
 import { TopBar } from '@/components/TopBar';
 import { ArrowLeft, Users, Hash, Palette, Save, Check, X } from 'lucide-react';
+import { SubmitButton } from '@/components/SubmitButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,7 +81,7 @@ export default function NowaDruzyna() {
         </fieldset>
 
         {/* Utwórz + Anuluj */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Link
             href="/druzyny"
             className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-bold py-3.5 rounded-2xl transition-all text-sm md:text-base"
@@ -88,12 +89,9 @@ export default function NowaDruzyna() {
             <X className="w-4 h-4 flex-shrink-0" />
             Anuluj
           </Link>
-          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base">
-            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
-            <span>
-              Utwórz<span className="hidden sm:inline"> drużynę</span>
-            </span>
-          </button>
+          <div className="flex-1">
+            <SubmitButton icon={Save} label="Utwórz drużynę" loadingLabel="Tworzenie..." />
+          </div>
         </div>
       </form>
     </div>

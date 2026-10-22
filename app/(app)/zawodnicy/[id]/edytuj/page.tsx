@@ -6,6 +6,7 @@ import { aktualizujZawodnika } from './actions';
 import { DeleteButton } from './DeleteButton';
 import { Select } from '@/components/Select';
 import { FormField } from '@/components/FormField';
+import { SubmitButton } from '@/components/SubmitButton';
 import { ArrowLeft, User, Hash, Trophy, Phone, FileText, Save, Pencil, X } from 'lucide-react';
 
 export default async function EdytujZawodnika({ params }: { params: Promise<{ id: string }> }) {
@@ -86,7 +87,6 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
           <textarea name="notatki" rows={3} defaultValue={zawodnik.notatki ?? ''} className="w-full bg-transparent border-0 outline-none text-white py-2 resize-none" />
         </FormField>
 
-        {/* Anuluj + Zapisz zmiany + Usuń */}
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Link
             href={`/zawodnicy/${idNum}`}
@@ -95,12 +95,9 @@ export default async function EdytujZawodnika({ params }: { params: Promise<{ id
             <X className="w-4 h-4 flex-shrink-0" />
             Anuluj
           </Link>
-          <button type="submit" className="group flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5 text-sm md:text-base">
-            <Save className="w-4 h-4 group-hover:scale-110 transition-transform flex-shrink-0" />
-            <span>
-              Zapisz<span className="hidden sm:inline"> zmiany</span>
-            </span>
-          </button>
+          <div className="flex-1">
+            <SubmitButton icon={Save} label="Zapisz zmiany" loadingLabel="Zapisywanie..." />
+          </div>
           <DeleteButton id={idNum} />
         </div>
       </form>

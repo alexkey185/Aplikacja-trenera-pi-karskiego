@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzyna } from '@/lib/druzyny';
 import { zaktualizujProfil, wyloguj } from './actions';
 import { DeleteAccountButton } from '@/components/DeleteAccountButton';
+import { SubmitButton } from '@/components/SubmitButton';
 import { ClubLogoUpload } from '@/components/ClubLogoUpload';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import {
@@ -156,13 +157,7 @@ export default async function Profil() {
           </label>
         </div>
 
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5"
-        >
-          <Save className="w-4 h-4" />
-          Zapisz dane
-        </button>
+                <SubmitButton icon={Save} label="Zapisz dane" loadingLabel="Zapisywanie..." />
       </form>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
