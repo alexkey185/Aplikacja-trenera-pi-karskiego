@@ -360,7 +360,6 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
     );
   };
 
-  // Lewy obszar kafla (klikalny) - PRZYWRÓCONA LITERA "D" / "!"
   const lewyObszar = (
     <>
       <div className="relative flex-shrink-0">

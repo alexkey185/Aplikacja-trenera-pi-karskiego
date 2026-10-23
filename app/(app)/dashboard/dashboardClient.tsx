@@ -101,7 +101,6 @@ export function DashboardClient({
 
   return (
     <div>
-      {/* NAGŁÓWEK */}
       <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <PageHeaderLogo icon={Zap} logoUrl={logoUrl} />

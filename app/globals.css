@@ -29,9 +29,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Zamiast dwóch pełnoekranowych `filter: blur(80px)` (zabójca FPS
-   przy scrollu na mobile) — dwa radial-gradienty bez `filter`.
-   Wizualnie prawie identyczne, koszt renderu ~0. */
+/* Gradienty w tle (zostaną wyłączone na mobile przez media query na dole pliku) */
 body::before {
   content: '';
   position: fixed;
@@ -42,7 +40,6 @@ body::before {
   background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-  will-change: transform;
 }
 
 body::after {
@@ -55,7 +52,6 @@ body::after {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-  will-change: transform;
 }
 
 main {
@@ -71,9 +67,6 @@ main {
 /* ═══════════════════════════════════════════════════════════════ */
 .app-content {
   padding-top: max(4.5rem, env(safe-area-inset-top));
-  /* Safe area na dole (iPhone home indicator).
-     Bez tego content wchodzi pod pasek.
-     7rem = pb-28 (Tailwind), + safe-area-inset-bottom. */
   padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -86,72 +79,33 @@ main {
 /* ANIMACJE                                                        */
 /* ═══════════════════════════════════════════════════════════════ */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.5); }
 }
 
 @keyframes today-glow {
   0%, 100% {
-    box-shadow:
-      0 0 8px rgba(34, 197, 94, 0.35),
-      inset 0 0 8px rgba(34, 197, 94, 0.08);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.35), inset 0 0 8px rgba(34, 197, 94, 0.08);
   }
   50% {
-    box-shadow:
-      0 0 16px rgba(34, 197, 94, 0.55),
-      inset 0 0 12px rgba(34, 197, 94, 0.12);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.55), inset 0 0 12px rgba(34, 197, 94, 0.12);
   }
 }
 
-/* Flash highlight kafla przy zmianie dnia */
 @keyframes flash-highlight {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
-  30% {
-    transform: scale(1.015);
-    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  30% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
 .animate-fadeIn {
@@ -219,23 +173,10 @@ button:active:not(:disabled), a:active {
 /* ═══════════════════════════════════════════════════════════════ */
 /* SCROLLBAR                                                       */
 /* ═══════════════════════════════════════════════════════════════ */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* KALENDARZ - komórki dni                                         */
@@ -272,13 +213,8 @@ button:active:not(:disabled), a:active {
   font-weight: 700 !important;
 }
 
-.day-weekend {
-  background: rgba(59, 130, 246, 0.05);
-}
-
-.day-holiday {
-  background: rgba(239, 68, 68, 0.08);
-}
+.day-weekend { background: rgba(59, 130, 246, 0.05); }
+.day-holiday { background: rgba(239, 68, 68, 0.08); }
 
 .day-hoverable:hover {
   background: rgba(255, 255, 255, 0.06) !important;
@@ -316,12 +252,19 @@ input:-webkit-autofill:active {
 }
 
 input:-webkit-autofill:focus {
-  -webkit-box-shadow:
-    0 0 0 30px #0f172a inset,
-    0 0 0 1px rgba(74, 222, 128, 0.6) !important;
-  box-shadow:
-    0 0 0 30px #0f172a inset,
-    0 0 0 1px rgba(74, 222, 128, 0.6) !important;
+  -webkit-box-shadow: 0 0 0 30px #0f172a inset, 0 0 0 1px rgba(74, 222, 128, 0.6) !important;
+  box-shadow: 0 0 0 30px #0f172a inset, 0 0 0 1px rgba(74, 222, 128, 0.6) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* EKSPORT - UKRYWANIE SHELLA APLIKACJI                            */
+/* ═══════════════════════════════════════════════════════════════ */
+body.eksport-mode > *:not(.eksport-shell) {
+  display: none !important;
+}
+
+body.eksport-mode {
+  overflow: hidden !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -338,20 +281,11 @@ input:-webkit-autofill:focus {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
-/* EKSPORT - UKRYWANIE SHELLA APLIKACJI                            */
+/* OPTYMALIZACJA MOBILNA - WYŁĄCZENIE CIĘŻKICH EFEKTÓW TŁA        */
 /* ═══════════════════════════════════════════════════════════════ */
-/* Zamiast iterować po DOM w JS (getComputedStyle wymusza layout,  */
-/* wolne na stronach z wieloma elementami) — ukrywamy w CSS.       */
-/* `eksport-shell` jest bezpośrednim dzieckiem body (createPortal),*/
-/* więc reguła `body > *:not(.eksport-shell)` wystarcza.           */
-/* Reguła jest aktywna tylko gdy body ma klasę `eksport-mode`      */
-/* (dodawaną przez EksportClient w useEffect).                     */
-body.eksport-mode > *:not(.eksport-shell) {
-  display: none !important;
-}
-
-/* Blokada scrolla tła w trybie eksportu (na ekranie).            */
-/* W @media print i tak ustawiamy overflow: visible.              */
-body.eksport-mode {
-  overflow: hidden !important;
+@media (max-width: 767px) {
+  body::before,
+  body::after {
+    display: none !important; /* Ukrywa duże poświaty w tle na telefonach */
+  }
 }
