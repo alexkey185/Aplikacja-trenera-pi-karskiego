@@ -1,52 +1,65 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import {
-  getActiveDruzynaId,
-  ZAWODNICY_CACHE_TAG,
-} from '@/lib/druzyny';
+import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
 import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
 import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-export async function aktualizujZawodnika(id: number, formData: FormData) {
+export type FormState = {
+  error?: string;
+  fieldErrors?: Record<string, string>;
+} | null;
+
+export async function aktualizujZawodnika(
+  id: number,
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej druzyny.');
+    return { error: 'Brak aktywnej druzyny.' };
   }
 
-  const parsed = parseFormData(dodajZawodnikaSchema, formData);
-  const {
-    imie,
-    nazwisko,
-    rocznik,
-    pozycja,
-    numer,
-    kontakt_rodzica: kontakt,
-    notatki,
-  } = parsed;
+  const raw: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') raw[key] = value;
+  }
+
+  const result = dodajZawodnikaSchema.safeParse(raw);
+
+  if (!result.success) {
+    const fieldErrors: Record<string, string> = {};
+    result.error.issues.forEach((issue) => {
+      const key = String(issue.path[0]);
+      if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    });
+    return { fieldErrors };
+  }
+
+  const { imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki } = result.data;
 
   const { error } = await supabase
     .from('zawodnicy')
     .update({
       imie,
       nazwisko,
-      rocznik,
-      pozycja,
-      numer,
-      kontakt_rodzica: kontakt,
-      notatki,
+      rocznik: rocznik ?? null,
+      pozycja: pozycja ?? null,
+      numer: numer ?? null,
+      kontakt_rodzica: kontakt_rodzica ?? null,
+      notatki: notatki ?? null,
     })
     .eq('id', id)
     .eq('druzyna_id', druzynaId);
 
   if (error) {
-    throw new Error(error.message);
+    return { error: error.message };
   }
 
-  // Aktualizacja nie zmienia liczby zawodników → nie revalidujemy counts
+  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/kadra');
   revalidatePath(`/zawodnicy/${id}`);
   redirect(`/zawodnicy/${id}?toast=zawodnik_zapisany`);
@@ -78,7 +91,6 @@ export async function usunZawodnika(formData: FormData) {
     throw new Error('Nie znaleziono zawodnika w aktywnej druzynie.');
   }
 
-  // Kaskada FK (migracja 20261015_fk_cascade.sql) usuwa obecności atomowo.
   const { error, count } = await supabase
     .from('zawodnicy')
     .delete({ count: 'exact' })
@@ -93,7 +105,6 @@ export async function usunZawodnika(formData: FormData) {
     throw new Error('Nie usunieto zadnego wiersza.');
   }
 
-  // Usunięty zawodnik → liczba w TopBar musi się odświeżyć
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/kadra');
   revalidatePath('/kalendarz');
