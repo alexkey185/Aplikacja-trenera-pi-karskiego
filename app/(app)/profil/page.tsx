@@ -3,9 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzyna } from '@/lib/druzyny';
 import { zaktualizujProfil, wyloguj } from './actions';
 import { DeleteAccountButton } from '@/components/DeleteAccountButton';
-import { SubmitButton } from '@/components/SubmitButton';
 import { ClubLogoUpload } from '@/components/ClubLogoUpload';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
+import { TopBar } from '@/components/TopBar';
 import {
   User,
   Mail,
@@ -44,34 +44,36 @@ export default async function Profil() {
   const nazwisko = user.user_metadata?.nazwisko ?? '';
   const inicjal = (imie?.charAt(0) || email.charAt(0)).toUpperCase();
 
+  // Użycie Intl.DateTimeFormat zamiast toLocaleDateString zapobiega błędom hydratacji
   const dataUtworzenia = user.created_at
-    ? new Date(user.created_at).toLocaleDateString('pl-PL', {
+    ? new Intl.DateTimeFormat('pl-PL', {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
-      })
+      }).format(new Date(user.created_at))
     : '—';
 
   const ostatnieLogowanie = user.last_sign_in_at
-    ? new Date(user.last_sign_in_at).toLocaleDateString('pl-PL', {
+    ? new Intl.DateTimeFormat('pl-PL', {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-      })
+      }).format(new Date(user.last_sign_in_at))
     : '—';
 
   return (
     <div className="max-w-2xl mx-auto">
       <header className="mb-6 flex items-center gap-3 animate-fadeIn">
         <PageHeaderLogo icon={User} logoUrl={activeDruzyna?.logo_url ?? null} />
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Profil</h1>
           <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
             Twoje konto i ustawienia
           </p>
         </div>
+        <TopBar />
       </header>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60 relative overflow-hidden">
@@ -157,7 +159,13 @@ export default async function Profil() {
           </label>
         </div>
 
-                <SubmitButton icon={Save} label="Zapisz dane" loadingLabel="Zapisywanie..." />
+        <button
+          type="submit"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5"
+        >
+          <Save className="w-4 h-4" />
+          Zapisz dane
+        </button>
       </form>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
@@ -219,11 +227,11 @@ export default async function Profil() {
                 <div className="text-xs font-semibold text-white">Regulamin</div>
                 <div className="text-[10px] text-white/50">
                   Zaakceptowany{' '}
-                  {new Date(consent.accepted_at).toLocaleDateString('pl-PL', {
+                  {new Intl.DateTimeFormat('pl-PL', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',
-                  })}
+                  }).format(new Date(consent.accepted_at))}
                 </div>
               </div>
               <div className="text-[10px] font-bold text-green-400 bg-green-500/15 border border-green-400/30 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
@@ -237,11 +245,11 @@ export default async function Profil() {
                 <div className="text-xs font-semibold text-white">Polityka prywatności</div>
                 <div className="text-[10px] text-white/50">
                   Zaakceptowana{' '}
-                  {new Date(consent.accepted_at).toLocaleDateString('pl-PL', {
+                  {new Intl.DateTimeFormat('pl-PL', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',
-                  })}
+                  }).format(new Date(consent.accepted_at))}
                 </div>
               </div>
               <div className="text-[10px] font-bold text-green-400 bg-green-500/15 border border-green-400/30 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
