@@ -20,9 +20,26 @@ import { przeniesTrening } from './actions';
 import { CompactStat } from './CompactStat';
 import { PanelMiesiaca } from './PanelMiesiaca';
 import { UpcomingRow } from './UpcomingRow';
-import { TYP_CONFIG, MONTHS_PL, MONTHS_PL_GENITIVE, DAYS_SHORT, DAYS_LONG, HOLIDAYS } from './constants';
-import { pad2, toISO, getLocalISO, parseISO, daysInMonth, firstWeekdayMon, formatShort, getMonday } from './utils';
+import {
+  TYP_CONFIG,
+  MONTHS_PL,
+  MONTHS_PL_GENITIVE,
+  DAYS_SHORT,
+  DAYS_LONG,
+  HOLIDAYS,
+} from './constants';
+import {
+  pad2,
+  toISO,
+  getLocalISO,
+  parseISO,
+  daysInMonth,
+  firstWeekdayMon,
+  formatShort,
+  getMonday,
+} from './utils';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
+import { EventCard } from '@/components/EventCard';
 import type { Trening, StatsMap } from './types';
 
 const DeleteEventButton = dynamic(
@@ -54,20 +71,6 @@ function liczbaSlowo(n: number): string {
   if (n >= 2 && n <= 4) return 'wydarzenia';
   return 'wydarzeń';
 }
-
-const typIkona = (typ: string) => {
-  if (typ === 'mecz') return Trophy;
-  if (typ === 'sparing') return Flame;
-  if (typ === 'turniej') return Target;
-  return CalendarIcon;
-};
-
-const typBorder = (typ: string) => {
-  if (typ === 'mecz') return 'border-l-red-500';
-  if (typ === 'sparing') return 'border-l-orange-500';
-  if (typ === 'turniej') return 'border-l-purple-500';
-  return 'border-l-blue-500';
-};
 
 export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
   const router = useRouter();
@@ -127,8 +130,14 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
   const changeMonth = (delta: number) => {
     let m = viewMonth + delta;
     let y = viewYear;
-    if (m > 11) { m = 0; y++; }
-    if (m < 0) { m = 11; y--; }
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+    if (m < 0) {
+      m = 11;
+      y--;
+    }
     setViewMonth(m);
     setViewYear(y);
   };
@@ -299,9 +308,7 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
 
     const remaining = (7 - (cells.length % 7)) % 7;
     for (let d = 1; d <= remaining; d++) {
-      cells.push(
-        <div key={`next-${d}`}>{renderDayCell(d, true, null)}</div>
-      );
+      cells.push(<div key={`next-${d}`}>{renderDayCell(d, true, null)}</div>);
     }
 
     return cells;
@@ -312,53 +319,6 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
   const selectedMonthLabel = MONTHS_PL_GENITIVE[selectedDateObj.getMonth()];
   const pierwszeWydarzenie = selectedEvents[0] ?? null;
   const liczbaWydarzen = selectedEvents.length;
-
-  const renderEventRow = (t: Trening) => {
-    const Icon = typIkona(t.typ);
-    return (
-      <div
-        key={t.id}
-        className={`flex items-center gap-2 p-2 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}
-      >
-        <Link
-          href={`/kalendarz/${t.id}/obecnosc`}
-          className="flex-1 flex items-center gap-2 min-w-0"
-          title="Otwórz obecność"
-        >
-          <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
-            <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-          </div>
-          <div className="flex-shrink-0 text-xs font-bold text-white tabular-nums">
-            {t.godzina}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-semibold text-white truncate capitalize">
-              {TYP_CONFIG[t.typ]?.label}
-              {t.przeciwnik && <span className="text-white/60"> vs {t.przeciwnik}</span>}
-            </div>
-            {t.miejsce && (
-              <div className="text-[10px] text-white/50 truncate">{t.miejsce}</div>
-            )}
-          </div>
-        </Link>
-        <Link
-          href={`/kalendarz/${t.id}/edytuj`}
-          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all flex-shrink-0"
-          title="Edytuj"
-        >
-          <Pencil className="w-3 h-3" />
-        </Link>
-        <DeleteEventButton id={t.id} cyklId={t.cykl_id} size="sm" />
-        <Link
-          href={`/kalendarz/${t.id}/obecnosc`}
-          className="w-5 h-5 text-white/40 hover:text-green-400 transition-all flex-shrink-0"
-          title="Przejdź do obecności"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Link>
-      </div>
-    );
-  };
 
   const lewyObszar = (
     <>
@@ -411,12 +371,15 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
         {selectedEvents.length > 0 ? (
           <div className="text-xs lg:text-sm text-white/70 mt-0.5 truncate font-medium">
             {TYP_CONFIG[selectedEvents[0].typ]?.label}
-            {selectedEvents[0].przeciwnik && ` vs ${selectedEvents[0].przeciwnik}`}
+            {selectedEvents[0].przeciwnik &&
+              ` vs ${selectedEvents[0].przeciwnik}`}
             {selectedEvents[0].miejsce && ` · ${selectedEvents[0].miejsce}`}
           </div>
         ) : (
           <div className="text-xs lg:text-sm text-white/50 mt-0.5">
-            {isTodaySelected ? 'Nic nie zaplanowano na dziś' : 'Nic nie zaplanowano na ten dzień'}
+            {isTodaySelected
+              ? 'Nic nie zaplanowano na dziś'
+              : 'Nic nie zaplanowano na ten dzień'}
           </div>
         )}
       </div>
@@ -433,7 +396,8 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
               Kalendarz
             </h1>
             <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">
-              {monthStats.total} {monthStats.total === 1 ? 'wydarzenie' : 'wydarzeń'} w tym miesiącu
+              {monthStats.total}{' '}
+              {monthStats.total === 1 ? 'wydarzenie' : 'wydarzeń'} w tym miesiącu
             </p>
           </div>
         </div>
@@ -513,7 +477,9 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
 
             {liczbaWydarzen > 1 && (
               <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
-                {selectedEvents.map(renderEventRow)}
+                {selectedEvents.map((t) => (
+                  <EventCard key={t.id} trening={t} variant="compact" />
+                ))}
                 <button
                   onClick={handleFabClick}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 text-[11px] font-semibold transition-all hover:shadow-lg hover:shadow-green-500/20"
@@ -526,10 +492,38 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
           </div>
 
           <div className="grid grid-cols-4 gap-2 lg:gap-3 animate-fadeIn flex-shrink-0">
-            <CompactStat icon={CalendarIcon} color="text-blue-400" bg="from-blue-500/20 to-blue-700/10" border="border-blue-400/30" label="Treningi" value={monthStats.treningi} />
-            <CompactStat icon={Trophy} color="text-red-400" bg="from-red-500/20 to-red-700/10" border="border-red-400/30" label="Mecze" value={monthStats.mecze} />
-            <CompactStat icon={Flame} color="text-orange-400" bg="from-orange-500/20 to-orange-700/10" border="border-orange-400/30" label="Sparingi" value={monthStats.sparingi} />
-            <CompactStat icon={Target} color="text-purple-400" bg="from-purple-500/20 to-purple-700/10" border="border-purple-400/30" label="Turnieje" value={monthStats.turnieje} />
+            <CompactStat
+              icon={CalendarIcon}
+              color="text-blue-400"
+              bg="from-blue-500/20 to-blue-700/10"
+              border="border-blue-400/30"
+              label="Treningi"
+              value={monthStats.treningi}
+            />
+            <CompactStat
+              icon={Trophy}
+              color="text-red-400"
+              bg="from-red-500/20 to-red-700/10"
+              border="border-red-400/30"
+              label="Mecze"
+              value={monthStats.mecze}
+            />
+            <CompactStat
+              icon={Flame}
+              color="text-orange-400"
+              bg="from-orange-500/20 to-orange-700/10"
+              border="border-orange-400/30"
+              label="Sparingi"
+              value={monthStats.sparingi}
+            />
+            <CompactStat
+              icon={Target}
+              color="text-purple-400"
+              bg="from-purple-500/20 to-purple-700/10"
+              border="border-purple-400/30"
+              label="Turnieje"
+              value={monthStats.turnieje}
+            />
           </div>
 
           <div
@@ -547,11 +541,12 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
                 <div className="font-bold text-white text-sm lg:text-lg">
                   {MONTHS_PL[viewMonth]} {viewYear}
                 </div>
-                {viewYear === todayDate.getFullYear() && viewMonth === todayDate.getMonth() && (
-                  <div className="text-[10px] lg:text-xs text-green-400 font-bold uppercase tracking-widest">
-                    Bieżący miesiąc
-                  </div>
-                )}
+                {viewYear === todayDate.getFullYear() &&
+                  viewMonth === todayDate.getMonth() && (
+                    <div className="text-[10px] lg:text-xs text-green-400 font-bold uppercase tracking-widest">
+                      Bieżący miesiąc
+                    </div>
+                  )}
               </div>
               <button
                 onClick={() => changeMonth(1)}
@@ -585,7 +580,9 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
             <div className="flex items-center justify-center gap-4 lg:gap-6 mt-5 lg:mt-4 pt-4 lg:pt-3 border-t border-white/10 text-[10px] lg:text-xs flex-wrap flex-shrink-0">
               {Object.entries(TYP_CONFIG).map(([key, cfg]) => (
                 <div key={key} className="flex items-center gap-1.5 lg:gap-2">
-                  <span className={`w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full ${cfg.color}`} />
+                  <span
+                    className={`w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full ${cfg.color}`}
+                  />
                   <span className="text-white/60">{cfg.label}</span>
                 </div>
               ))}
@@ -626,7 +623,10 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
         className="group fixed bottom-24 right-5 md:bottom-6 md:right-6 z-40 w-14 h-14 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 flex items-center justify-center text-white shadow-2xl shadow-green-500/50 hover:shadow-green-400/70 transition-all hover:scale-110 active:scale-95 animate-glow"
         title="Dodaj wydarzenie"
       >
-        <Plus className="w-7 h-7 md:w-6 md:h-6 group-hover:rotate-90 transition-transform" strokeWidth={2.5} />
+        <Plus
+          className="w-7 h-7 md:w-6 md:h-6 group-hover:rotate-90 transition-transform"
+          strokeWidth={2.5}
+        />
       </button>
 
       {toast && (
