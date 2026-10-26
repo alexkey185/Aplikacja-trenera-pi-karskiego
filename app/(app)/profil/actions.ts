@@ -7,18 +7,14 @@ import { redirect } from 'next/navigation';
 
 export async function zaktualizujProfil(formData: FormData) {
   const supabase = await createClient();
-
   const imie = (formData.get('imie') as string)?.trim();
   const nazwisko = (formData.get('nazwisko') as string)?.trim();
-
   const { error } = await supabase.auth.updateUser({
     data: { imie, nazwisko },
   });
-
   if (error) {
     throw new Error(error.message);
   }
-
   revalidatePath('/profil');
   revalidatePath('/dashboard');
   revalidatePath('/kadra');
@@ -31,12 +27,17 @@ export async function wyloguj() {
   redirect('/auth/login');
 }
 
-// ══════════════════════════════════════════════
-// USUWANIE KONTA
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// USUWANIE KONTA - zgodne z RODO (prawo do bycia zapomnianym)
+//
+// Kolejność jest ważna:
+//   1. Usuń dane zależne (zgłoszenia, zgody)
+//   2. Usuń drużyny - kaskada FK usunie zawodników, treningi, obecności
+//   3. Usuń konto auth
+//   4. Wyloguj i przekieruj
+// ═══════════════════════════════════════════════════════════════
 export async function usunKonto(): Promise<{ error?: string }> {
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -46,15 +47,14 @@ export async function usunKonto(): Promise<{ error?: string }> {
   }
 
   const adminClient = createAdminClient();
-  const { error } = await adminClient.auth.admin.deleteUser(user.id);
 
-  if (error) {
-    return { error: error.message };
-  }
+  // ─── 1. Usuń zgłoszenia pomocy (jeśli istnieją) ───
+  await adminClient.from('zgloszenia').delete().eq('user_id', user.id);
 
-  await supabase.auth.signOut();
+  // ─── 2. Usuń zgody RODO ───
+  await adminClient.from('user_consents').delete().eq('user_id', user.id);
 
-  revalidatePath('/');
-  revalidatePath('/auth/login');
-  redirect('/');
-}
+  // ─── 3. Usuń drużyny ──
+  // Kaskada FK w bazie usunie automatycznie:
+  //   - zawodnicy (i ich obecności przez FK)
+  //   - treningi (i ich obecności przez FK)

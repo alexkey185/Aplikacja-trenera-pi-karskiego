@@ -11,10 +11,17 @@ import {
 } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
+import { z } from 'zod';
+
+// P1.2: Walidacja formatu UUID
+const uuidSchema = z.string().uuid();
 
 export async function aktualizujDruzyna(id: string, formData: FormData) {
-  const supabase = await createClient();
+  if (!uuidSchema.safeParse(id).success) {
+    throw new Error('Nieprawidłowe ID drużyny.');
+  }
 
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,16 +35,17 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
   const parsed = parseFormData(dodajDruzynaSchema, formData);
   const { nazwa, rocznik, kolor } = parsed;
 
+  // P1.2: Dodanie .eq('user_id', user.id) dla Defense in Depth
   const { error } = await supabase
     .from('druzyny')
     .update({ nazwa, rocznik, kolor })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // Aktualizacja drużyny nie zmienia liczby zawodników
   revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
   revalidatePath('/druzyny');
@@ -47,12 +55,11 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
 export async function usunDruzyna(formData: FormData) {
   const id = formData.get('id') as string;
 
-  if (!id) {
-    throw new Error('Brak ID druzyny.');
+  if (!id || !uuidSchema.safeParse(id).success) {
+    throw new Error('Nieprawidłowe ID drużyny.');
   }
 
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -63,17 +70,24 @@ export async function usunDruzyna(formData: FormData) {
 
   await enforceRateLimit(`user:${user.id}`, 'usunDruzyna', 5, 3600);
 
+  // P1.2: Filtr user_id przy sprawdzaniu istnienia
   const { data: druzyna, error: errFetch } = await supabase
     .from('druzyny')
     .select('id')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single();
 
   if (errFetch || !druzyna) {
     throw new Error('Nie znaleziono druzyny.');
   }
 
-  const { error } = await supabase.from('druzyny').delete().eq('id', id);
+  // P1.2: Filtr user_id przy usuwaniu
+  const { error } = await supabase
+    .from('druzyny')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   if (error) {
     throw new Error(error.message);
@@ -86,6 +100,7 @@ export async function usunDruzyna(formData: FormData) {
     const { data: pozostale } = await supabase
       .from('druzyny')
       .select('id')
+      .eq('user_id', user.id) // P1.2: zawężenie do drużyn użytkownika
       .order('created_at', { ascending: true })
       .limit(1);
 
@@ -102,7 +117,6 @@ export async function usunDruzyna(formData: FormData) {
     }
   }
 
-  // Usunięcie drużyny kaskadowo usuwa zawodników → revaliduj counts
   revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');

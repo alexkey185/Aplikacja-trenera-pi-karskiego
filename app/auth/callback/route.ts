@@ -1,17 +1,8 @@
 import { type NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { ensureConsentRecord } from '@/lib/consents';
 
-// ═══════════════════════════════════════════════════════════
-// Callback OAuth (Google) - PKCE flow
-//
-// Google → Supabase → TU (z ?code=...)
-// Wymieniamy code na sesję i przekierowujemy usera dalej.
-//
-// Uwaga: to NIE jest to samo co /auth/confirm (maile z token_hash).
-// ═══════════════════════════════════════════════════════════
-
-// Bezpieczna walidacja parametru `next` (identyczna jak w /auth/confirm)
 function safeNext(rawNext: string | null): string {
   const fallback = '/dashboard';
   if (!rawNext) return fallback;
@@ -55,11 +46,6 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const next = safeNext(searchParams.get('next'));
 
-  // ═══════════════════════════════════════════════════════
-  // Fix dla Vercel preview deployments:
-  // url.origin zwraca wewnętrzny hostname Vercel, nie deployment URL.
-  // x-forwarded-host to poprawny host publiczny.
-  // ═══════════════════════════════════════════════════════
   const forwardedHost = request.headers.get('x-forwarded-host');
   const isLocal = process.env.NODE_ENV === 'development';
   const baseUrl = isLocal
@@ -75,7 +61,6 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
@@ -85,6 +70,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Sukces - sesja w cookies, przekieruj dalej
+  // P1.1: Zapisujemy zgodę RODO dla użytkowników OAuth
+  await ensureConsentRecord();
+
   return NextResponse.redirect(`${baseUrl}${next}`);
 }
