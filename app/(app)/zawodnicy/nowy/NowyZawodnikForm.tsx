@@ -5,7 +5,8 @@ import { FormField } from '@/components/FormField';
 import { Select } from '@/components/Select';
 import { SubmitButton } from '@/components/SubmitButton';
 import { User, Trophy, Hash, Phone, FileText, AlertCircle } from 'lucide-react';
-import { dodajZawodnika, type FormState } from './actions';
+import { dodajZawodnika } from './actions';
+import type { FormState } from '@/lib/action-result';
 
 export function NowyZawodnikForm() {
   const [state, formAction] = useActionState<FormState, FormData>(dodajZawodnika, null);

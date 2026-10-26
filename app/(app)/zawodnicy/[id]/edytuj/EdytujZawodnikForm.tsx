@@ -7,7 +7,8 @@ import { Select } from '@/components/Select';
 import { SubmitButton } from '@/components/SubmitButton';
 import { DeleteButton } from './DeleteButton';
 import { User, Hash, Trophy, Phone, FileText, Save, X, AlertCircle } from 'lucide-react';
-import { aktualizujZawodnika, type FormState } from './actions';
+import { aktualizujZawodnika } from './actions';
+import type { FormState } from '@/lib/action-result';
 
 type Zawodnik = {
   id: number;

@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
-import { dodajTreningSchema, parseFormData } from '@/lib/schemas';
+import { dodajTreningSchema } from '@/lib/schemas';
+import { getErrorMessage } from '@/lib/errors';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -24,10 +25,24 @@ export async function dodajTrening(formData: FormData) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    await enforceRateLimit(`user:${user.id}`, 'dodajTrening', 60, 3600);
+    try {
+      await enforceRateLimit(`user:${user.id}`, 'dodajTrening', 60, 3600);
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
   }
 
-  const parsed = parseFormData(dodajTreningSchema, formData);
+  const raw: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') raw[key] = value;
+  }
+
+  const parsed = dodajTreningSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message);
+  }
+
   const {
     data,
     godzina,
@@ -37,7 +52,7 @@ export async function dodajTrening(formData: FormData) {
     notatki,
     cykl,
     data_do: dataDo,
-  } = parsed;
+  } = parsed.data;
 
   const cyklDostepny = typ === 'trening' && cykl !== 'nie_powtarzaj';
   const dates: string[] = [];
@@ -92,14 +107,9 @@ export async function dodajTrening(formData: FormData) {
   const { error } = await supabase.from('treningi').insert(rows);
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(getErrorMessage(error));
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // revalidatePath('/', 'layout') - kluczowe dla badge „Dzisiaj"
-  // w BottomNav (desktop sidebar). Bez tego licznik nie odświeży
-  // się po dodaniu treningu na dziś.
-  // ═══════════════════════════════════════════════════════════
   revalidatePath('/', 'layout');
   revalidatePath('/kalendarz');
   revalidatePath('/dashboard');

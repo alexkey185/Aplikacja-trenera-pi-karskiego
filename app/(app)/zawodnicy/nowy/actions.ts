@@ -4,13 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajZawodnikaSchema } from '@/lib/schemas';
+import { getErrorMessage } from '@/lib/errors';
 import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
-
-export type FormState = {
-  error?: string;
-  fieldErrors?: Record<string, string>;
-} | null;
+import type { FormState } from '@/lib/action-result';
 
 export async function dodajZawodnika(
   prevState: FormState,
@@ -28,11 +25,10 @@ export async function dodajZawodnika(
     try {
       await enforceRateLimit(`user:${user.id}`, 'dodajZawodnika', 30, 3600);
     } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Zbyt wiele prób.' };
+      return { error: getErrorMessage(err) };
     }
   }
 
-  // Ręczne parsowanie zamiast parseFormData (który rzuca wyjątkiem)
   const raw: Record<string, string> = {};
   for (const [key, value] of formData.entries()) {
     if (typeof value === 'string') raw[key] = value;
@@ -63,7 +59,7 @@ export async function dodajZawodnika(
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: getErrorMessage(error) };
   }
 
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');

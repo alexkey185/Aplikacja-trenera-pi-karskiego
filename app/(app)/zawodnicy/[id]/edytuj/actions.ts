@@ -2,14 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
-import { dodajZawodnikaSchema, parseFormData } from '@/lib/schemas';
+import { dodajZawodnikaSchema } from '@/lib/schemas';
+import { getErrorMessage } from '@/lib/errors';
 import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
-
-export type FormState = {
-  error?: string;
-  fieldErrors?: Record<string, string>;
-} | null;
+import type { FormState } from '@/lib/action-result';
 
 export async function aktualizujZawodnika(
   id: number,
@@ -20,7 +17,7 @@ export async function aktualizujZawodnika(
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    return { error: 'Brak aktywnej druzyny.' };
+    return { error: 'Brak aktywnej drużyny.' };
   }
 
   const raw: Record<string, string> = {};
@@ -56,7 +53,7 @@ export async function aktualizujZawodnika(
     .eq('druzyna_id', druzynaId);
 
   if (error) {
-    return { error: error.message };
+    return { error: getErrorMessage(error) };
   }
 
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
@@ -70,12 +67,12 @@ export async function usunZawodnika(formData: FormData) {
   const id = parseInt(idStr, 10);
 
   if (!id || isNaN(id)) {
-    throw new Error('Nieprawidlowe ID zawodnika.');
+    throw new Error('Nieprawidłowe ID zawodnika.');
   }
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej druzyny.');
+    throw new Error('Brak aktywnej drużyny.');
   }
 
   const supabase = await createClient();
@@ -98,11 +95,11 @@ export async function usunZawodnika(formData: FormData) {
     .eq('druzyna_id', druzynaId);
 
   if (error) {
-    throw new Error(`Nie udalo sie usunac: ${error.message}`);
+    throw new Error(getErrorMessage(error));
   }
 
   if (!count || count === 0) {
-    throw new Error('Nie usunieto zadnego wiersza.');
+    throw new Error('Nie usunięto żadnego wiersza.');
   }
 
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
