@@ -4,17 +4,38 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
+
+const profilSchema = z.object({
+  imie: z.string().trim().max(50, 'Imię może mieć maksymalnie 50 znaków').optional(),
+  nazwisko: z.string().trim().max(50, 'Nazwisko może mieć maksymalnie 50 znaków').optional(),
+});
 
 export async function zaktualizujProfil(formData: FormData) {
   const supabase = await createClient();
-  const imie = (formData.get('imie') as string)?.trim();
-  const nazwisko = (formData.get('nazwisko') as string)?.trim();
+
+  const raw = {
+    imie: formData.get('imie'),
+    nazwisko: formData.get('nazwisko'),
+  };
+
+  const parsed = profilSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message);
+  }
+
   const { error } = await supabase.auth.updateUser({
-    data: { imie, nazwisko },
+    data: {
+      imie: parsed.data.imie ?? '',
+      nazwisko: parsed.data.nazwisko ?? '',
+    },
   });
+
   if (error) {
     throw new Error(error.message);
   }
+
   revalidatePath('/profil');
   revalidatePath('/dashboard');
   revalidatePath('/kadra');
@@ -27,17 +48,9 @@ export async function wyloguj() {
   redirect('/auth/login');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// USUWANIE KONTA - zgodne z RODO (prawo do bycia zapomnianym)
-//
-// Kolejność jest ważna:
-//   1. Usuń dane zależne (zgłoszenia, zgody)
-//   2. Usuń drużyny - kaskada FK usunie zawodników, treningi, obecności
-//   3. Usuń konto auth
-//   4. Wyloguj i przekieruj
-// ═══════════════════════════════════════════════════════════════
 export async function usunKonto(): Promise<{ error?: string }> {
   const supabase = await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -46,15 +59,56 @@ export async function usunKonto(): Promise<{ error?: string }> {
     redirect('/auth/login');
   }
 
+  // Krok 1: Pobierz druzyny uzytkownika (przez jego wlasny klient - RLS gwarantuje poprawnosc)
+  const { data: druzyny } = await supabase
+    .from('druzyny')
+    .select('id')
+    .eq('user_id', user.id);
+
+  // Krok 2: Usun pliki z bucketu club-logos (jesli istnieja)
+  if (druzyny && druzyny.length > 0) {
+    const filesToRemove: string[] = [];
+
+    for (const d of druzyny) {
+      const { data: files } = await supabase.storage
+        .from('club-logos')
+        .list(d.id);
+
+      if (files && files.length > 0) {
+        for (const f of files) {
+          filesToRemove.push(`${d.id}/${f.name}`);
+        }
+      }
+    }
+
+    if (filesToRemove.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from('club-logos')
+        .remove(filesToRemove);
+
+      if (storageError) {
+        console.error('Blad czyszczenia storage:', storageError.message);
+      }
+    }
+  }
+
+  // Krok 3: Usun uzytkownika z auth.users (admin client, omija RLS)
+  // Kaskada FK w bazie usunie:
+  //   - zawodnikow (i ich obecnosci przez FK)
+  //   - treningi (i ich obecnosci przez FK)
+  //   - druzyny
+  //   - user_consents
   const adminClient = createAdminClient();
+  const { error } = await adminClient.auth.admin.deleteUser(user.id);
 
-  // ─── 1. Usuń zgłoszenia pomocy (jeśli istnieją) ───
-  await adminClient.from('zgloszenia').delete().eq('user_id', user.id);
+  if (error) {
+    return { error: error.message };
+  }
 
-  // ─── 2. Usuń zgody RODO ───
-  await adminClient.from('user_consents').delete().eq('user_id', user.id);
+  // Krok 4: Wyloguj i przekieruj
+  await supabase.auth.signOut();
 
-  // ─── 3. Usuń drużyny ──
-  // Kaskada FK w bazie usunie automatycznie:
-  //   - zawodnicy (i ich obecności przez FK)
-  //   - treningi (i ich obecności przez FK)
+  revalidatePath('/');
+  revalidatePath('/auth/login');
+  redirect('/');
+}
