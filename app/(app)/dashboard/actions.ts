@@ -5,7 +5,6 @@ import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
-// P1.4: Walidacja Zod - notatki max 2000 znaków, trim, pusty → null
 const notatkaSchema = z.object({
   notatki: z
     .string()
@@ -23,14 +22,12 @@ export async function zapiszWynikLubNotatke(
   treningId: number,
   formData: FormData
 ): Promise<FormState> {
-  // P1.4: Walidacja ID treningu (integer > 0)
   if (!Number.isInteger(treningId) || treningId <= 0) {
     return { error: 'Nieprawidłowe ID treningu.' };
   }
 
   const supabase = await createClient();
 
-  // P1.4: Sprawdzenie sesji
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -39,7 +36,6 @@ export async function zapiszWynikLubNotatke(
     return { error: 'Musisz być zalogowany.' };
   }
 
-  // P1.4: Rate limit - 100 zapisów na godzinę per user
   try {
     await enforceRateLimit(
       `user:${user.id}`,
@@ -53,13 +49,11 @@ export async function zapiszWynikLubNotatke(
     };
   }
 
-  // P1.4: Aktywna drużyna
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
     return { error: 'Brak aktywnej drużyny.' };
   }
 
-  // P1.4: Walidacja notatki przez Zod
   const raw = {
     notatki: formData.get('notatki') ?? '',
   };
@@ -70,20 +64,19 @@ export async function zapiszWynikLubNotatke(
     return { error: parsed.error.issues[0].message };
   }
 
-  // P1.4: UPDATE z pełnym filtrem (id + druzyna_id) - defense in depth obok RLS
+  // FIX: count przekazywany do update(), nie do select()
   const { error, count } = await supabase
     .from('treningi')
-    .update({ notatki: parsed.data.notatki })
+    .update({ notatki: parsed.data.notatki }, { count: 'exact' })
     .eq('id', treningId)
     .eq('druzyna_id', druzynaId)
-    .select('id', { count: 'exact' });
+    .select('id');
 
   if (error) {
     console.error('Błąd zapisu notatki:', error);
     return { error: 'Nie udało się zapisać notatki. Spróbuj ponownie.' };
   }
 
-  // P1.4: Brak wiersza = trening nie istnieje LUB należy do innej drużyny
   if (!count || count === 0) {
     return { error: 'Nie znaleziono treningu w aktywnej drużynie.' };
   }
