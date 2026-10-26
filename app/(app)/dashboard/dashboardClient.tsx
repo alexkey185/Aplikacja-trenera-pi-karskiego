@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import {
   Calendar as CalendarIcon,
@@ -8,11 +8,17 @@ import {
   ChevronRight,
   Trophy,
   Clock,
+  MapPin,
+  ChevronRight as ChevronRightIcon,
   BarChart3 as BarChart3Icon,
+  Pencil,
+  ExternalLink,
   Plus,
   Zap,
 } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
+import { zapiszWynikLubNotatke } from './actions';
+import { toast } from 'sonner';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import { EventCard } from '@/components/EventCard';
 
@@ -74,6 +80,7 @@ export function DashboardClient({
 }) {
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
+  const [isPending, startTransition] = useTransition();
 
   const dni = initialDni;
   const selectedEvents = eventMap[selectedDate] ?? [];
@@ -90,6 +97,21 @@ export function DashboardClient({
     }
     return start;
   })();
+
+  const handleSaveNotatka = (id: number, e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    startTransition(async () => {
+      const res = await zapiszWynikLubNotatke(id, formData);
+      if (res?.error) {
+        toast.error('Błąd zapisu', { description: res.error });
+      } else if (res?.success) {
+        toast.success('Notatka zapisana');
+      }
+    });
+  };
 
   return (
     <div>
