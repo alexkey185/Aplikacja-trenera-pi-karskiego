@@ -3,10 +3,8 @@ import { type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ensureConsentRecord } from '@/lib/consents';
+import { safeNext as safeNextBase } from '@/lib/auth/safe-redirect';
 
-// ═══════════════════════════════════════════════════════════
-// Dozwolone typy OTP
-// ═══════════════════════════════════════════════════════════
 const ALLOWED_TYPES = new Set<EmailOtpType>([
   'signup',
   'invite',
@@ -16,68 +14,14 @@ const ALLOWED_TYPES = new Set<EmailOtpType>([
   'email',
 ]);
 
-// ═══════════════════════════════════════════════════════════
-// Domyślne ścieżki zależne od typu OTP
-// - recovery (reset hasła) idzie na update-password
-// - reszta idzie na dashboard
-// ═══════════════════════════════════════════════════════════
 function getDefaultNext(type: EmailOtpType | null): string {
   if (type === 'recovery') return '/auth/update-password';
   if (type === 'email_change' || type === 'email') return '/profil';
   return '/dashboard';
 }
 
-// ═══════════════════════════════════════════════════════════
-// Bezpieczna walidacja parametru `next`
-// - obsługuje też pełne URL-e z naszego hosta (wyciąga ścieżkę)
-// - blokuje open redirect, javascript:, data: itp.
-// ═══════════════════════════════════════════════════════════
 function safeNext(rawNext: string | null, type: EmailOtpType | null): string {
-  const fallback = getDefaultNext(type);
-
-  if (!rawNext) return fallback;
-
-  let candidate = rawNext;
-
-  // Jeśli pełny URL - zaakceptuj tylko jeśli host jest nasz
-  if (/^https?:\/\//i.test(rawNext)) {
-    try {
-      const url = new URL(rawNext);
-      const allowedHosts = new Set([
-        'talentapp.pl',
-        'www.talentapp.pl',
-        'localhost:3000',
-        'localhost:3001',
-      ]);
-      if (!allowedHosts.has(url.host)) {
-        return fallback;
-      }
-      candidate = url.pathname + url.search + url.hash;
-    } catch {
-      return fallback;
-    }
-  }
-
-  // Musi zaczynać się od pojedynczego "/"
-  if (!candidate.startsWith('/')) return fallback;
-
-  // Blokuj "//" (protocol-relative) i "/\"
-  if (candidate.startsWith('//') || candidate.startsWith('/\\')) return fallback;
-
-  // Blokuj cokolwiek z "://"
-  if (candidate.includes('://')) return fallback;
-
-  // Blokuj próby javascript:, data:, vbscript: itp.
-  const lowered = candidate.toLowerCase();
-  if (
-    lowered.includes('javascript:') ||
-    lowered.includes('data:') ||
-    lowered.includes('vbscript:')
-  ) {
-    return fallback;
-  }
-
-  return candidate;
+  return safeNextBase(rawNext, getDefaultNext(type));
 }
 
 export async function GET(request: NextRequest) {
@@ -102,12 +46,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      // ═══════════════════════════════════════════════════
-      // Zapisz zgodę RODO z user_metadata (jeśli signup)
-      // - idempotentne, więc bezpieczne dla każdego typu OTP
-      // ═══════════════════════════════════════════════════
       await ensureConsentRecord();
-
       redirect(next);
     }
     redirect(

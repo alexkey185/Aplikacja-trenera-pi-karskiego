@@ -3,12 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit, checkRateLimit } from '@/lib/rate-limit';
-import { aktualizujTreningSchema, parseFormData } from '@/lib/schemas';
-import { revalidatePath } from 'next/cache';
+import { aktualizujTreningSchema } from '@/lib/schemas';
+import { getErrorMessage } from '@/lib/errors';
+import { revalidateKalendarz } from '@/lib/action-result';
 
-// ═══════════════════════════════════════════════════════════════
-// AKTUALIZACJA TRENINGU - single lub cała seria
-// ═══════════════════════════════════════════════════════════════
 export async function aktualizujTrening(
   id: number,
   scope: 'single' | 'all',
@@ -21,15 +19,21 @@ export async function aktualizujTrening(
     throw new Error('Brak aktywnej druzyny.');
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'aktualizujTrening', 100, 3600);
   }
 
-  const parsed = parseFormData(aktualizujTreningSchema, formData);
-  const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed;
+  const raw: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') raw[key] = value;
+  }
+
+  const parsed = aktualizujTreningSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message);
+  }
 
   const { data: trening, error: errFetch } = await supabase
     .from('treningi')
@@ -42,6 +46,8 @@ export async function aktualizujTrening(
     throw new Error('Nie znaleziono treningu w aktywnej druzynie.');
   }
 
+  const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed.data;
+
   if (scope === 'single' || !trening.cykl_id) {
     const { error } = await supabase
       .from('treningi')
@@ -49,9 +55,7 @@ export async function aktualizujTrening(
       .eq('id', id)
       .eq('druzyna_id', druzynaId);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    if (error) throw new Error(getErrorMessage(error));
   } else {
     const { error } = await supabase
       .from('treningi')
@@ -59,26 +63,13 @@ export async function aktualizujTrening(
       .eq('cykl_id', trening.cykl_id)
       .eq('druzyna_id', druzynaId);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    if (error) throw new Error(getErrorMessage(error));
   }
 
-  revalidatePath('/', 'layout');
-  revalidatePath('/kalendarz');
-  revalidatePath('/dashboard');
-  revalidatePath('/kalendarz/eksport');
-  revalidatePath('/statystyki');
-
-  return {
-    success: true,
-    scope: trening.cykl_id && scope === 'all' ? 'all' : 'single',
-  };
+  revalidateKalendarz();
+  return { success: true, scope: trening.cykl_id && scope === 'all' ? 'all' : 'single' };
 }
 
-// ═══════════════════════════════════════════════════════════════
-// USUWANIE TRENINGU - z opcją całej serii
-// ═══════════════════════════════════════════════════════════════
 export async function usunTreningZakres(
   id: number,
   scope: 'single' | 'all'
@@ -89,18 +80,13 @@ export async function usunTreningZakres(
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) {
-    return { error: 'Brak aktywnej druzyny.' };
-  }
+  if (!druzynaId) return { error: 'Brak aktywnej druzyny.' };
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const rl = await checkRateLimit(`user:${user.id}`, 'usunTreningZakres', 50, 3600);
     if (!rl.allowed) {
-      const minuty = Math.ceil(rl.retryAfter / 60);
-      return { error: `Za duzo operacji. Sprobuj ponownie za ${minuty} min.` };
+      return { error: `Za duzo operacji. Sprobuj ponownie za ${Math.ceil(rl.retryAfter / 60)} min.` };
     }
   }
 
@@ -123,10 +109,7 @@ export async function usunTreningZakres(
       .delete({ count: 'exact' })
       .eq('cykl_id', trening.cykl_id)
       .eq('druzyna_id', druzynaId);
-
-    if (error) {
-      return { error: error.message };
-    }
+    if (error) return { error: getErrorMessage(error) };
     count = deletedCount ?? 0;
   } else {
     const { error, count: deletedCount } = await supabase
@@ -134,18 +117,10 @@ export async function usunTreningZakres(
       .delete({ count: 'exact' })
       .eq('id', id)
       .eq('druzyna_id', druzynaId);
-
-    if (error) {
-      return { error: error.message };
-    }
+    if (error) return { error: getErrorMessage(error) };
     count = deletedCount ?? 0;
   }
 
-  revalidatePath('/', 'layout');
-  revalidatePath('/kalendarz');
-  revalidatePath('/dashboard');
-  revalidatePath('/kalendarz/eksport');
-  revalidatePath('/statystyki');
-
+  revalidateKalendarz();
   return { success: true, count };
 }

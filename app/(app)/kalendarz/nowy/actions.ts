@@ -5,8 +5,8 @@ import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajTreningSchema } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
+import { revalidateKalendarz } from '@/lib/action-result';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 
 function toISODate(d: Date): string {
   const y = d.getFullYear();
@@ -110,10 +110,6 @@ export async function dodajTrening(formData: FormData) {
     throw new Error(getErrorMessage(error));
   }
 
-  revalidatePath('/', 'layout');
-  revalidatePath('/kalendarz');
-  revalidatePath('/dashboard');
-  revalidatePath('/kalendarz/eksport');
-  revalidatePath('/statystyki');
+  revalidateKalendarz();
   redirect('/kalendarz?toast=trening_dodany');
 }

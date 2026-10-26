@@ -2,49 +2,12 @@ import { type NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ensureConsentRecord } from '@/lib/consents';
-
-function safeNext(rawNext: string | null): string {
-  const fallback = '/dashboard';
-  if (!rawNext) return fallback;
-
-  let candidate = rawNext;
-
-  if (/^https?:\/\//i.test(rawNext)) {
-    try {
-      const url = new URL(rawNext);
-      const allowedHosts = new Set([
-        'talentapp.pl',
-        'www.talentapp.pl',
-        'localhost:3000',
-        'localhost:3001',
-      ]);
-      if (!allowedHosts.has(url.host)) return fallback;
-      candidate = url.pathname + url.search + url.hash;
-    } catch {
-      return fallback;
-    }
-  }
-
-  if (!candidate.startsWith('/')) return fallback;
-  if (candidate.startsWith('//') || candidate.startsWith('/\\')) return fallback;
-  if (candidate.includes('://')) return fallback;
-
-  const lowered = candidate.toLowerCase();
-  if (
-    lowered.includes('javascript:') ||
-    lowered.includes('data:') ||
-    lowered.includes('vbscript:')
-  ) {
-    return fallback;
-  }
-
-  return candidate;
-}
+import { safeNext } from '@/lib/auth/safe-redirect';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = safeNext(searchParams.get('next'));
+  const next = safeNext(searchParams.get('next'), '/dashboard');
 
   const forwardedHost = request.headers.get('x-forwarded-host');
   const isLocal = process.env.NODE_ENV === 'development';
