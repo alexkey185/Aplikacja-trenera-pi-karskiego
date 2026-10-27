@@ -23,7 +23,9 @@ export async function zaktualizujProfil(formData: FormData) {
   const parsed = profilSchema.safeParse(raw);
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0].message);
+    // Zamiast throw, po prostu zwracamy błąd (żeby nie wywalać całej strony)
+    console.error('Błąd walidacji profilu:', parsed.error);
+    return;
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -34,6 +36,7 @@ export async function zaktualizujProfil(formData: FormData) {
   });
 
   if (error) {
+    console.error('Błąd zapisu profilu:', error);
     throw new Error(getErrorMessage(error));
   }
 
