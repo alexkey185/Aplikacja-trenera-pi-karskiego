@@ -144,6 +144,7 @@ export default async function Statystyki({
 
   const zakres = getZakres(okres, m);
 
+  // RPC główne (statystyki, ranking, miesiące)
   const { data: rpcData, error: rpcError } = await supabase.rpc(
     'get_statystyki_druzyny',
     {
@@ -158,21 +159,13 @@ export default async function Statystyki({
     console.error('RPC get_statystyki_druzyny error:', rpcError);
   }
 
-  const emptyStats: RpcStats = {
-    total_treningi: 0,
-    total_wpisy: 0,
-    obecni_razem: 0,
-    treningi_z_wpisami: 0,
-    treningi_bez_wpisow: [],
-  };
-  const result = (rpcData ?? {
-    stats: emptyStats,
-    ranking: [],
-    miesiace: [],
-  }) as RpcResult;
+  // Bezpieczne parsowanie (fallback jeśli rpcData jest null lub ma złą strukturę)
+  const raw = (rpcData ?? {}) as Record<string, unknown>;
+  const stats = (raw.stats ?? {}) as RpcStats;
+  const ranking = (raw.ranking ?? []) as RpcRankingRow[];
+  const miesiace = (raw.miesiace ?? []) as RpcMiesiacRow[];
 
-  const { stats, ranking, miesiace } = result;
-
+  // RPC miesiące do dropdownu
   const { data: miesiaceRaw, error: miesiaceError } = await supabase.rpc(
     'get_miesiace_druzyny',
     { p_druzyna_id: druzynaId }
@@ -186,14 +179,14 @@ export default async function Statystyki({
     (r) => r.miesiac
   );
 
-  const totalTreningi = stats.total_treningi;
-  const totalWpisy = stats.total_wpisy;
-  const obecniRazem = stats.obecni_razem;
+  const totalTreningi = stats.total_treningi ?? 0;
+  const totalWpisy = stats.total_wpisy ?? 0;
+  const obecniRazem = stats.obecni_razem ?? 0;
   const nieobecniRazem = totalWpisy - obecniRazem;
   const procentOgolem =
     totalWpisy > 0 ? Math.round((obecniRazem / totalWpisy) * 100) : 0;
-  const treningiZWpisami = stats.treningi_z_wpisami;
-  const treningiBezWpisow = stats.treningi_bez_wpisow;
+  const treningiZWpisami = stats.treningi_z_wpisami ?? 0;
+  const treningiBezWpisow = stats.treningi_bez_wpisow ?? [];
 
   const rankingZBraki = ranking.map((r) => ({
     ...r,
