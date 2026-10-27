@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 export async function GET(request: Request) {
-  // Zbieramy ciasteczka, które Supabase chce ustawić
   const cookiesToSet: { name: string; value: string; options: CookieOptions }[] = [];
 
   const supabase = createServerClient(
@@ -22,16 +21,16 @@ export async function GET(request: Request) {
     }
   );
 
-  // Wyloguj poprzednią sesję (na wszelki wypadek)
   await supabase.auth.signOut();
 
-  // Zaloguj na konto demo
+  // ZMIENIONE HASŁO NA PRAWIDŁOWE
   const { error } = await supabase.auth.signInWithPassword({
     email: 'demo@talentapp.pl',
-    password: 'DemoTrener2026!',
+    password: '@DemoTrener',
   });
 
   if (error) {
+    console.error('Demo login error:', error.message, error.status);
     return NextResponse.redirect(
       new URL(
         '/auth/error?error=' + encodeURIComponent('Demo jest chwilowo niedostępne.'),
@@ -40,10 +39,8 @@ export async function GET(request: Request) {
     );
   }
 
-  // Przekierowanie na dashboard
   const response = NextResponse.redirect(new URL('/dashboard?demo=true', request.url));
 
-  // RĘCZNIE ustawiamy ciasteczka sesji na odpowiedzi
   cookiesToSet.forEach(({ name, value, options }) => {
     response.cookies.set(name, value, options);
   });
