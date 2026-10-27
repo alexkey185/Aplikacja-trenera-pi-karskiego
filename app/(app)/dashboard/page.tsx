@@ -55,7 +55,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
-  // Zmieniono z Map na Record, aby uniknąć błędów serializacji RSC
   const stats: Record<number, { obecni: number; nieobecni: number }> = {};
   lista.forEach((t) => {
     let obecni = 0; let nieobecni = 0;
@@ -66,7 +65,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     stats[t.id] = { obecni, nieobecni };
   });
 
-  const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
+  // ZMIANA: Przekazujemy tablicę stringów ISO zamiast obiektów Date
+  const dni = Array.from({ length: 7 }, (_, i) => toISO(addDays(poniedzialek, i)));
 
   const eventMap: Record<string, TreningZObecnoscia[]> = {};
   lista.forEach((t) => {

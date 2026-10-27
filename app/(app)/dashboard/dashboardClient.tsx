@@ -44,7 +44,7 @@ export function DashboardClient({
   initialDni, poniedzialekISO, niedzielaISO, prevWeek, nextWeek, jestWTygodniu,
   eventMap, stats, wszystkieObecnosci, topBar, logoUrl,
 }: {
-  initialDni: Date[];
+  initialDni: string[]; // Zmienione z Date[] na string[]
   poniedzialekISO: string;
   niedzielaISO: string;
   prevWeek: string;
@@ -60,7 +60,9 @@ export function DashboardClient({
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
   const [isPending, startTransition] = useTransition();
 
-  const dni = initialDni;
+  // ZMIANA: Konwertujemy stringi z serwera na obiekty Date na kliencie
+  const dni = initialDni.map((iso) => new Date(iso + 'T00:00:00'));
+
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
