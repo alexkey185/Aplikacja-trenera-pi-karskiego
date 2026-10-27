@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Download, X, Share, Plus } from 'lucide-react';
 
-// ── Typ zdarzenia beforeinstallprompt (nie ma go w lib.dom) ──
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -11,8 +10,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = 'pwa_install_dismissed_at';
 const VISITS_KEY = 'pwa_visit_count';
-const VISITS_BEFORE_PROMPT = 2; // pokaż po 2 wizytach
-const DISMISS_COOLDOWN_DAYS = 30; // po odrzuceniu 30 dni ciszy
+const VISITS_BEFORE_PROMPT = 2;
+const DISMISS_COOLDOWN_DAYS = 30;
 
 function getVisitCount(): number {
   try {
@@ -36,7 +35,6 @@ function isDismissedRecently(): boolean {
 function isStandaloneMode(): boolean {
   if (typeof window === 'undefined') return false;
   if (window.matchMedia('(display-mode: standalone)').matches) return true;
-  // iOS Safari używa własnej flagi navigator.standalone
   return (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
@@ -55,29 +53,26 @@ export function PWAInstallPrompt() {
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   useEffect(() => {
-    // Dev: nie przeszkadzaj w pracy
+    // WYŁĄCZONE W TRYBIE DEMO
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === 'true') return;
+
     if (process.env.NODE_ENV !== 'production') return;
-    // Już zainstalowana - cisza
     if (isStandaloneMode()) return;
-    // Ostatnio odrzucono - poczekaj 30 dni
     if (isDismissedRecently()) return;
 
-    // Zlicz wizytę
     const visits = getVisitCount() + 1;
     try {
       localStorage.setItem(VISITS_KEY, String(visits));
     } catch {}
 
-    // Za mało wizyt - poczekaj
     if (visits < VISITS_BEFORE_PROMPT) return;
 
-    // iOS Safari - brak natywnego promptu, pokaż instrukcje
     if (isIOS()) {
       setVisible(true);
       return;
     }
 
-    // Chromium - czekaj na beforeinstallprompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -88,7 +83,6 @@ export function PWAInstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // appinstalled - user zainstalował, ukryj prompt i wyczyść dismissal
   useEffect(() => {
     const handler = () => {
       setVisible(false);
@@ -128,7 +122,6 @@ export function PWAInstallPrompt() {
   return (
     <div className="fixed z-40 bottom-24 left-4 right-20 md:bottom-6 md:left-[16.5rem] md:right-auto md:w-80 animate-fadeIn">
       <div className="relative bg-slate-900/95 backdrop-blur-xl border border-green-400/40 rounded-2xl p-4 shadow-2xl shadow-black/60">
-        {/* Close button */}
         <button
           onClick={handleDismiss}
           aria-label="Zamknij"
@@ -170,34 +163,16 @@ export function PWAInstallPrompt() {
             </div>
             <ol className="space-y-2.5 text-xs text-white/70">
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                  1
-                </span>
-                <span>
-                  Kliknij{' '}
-                  <Share className="w-3.5 h-3.5 inline text-green-400 mx-0.5" />
-                  <strong className="text-white"> Udostępnij</strong> na dole
-                  Safari
-                </span>
+                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">1</span>
+                <span>Kliknij <Share className="w-3.5 h-3.5 inline text-green-400 mx-0.5" /> <strong className="text-white">Udostępnij</strong> na dole Safari</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                  2
-                </span>
-                <span>
-                  Wybierz{' '}
-                  <Plus className="w-3.5 h-3.5 inline text-green-400 mx-0.5" />
-                  <strong className="text-white"> Dodaj do ekranu początkowego</strong>
-                </span>
+                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">2</span>
+                <span>Wybierz <Plus className="w-3.5 h-3.5 inline text-green-400 mx-0.5" /> <strong className="text-white">Dodaj do ekranu początkowego</strong></span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                  3
-                </span>
-                <span>
-                  Kliknij <strong className="text-white">Dodaj</strong> w prawym
-                  górnym rogu
-                </span>
+                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">3</span>
+                <span>Kliknij <strong className="text-white">Dodaj</strong> w prawym górnym rogu</span>
               </li>
             </ol>
             <button
