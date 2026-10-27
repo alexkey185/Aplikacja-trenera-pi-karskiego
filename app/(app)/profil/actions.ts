@@ -7,12 +7,21 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getErrorMessage } from '@/lib/errors';
 
+export type ProfilFormState = {
+  error?: string;
+  success?: boolean;
+} | null;
+
 const profilSchema = z.object({
   imie: z.string().trim().max(50, 'Imię może mieć maksymalnie 50 znaków').optional(),
   nazwisko: z.string().trim().max(50, 'Nazwisko może mieć maksymalnie 50 znaków').optional(),
 });
 
-export async function zaktualizujProfil(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+// FIX: useActionState wymaga (prevState, formData)
+export async function zaktualizujProfil(
+  prevState: ProfilFormState,
+  formData: FormData
+): Promise<ProfilFormState> {
   const supabase = await createClient();
 
   const raw = {
