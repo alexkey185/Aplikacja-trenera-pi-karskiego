@@ -1,6 +1,6 @@
 import 'server-only';
 import { getActiveDruzyna } from './druzyny';
-import { Rola } from './druzyny';
+import type { Rola } from './druzyny';
 
 export async function requireRole(allowedRoles: Rola[]) {
   const druzyna = await getActiveDruzyna();

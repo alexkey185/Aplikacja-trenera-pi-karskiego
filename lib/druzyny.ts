@@ -25,7 +25,7 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('druzyna_czlonkowie')
     .select(`
       rola,
@@ -33,12 +33,20 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
     `)
     .eq('user_id', user.id);
 
+  if (error) {
+    console.error('Błąd pobierania drużyn (sprawdź RLS i tabele):', error);
+    return [];
+  }
+
   if (!data) return [];
 
-  return data.map((item: any) => ({
-    ...item.druzyny,
-    rola: item.rola as Rola,
-  })).filter(d => d.id);
+  return data.map((item: any) => {
+    if (!item.druzyny) return null;
+    return {
+      ...item.druzyny,
+      rola: item.rola as Rola,
+    };
+  }).filter((d): d is Druzyna => d !== null);
 });
 
 export const getActiveDruzynaId = cache(async (): Promise<string | null> => {
@@ -72,10 +80,12 @@ export const getZawodnicyCounts = cache(
     if (druzyny.length === 0) return {};
     const druzynaIds = druzyny.map((d) => d.id);
 
-    const { data: zawodnicy } = await supabase
+    const { data: zawodnicy, error } = await supabase
       .from('zawodnicy')
       .select('druzyna_id')
       .in('druzyna_id', druzynaIds);
+
+    if (error) return {};
 
     const counts: Record<string, number> = {};
     (zawodnicy ?? []).forEach((z) => {
