@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/errors';
 
 const profilSchema = z.object({
   imie: z.string().trim().max(50, 'Imię może mieć maksymalnie 50 znaków').optional(),
@@ -33,7 +34,7 @@ export async function zaktualizujProfil(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(getErrorMessage(error));
   }
 
   revalidatePath('/profil');
@@ -59,55 +60,37 @@ export async function usunKonto(): Promise<{ error?: string }> {
     redirect('/auth/login');
   }
 
-  // Krok 1: Pobierz druzyny uzytkownika (przez jego wlasny klient - RLS gwarantuje poprawnosc)
+  // 1. Pobierz drużyny użytkownika
   const { data: druzyny } = await supabase
     .from('druzyny')
     .select('id')
     .eq('user_id', user.id);
 
-  // Krok 2: Usun pliki z bucketu club-logos (jesli istnieja)
+  // 2. Usuń pliki z bucketu club-logos
   if (druzyny && druzyny.length > 0) {
     const filesToRemove: string[] = [];
-
     for (const d of druzyny) {
-      const { data: files } = await supabase.storage
-        .from('club-logos')
-        .list(d.id);
-
+      const { data: files } = await supabase.storage.from('club-logos').list(d.id);
       if (files && files.length > 0) {
         for (const f of files) {
           filesToRemove.push(`${d.id}/${f.name}`);
         }
       }
     }
-
     if (filesToRemove.length > 0) {
-      const { error: storageError } = await supabase.storage
-        .from('club-logos')
-        .remove(filesToRemove);
-
-      if (storageError) {
-        console.error('Blad czyszczenia storage:', storageError.message);
-      }
+      await supabase.storage.from('club-logos').remove(filesToRemove);
     }
   }
 
-  // Krok 3: Usun uzytkownika z auth.users (admin client, omija RLS)
-  // Kaskada FK w bazie usunie:
-  //   - zawodnikow (i ich obecnosci przez FK)
-  //   - treningi (i ich obecnosci przez FK)
-  //   - druzyny
-  //   - user_consents
+  // 3. Usuń użytkownika (admin client omija RLS)
   const adminClient = createAdminClient();
   const { error } = await adminClient.auth.admin.deleteUser(user.id);
 
   if (error) {
-    return { error: error.message };
+    return { error: getErrorMessage(error) };
   }
 
-  // Krok 4: Wyloguj i przekieruj
   await supabase.auth.signOut();
-
   revalidatePath('/');
   revalidatePath('/auth/login');
   redirect('/');
