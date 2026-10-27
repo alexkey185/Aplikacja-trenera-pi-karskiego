@@ -142,6 +142,10 @@ export default async function Statystyki({
 
   const activeDruzyna = await getActiveDruzyna();
 
+  // DEBUG
+  console.log('DEBUG druzynaId w statystykach:', druzynaId);
+  console.log('DEBUG aktywna druzyna:', activeDruzyna?.nazwa);
+
   const zakres = getZakres(okres, m);
 
   // RPC główne (statystyki, ranking, miesiące)
@@ -154,6 +158,10 @@ export default async function Statystyki({
       p_miesiace: 6,
     }
   );
+
+  // DEBUG
+  console.log('DEBUG rpcData:', JSON.stringify(rpcData));
+  console.log('DEBUG rpcError:', rpcError);
 
   if (rpcError) {
     console.error('RPC get_statystyki_druzyny error:', rpcError);
