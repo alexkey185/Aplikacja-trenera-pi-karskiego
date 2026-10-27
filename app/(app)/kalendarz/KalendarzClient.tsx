@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Plus,
   Calendar as CalendarIcon,
-  Printer,
   Pencil,
   Trash2,
   Trophy,
@@ -205,11 +204,6 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
     }
   };
 
-  const eksportUrl = useMemo(() => {
-    const monday = getMonday(parseISO(selectedDate));
-    return `/kalendarz/eksport?w=${getLocalISO(monday)}`;
-  }, [selectedDate]);
-
   const renderDayCell = (
     dayNum: number,
     otherMonth: boolean,
@@ -403,14 +397,6 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
-          <Link
-            href={eksportUrl}
-            className="inline-flex items-center gap-2 px-3 lg:px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-xs lg:text-sm font-semibold transition-all flex-shrink-0"
-            title="Eksportuj plan tygodnia"
-          >
-            <Printer className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-            <span className="hidden sm:inline">Eksport</span>
-          </Link>
           {topBar}
         </div>
       </header>
