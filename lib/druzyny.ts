@@ -25,6 +25,7 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
+  // Próbujemy pobrać przez nową tabelę ról
   const { data, error } = await supabase
     .from('druzyna_czlonkowie')
     .select(`
@@ -33,9 +34,19 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
     `)
     .eq('user_id', user.id);
 
+  // FALLBACK: Jeśli nowa tabela jeszcze nie istnieje lub RLS blokuje, wracamy do starej metody
   if (error) {
-    console.error('Błąd pobierania drużyn (sprawdź RLS i tabele):', error);
-    return [];
+    console.warn('Błąd nowej tabeli ról, używam fallbacku:', error.message);
+    
+    const { data: stareDruzyny, error: staryError } = await supabase
+      .from('druzyny')
+      .select('id, nazwa, rocznik, kolor, created_at, logo_url')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    if (staryError || !stareDruzyny) return [];
+
+    return stareDruzyny.map((d) => ({ ...d, rola: 'admin' as Rola }));
   }
 
   if (!data) return [];
