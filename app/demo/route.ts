@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 export async function GET(request: Request) {
   // Zbieramy ciasteczka, które Supabase chce ustawić
-  const cookiesToSet: { name: string; value: string; options: any }[] = [];
+  const cookiesToSet: { name: string; value: string; options: CookieOptions }[] = [];
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +13,9 @@ export async function GET(request: Request) {
         getAll() {
           return [];
         },
-        setAll(newCookies) {
+        setAll(
+          newCookies: { name: string; value: string; options: CookieOptions }[]
+        ) {
           newCookies.forEach((c) => cookiesToSet.push(c));
         },
       },
