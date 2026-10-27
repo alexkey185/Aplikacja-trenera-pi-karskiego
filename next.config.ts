@@ -6,9 +6,10 @@ const nextConfig: NextConfig = {
     qualities: [75, 100],
   },
   experimental: {
-    // Automatyczny tree-shaking barrel importów.
-    // Bez tego `import { X } from 'lucide-react'` może wciągnąć
-    // cały barrel (~1000 ikon) do bundle'a.
+    // Zwiększamy limit dla Server Actions (domyślnie 1MB, logo może ważyć do 2MB)
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-checkbox',

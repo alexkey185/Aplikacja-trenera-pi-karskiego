@@ -1,18 +1,18 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzyna } from '@/lib/druzyny';
-import { zaktualizujProfil, wyloguj } from './actions';
+import { wyloguj } from './actions';
 import { DeleteAccountButton } from '@/components/DeleteAccountButton';
 import { ClubLogoUpload } from '@/components/ClubLogoUpload';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import { TopBar } from '@/components/TopBar';
+import { ProfilForm } from './ProfilForm';
 import {
   User,
   Mail,
   Calendar as CalendarIcon,
   Shield,
   Info,
-  Save,
   LogOut,
   AlertTriangle,
   MessageSquare,
@@ -27,9 +27,7 @@ export default async function Profil() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const activeDruzyna = await getActiveDruzyna();
 
@@ -44,7 +42,6 @@ export default async function Profil() {
   const nazwisko = user.user_metadata?.nazwisko ?? '';
   const inicjal = (imie?.charAt(0) || email.charAt(0)).toUpperCase();
 
-  // Użycie Intl.DateTimeFormat zamiast toLocaleDateString zapobiega błędom hydratacji
   const dataUtworzenia = user.created_at
     ? new Intl.DateTimeFormat('pl-PL', {
         day: '2-digit',
@@ -121,52 +118,8 @@ export default async function Profil() {
         </div>
       )}
 
-      <form
-        action={zaktualizujProfil}
-        className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60"
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <User className="w-4 h-4 text-green-400" />
-          <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-            Dane osobowe
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-          <label className="block group">
-            <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
-              Imię
-            </div>
-            <input
-              name="imie"
-              type="text"
-              defaultValue={imie}
-              placeholder="np. Adam"
-              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 outline-none transition-all"
-            />
-          </label>
-          <label className="block group">
-            <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
-              Nazwisko
-            </div>
-            <input
-              name="nazwisko"
-              type="text"
-              defaultValue={nazwisko}
-              placeholder="np. Pilny"
-              className="w-full bg-white/5 border border-white/15 focus:border-green-400/60 focus:bg-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 outline-none transition-all"
-            />
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-0.5"
-        >
-          <Save className="w-4 h-4" />
-          Zapisz dane
-        </button>
-      </form>
+      {/* Podmieniony formularz na nowy komponent */}
+      <ProfilForm imie={imie} nazwisko={nazwisko} />
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="p-5">

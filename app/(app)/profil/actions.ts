@@ -12,7 +12,7 @@ const profilSchema = z.object({
   nazwisko: z.string().trim().max(50, 'Nazwisko może mieć maksymalnie 50 znaków').optional(),
 });
 
-export async function zaktualizujProfil(formData: FormData) {
+export async function zaktualizujProfil(formData: FormData): Promise<{ error?: string; success?: boolean }> {
   const supabase = await createClient();
 
   const raw = {
@@ -23,9 +23,7 @@ export async function zaktualizujProfil(formData: FormData) {
   const parsed = profilSchema.safeParse(raw);
 
   if (!parsed.success) {
-    // Zamiast throw, po prostu zwracamy błąd (żeby nie wywalać całej strony)
-    console.error('Błąd walidacji profilu:', parsed.error);
-    return;
+    return { error: parsed.error.issues[0].message };
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -36,14 +34,15 @@ export async function zaktualizujProfil(formData: FormData) {
   });
 
   if (error) {
-    console.error('Błąd zapisu profilu:', error);
-    throw new Error(getErrorMessage(error));
+    return { error: getErrorMessage(error) };
   }
 
   revalidatePath('/profil');
   revalidatePath('/dashboard');
   revalidatePath('/kadra');
   revalidatePath('/kalendarz');
+
+  return { success: true };
 }
 
 export async function wyloguj() {
@@ -63,13 +62,11 @@ export async function usunKonto(): Promise<{ error?: string }> {
     redirect('/auth/login');
   }
 
-  // 1. Pobierz drużyny użytkownika
   const { data: druzyny } = await supabase
     .from('druzyny')
     .select('id')
     .eq('user_id', user.id);
 
-  // 2. Usuń pliki z bucketu club-logos
   if (druzyny && druzyny.length > 0) {
     const filesToRemove: string[] = [];
     for (const d of druzyny) {
@@ -85,7 +82,6 @@ export async function usunKonto(): Promise<{ error?: string }> {
     }
   }
 
-  // 3. Usuń użytkownika (admin client omija RLS)
   const adminClient = createAdminClient();
   const { error } = await adminClient.auth.admin.deleteUser(user.id);
 
