@@ -4,6 +4,8 @@ import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
 import { DashboardClient } from './dashboardClient';
 import { TopBar } from '@/components/TopBar';
+import { PageHeaderLogo } from '@/components/PageHeaderLogo';
+import { Zap } from 'lucide-react';
 
 type TreningZObecnoscia = {
   id: number;
@@ -55,17 +57,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
-  const stats: Record<number, { obecni: number; nieobecni: number }> = {};
+  const stats: Record<string, { obecni: number; nieobecni: number }> = {};
   lista.forEach((t) => {
     let obecni = 0; let nieobecni = 0;
     for (const o of t.obecnosc ?? []) {
       if (o.status === 'obecny' || o.status === 'spozniony') obecni++;
       else nieobecni++;
     }
-    stats[t.id] = { obecni, nieobecni };
+    stats[String(t.id)] = { obecni, nieobecni };
   });
 
-  // ZMIANA: Przekazujemy tablicę stringów ISO zamiast obiektów Date
   const dni = Array.from({ length: 7 }, (_, i) => toISO(addDays(poniedzialek, i)));
 
   const eventMap: Record<string, TreningZObecnoscia[]> = {};
@@ -78,11 +79,25 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto">
+      {/* NAGŁÓWEK PRZENIESIONY TUTAJ (na serwerze) */}
+      <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <PageHeaderLogo icon={Zap} logoUrl={activeDruzyna?.logo_url ?? null} />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">Dzisiaj</h1>
+            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">Twój plan na najbliższe dni</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <TopBar />
+        </div>
+      </header>
+
       <DashboardClient
         initialDni={dni} poniedzialekISO={toISO(poniedzialek)} niedzielaISO={toISO(niedziela)}
         prevWeek={toISO(addDays(poniedzialek, -7))} nextWeek={toISO(addDays(poniedzialek, 7))}
         jestWTygodniu={jestWTygodniu} eventMap={eventMap} stats={stats}
-        wszystkieObecnosci={wszystkieObecnosci} topBar={<TopBar />} logoUrl={activeDruzyna?.logo_url ?? null}
+        wszystkieObecnosci={wszystkieObecnosci}
       />
     </div>
   );

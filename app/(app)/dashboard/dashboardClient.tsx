@@ -2,11 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Trophy, Clock, MapPin, ChevronRight as ChevronRightIcon, BarChart3 as BarChart3Icon, Pencil, ExternalLink, Plus, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, BarChart3 as BarChart3Icon, Plus } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
 import { zapiszWynikLubNotatke } from './actions';
 import { toast } from 'sonner';
-import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import { EventCard } from '@/components/EventCard';
 
 type TreningZObecnoscia = {
@@ -21,7 +20,7 @@ type TreningZObecnoscia = {
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
-type StatsMap = Record<number, { obecni: number; nieobecni: number }>;
+type StatsMap = Record<string, { obecni: number; nieobecni: number }>;
 
 function formatDzienTyg(date: Date) {
   return date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
@@ -42,9 +41,9 @@ const typBorder = (typ: string) => {
 
 export function DashboardClient({
   initialDni, poniedzialekISO, niedzielaISO, prevWeek, nextWeek, jestWTygodniu,
-  eventMap, stats, wszystkieObecnosci, topBar, logoUrl,
+  eventMap, stats, wszystkieObecnosci,
 }: {
-  initialDni: string[]; // Zmienione z Date[] na string[]
+  initialDni: string[];
   poniedzialekISO: string;
   niedzielaISO: string;
   prevWeek: string;
@@ -53,14 +52,11 @@ export function DashboardClient({
   eventMap: Record<string, TreningZObecnoscia[]>;
   stats: StatsMap;
   wszystkieObecnosci: { trening_id: number; status: string }[];
-  topBar: React.ReactNode;
-  logoUrl: string | null;
 }) {
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
   const [isPending, startTransition] = useTransition();
 
-  // ZMIANA: Konwertujemy stringi z serwera na obiekty Date na kliencie
   const dni = initialDni.map((iso) => new Date(iso + 'T00:00:00'));
 
   const selectedEvents = eventMap[selectedDate] ?? [];
@@ -95,17 +91,6 @@ export function DashboardClient({
 
   return (
     <div>
-      <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <PageHeaderLogo icon={Zap} logoUrl={logoUrl} />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">Dzisiaj</h1>
-            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">Twój plan na najbliższe dni</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 flex-shrink-0">{topBar}</div>
-      </header>
-
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
           <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
@@ -200,7 +185,7 @@ export function DashboardClient({
           </div>
         ) : (
           <div className="space-y-3">
-            {selectedEvents.map((t) => <EventCard key={t.id} trening={t} variant="full" stats={stats[t.id]} />)}
+            {selectedEvents.map((t) => <EventCard key={t.id} trening={t} variant="full" stats={stats[String(t.id)]} />)}
             <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20">
               <Plus className="w-3.5 h-3.5" /> Dodaj kolejne wydarzenie
             </Link>
