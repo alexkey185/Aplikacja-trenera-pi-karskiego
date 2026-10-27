@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin', '/auth'];
+// Dodajemy '/demo' do ścieżek publicznych!
+const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin', '/auth', '/demo'];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => {
@@ -20,7 +21,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Fast path dla ścieżek publicznych
+  // FAST PATH: ścieżki publiczne (w tym /demo) - zwróć next() bez sprawdzania sesji
   if (isPublicPath(pathname)) {
     return NextResponse.next({ request });
   }
