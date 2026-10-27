@@ -35,41 +35,39 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   const activeDruzyna = await getActiveDruzyna();
 
-  // Pobieramy tylko to, co potrzebne na ten widok.
-  // Optymalizacja: nie pobieramy już 3 miesięcy do pamięci, a tylko wyświetlany tydzień i bieżący miesiąc do statystyk.
-  const poczatekMiesiaca = new Date(teraz.getFullYear(), teraz.getMonth(), 1);
-  const koniecMiesiaca = new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0);
-
-  const odData = toISO(poniedzialek) < toISO(poczatekMiesiaca) ? toISO(poniedzialek) : toISO(poczatekMiesiaca);
-  const doData = toISO(niedziela) > toISO(koniecMiesiaca) ? toISO(niedziela) : toISO(koniecMiesiaca);
+  const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
+  const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
 
   const [treningiRes] = await Promise.all([
     supabase
       .from('treningi')
-      .select(`id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, obecnosc (trening_id, status)`)
+      .select(`
+        id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
+        obecnosc (trening_id, status)
+      `)
       .eq('druzyna_id', druzynaId)
-      .gte('data', odData)
-      .lte('data', doData)
+      .gte('data', toISO(odD))
+      .lte('data', toISO(doD))
       .order('data', { ascending: true })
       .order('godzina', { ascending: true }),
   ]);
 
-  if (treningiRes.error) console.error('Błąd pobierania treningów:', treningiRes.error);
-
   const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
-  const stats = new Map<number, { obecni: number; nieobecni: number }>();
+  // Zmieniono z Map na Record, aby uniknąć błędów serializacji RSC
+  const stats: Record<number, { obecni: number; nieobecni: number }> = {};
   lista.forEach((t) => {
     let obecni = 0; let nieobecni = 0;
     for (const o of t.obecnosc ?? []) {
       if (o.status === 'obecny' || o.status === 'spozniony') obecni++;
       else nieobecni++;
     }
-    stats.set(t.id, { obecni, nieobecni });
+    stats[t.id] = { obecni, nieobecni };
   });
 
   const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
+
   const eventMap: Record<string, TreningZObecnoscia[]> = {};
   lista.forEach((t) => {
     if (!eventMap[t.data]) eventMap[t.data] = [];

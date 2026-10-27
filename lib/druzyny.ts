@@ -21,43 +21,41 @@ export const DRUZYNY_CACHE_TAG = 'druzyny';
 export const ZAWODNICY_CACHE_TAG = 'zawodnicy-counts';
 
 export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
 
-  // Próbujemy pobrać przez nową tabelę ról
-  const { data, error } = await supabase
-    .from('druzyna_czlonkowie')
-    .select(`
-      rola,
-      druzyny (id, nazwa, rocznik, kolor, created_at, logo_url)
-    `)
-    .eq('user_id', user.id);
+    const { data, error } = await supabase
+      .from('druzyna_czlonkowie')
+      .select(`
+        rola,
+        druzyny (id, nazwa, rocznik, kolor, created_at, logo_url)
+      `)
+      .eq('user_id', user.id);
 
-  // FALLBACK: Jeśli nowa tabela jeszcze nie istnieje lub RLS blokuje, wracamy do starej metody
-  if (error) {
-    console.warn('Błąd nowej tabeli ról, używam fallbacku:', error.message);
-    
-    const { data: stareDruzyny, error: staryError } = await supabase
-      .from('druzyny')
-      .select('id, nazwa, rocznik, kolor, created_at, logo_url')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
+    if (error) {
+      console.warn('Fallback RLS:', error.message);
+      const { data: stareDruzyny } = await supabase
+        .from('druzyny')
+        .select('id, nazwa, rocznik, kolor, created_at, logo_url')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
 
-    if (staryError || !stareDruzyny) return [];
+      if (!stareDruzyny) return [];
+      return stareDruzyny.map((d) => ({ ...d, rola: 'admin' as Rola }));
+    }
 
-    return stareDruzyny.map((d) => ({ ...d, rola: 'admin' as Rola }));
+    if (!data) return [];
+
+    return data.map((item: any) => {
+      if (!item.druzyny) return null;
+      return { ...item.druzyny, rola: item.rola as Rola };
+    }).filter((d): d is Druzyna => d !== null);
+  } catch (err) {
+    console.error('Krytyczny błąd getDruzyny:', err);
+    return [];
   }
-
-  if (!data) return [];
-
-  return data.map((item: any) => {
-    if (!item.druzyny) return null;
-    return {
-      ...item.druzyny,
-      rola: item.rola as Rola,
-    };
-  }).filter((d): d is Druzyna => d !== null);
 });
 
 export const getActiveDruzynaId = cache(async (): Promise<string | null> => {
@@ -70,7 +68,6 @@ export const getActiveDruzynaId = cache(async (): Promise<string | null> => {
   if (active && druzyny.some((d) => d.id === active)) {
     return active;
   }
-
   return druzyny[0].id;
 });
 
@@ -81,29 +78,27 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
   return druzyny.find((d) => d.id === id) ?? null;
 });
 
-export const getZawodnicyCounts = cache(
-  async (): Promise<Record<string, number>> => {
+export const getZawodnicyCounts = cache(async (): Promise<Record<string, number>> => {
+  try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return {};
 
     const druzyny = await getDruzyny();
     if (druzyny.length === 0) return {};
+    
     const druzynaIds = druzyny.map((d) => d.id);
-
-    const { data: zawodnicy, error } = await supabase
+    const { data: zawodnicy } = await supabase
       .from('zawodnicy')
       .select('druzyna_id')
       .in('druzyna_id', druzynaIds);
 
-    if (error) return {};
-
     const counts: Record<string, number> = {};
     (zawodnicy ?? []).forEach((z) => {
-      if (z.druzyna_id) {
-        counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
-      }
+      if (z.druzyna_id) counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
     });
     return counts;
+  } catch {
+    return {};
   }
-);
+});

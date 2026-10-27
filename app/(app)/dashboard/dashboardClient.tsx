@@ -2,20 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Trophy,
-  Clock,
-  MapPin,
-  ChevronRight as ChevronRightIcon,
-  BarChart3 as BarChart3Icon,
-  Pencil,
-  ExternalLink,
-  Plus,
-  Zap,
-} from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Trophy, Clock, MapPin, ChevronRight as ChevronRightIcon, BarChart3 as BarChart3Icon, Pencil, ExternalLink, Plus, Zap } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
 import { zapiszWynikLubNotatke } from './actions';
 import { toast } from 'sonner';
@@ -34,7 +21,7 @@ type TreningZObecnoscia = {
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
-type StatsMap = Map<number, { obecni: number; nieobecni: number }>;
+type StatsMap = Record<number, { obecni: number; nieobecni: number }>;
 
 function formatDzienTyg(date: Date) {
   return date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
@@ -54,17 +41,8 @@ const typBorder = (typ: string) => {
 };
 
 export function DashboardClient({
-  initialDni,
-  poniedzialekISO,
-  niedzielaISO,
-  prevWeek,
-  nextWeek,
-  jestWTygodniu,
-  eventMap,
-  stats,
-  wszystkieObecnosci,
-  topBar,
-  logoUrl,
+  initialDni, poniedzialekISO, niedzielaISO, prevWeek, nextWeek, jestWTygodniu,
+  eventMap, stats, wszystkieObecnosci, topBar, logoUrl,
 }: {
   initialDni: Date[];
   poniedzialekISO: string;
@@ -119,49 +97,25 @@ export function DashboardClient({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <PageHeaderLogo icon={Zap} logoUrl={logoUrl} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">
-              Dzisiaj
-            </h1>
-            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">
-              Twój plan na najbliższe dni
-            </p>
+            <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">Dzisiaj</h1>
+            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">Twój plan na najbliższe dni</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {topBar}
-        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">{topBar}</div>
       </header>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
-          <Link
-            href={`/dashboard?w=${prevWeek}`}
-            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
-          >
+          <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronLeft className="w-4 h-4" />
           </Link>
           <div className="text-center px-2">
             <div className="font-bold text-white text-sm capitalize">
-              {new Date(poniedzialekISO + 'T00:00:00').toLocaleDateString('pl-PL', {
-                day: '2-digit',
-                month: 'long',
-              })}{' '}
-              -{' '}
-              {new Date(niedzielaISO + 'T00:00:00').toLocaleDateString('pl-PL', {
-                day: '2-digit',
-                month: 'long',
-              })}
+              {new Date(poniedzialekISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} - {new Date(niedzielaISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
             </div>
-            {jestWTygodniu && (
-              <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">
-                Bieżący tydzień
-              </div>
-            )}
+            {jestWTygodniu && <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Bieżący tydzień</div>}
           </div>
-          <Link
-            href={`/dashboard?w=${nextWeek}`}
-            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0"
-          >
+          <Link href={`/dashboard?w=${nextWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -173,57 +127,22 @@ export function DashboardClient({
             const czyDzis = dataStr === dzisStr;
             const czyWybrany = dataStr === selectedDate;
             return (
-              <button
-                key={i}
-                onClick={() => setSelectedDate(dataStr)}
-                className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${
-                  czyDzis
-                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20'
-                    : czyWybrany
-                    ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20'
-                    : 'bg-slate-800/60 border border-white/10 hover:border-white/20'
-                }`}
-              >
+              <button key={i} onClick={() => setSelectedDate(dataStr)} className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 border border-white/10 hover:border-white/20'}`}>
                 <div className="mb-3 pb-2 border-b border-white/10">
-                  <div
-                    className={`text-[10px] uppercase tracking-widest font-bold ${
-                      czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'
-                    }`}
-                  >
-                    {formatDzienTyg(d)}
-                  </div>
-                  <div
-                    className={`text-2xl font-black leading-none mt-1 ${
-                      czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'
-                    }`}
-                  >
-                    {d.getDate()}
-                  </div>
+                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
+                  <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
                 </div>
                 <div className="flex-1 space-y-1.5">
-                  {eventy.length === 0 && (
-                    <div className="text-[10px] text-white/30 py-2">brak</div>
-                  )}
+                  {eventy.length === 0 && <div className="text-[10px] text-white/30 py-2">brak</div>}
                   {eventy.map((t) => (
-                    <div
-                      key={t.id}
-                      className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(
-                        t.typ
-                      )} bg-white/5`}
-                    >
+                    <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(t.typ)} bg-white/5`}>
                       <div className="font-bold leading-tight">{t.godzina}</div>
-                      <div className="text-white/70 leading-tight capitalize truncate">
-                        {t.typ}
-                      </div>
+                      <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
                     </div>
                   ))}
                 </div>
-                {czyDzis && (
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
-                )}
-                {czyWybrany && !czyDzis && (
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />
-                )}
+                {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
+                {czyWybrany && !czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />}
               </button>
             );
           })}
@@ -236,64 +155,26 @@ export function DashboardClient({
             const czyDzis = dataStr === dzisStr;
             const czyWybrany = dataStr === selectedDate;
             return (
-              <button
-                key={i}
-                onClick={() => setSelectedDate(dataStr)}
-                className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col text-left ${
-                  czyDzis
-                    ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20'
-                    : czyWybrany
-                    ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20'
-                    : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'
-                }`}
-              >
+              <button key={i} onClick={() => setSelectedDate(dataStr)} className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'}`}>
                 <div className="mb-2 flex-shrink-0">
-                  <div
-                    className={`text-[10px] uppercase tracking-widest font-bold ${
-                      czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'
-                    }`}
-                  >
-                    {formatDzienTyg(d)}
-                  </div>
-                  <div
-                    className={`text-2xl font-black leading-none mt-0.5 ${
-                      czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'
-                    }`}
-                  >
-                    {d.getDate()}
-                  </div>
+                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
+                  <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
                 </div>
                 <div className="flex-1 space-y-1 overflow-hidden">
                   {eventy.slice(0, 3).map((t) => (
-                    <div
-                      key={t.id}
-                      className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(
-                        t.typ
-                      )} bg-white/5`}
-                    >
+                    <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-1.5 py-1 text-white truncate ${typBorder(t.typ)} bg-white/5`}>
                       <div className="font-bold leading-tight">{t.godzina}</div>
-                      <div className="truncate text-white/70 leading-tight capitalize">
-                        {t.typ}
-                      </div>
+                      <div className="truncate text-white/70 leading-tight capitalize">{t.typ}</div>
                     </div>
                   ))}
                 </div>
                 {eventy.length > 0 && (
                   <div className="flex gap-0.5 mt-1 flex-shrink-0">
-                    {eventy.slice(0, 4).map((e, idx) => (
-                      <div
-                        key={idx}
-                        className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`}
-                      />
-                    ))}
+                    {eventy.slice(0, 4).map((e, idx) => <div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />)}
                   </div>
                 )}
-                {czyDzis && (
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />
-                )}
-                {czyWybrany && !czyDzis && (
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />
-                )}
+                {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
+                {czyWybrany && !czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />}
               </button>
             );
           })}
@@ -302,48 +183,24 @@ export function DashboardClient({
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
         <div className="flex items-center gap-2 mb-4">
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${
-              selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'
-            }`}
-          />
+          <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
           <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-            {selectedDate === dzisStr ? 'Dzisiaj' : 'Wybrany dzień'} ·{' '}
-            {selectedDateObj.toLocaleDateString('pl-PL', {
-              day: '2-digit',
-              month: 'long',
-            })}
+            {selectedDate === dzisStr ? 'Dzisiaj' : 'Wybrany dzień'} · {selectedDateObj.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
           </h2>
         </div>
 
         {selectedEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="text-white/40 text-sm mb-4">Brak wydarzeń tego dnia</div>
-            <Link
-              href={`/kalendarz/nowy?data=${selectedDate}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Dodaj wydarzenie
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20">
+              <Plus className="w-3.5 h-3.5" /> Dodaj wydarzenie
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {selectedEvents.map((t) => (
-              <EventCard
-                key={t.id}
-                trening={t}
-                variant="full"
-                stats={stats.get(t.id)}
-              />
-            ))}
-
-            <Link
-              href={`/kalendarz/nowy?data=${selectedDate}`}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Dodaj kolejne wydarzenie
+            {selectedEvents.map((t) => <EventCard key={t.id} trening={t} variant="full" stats={stats[t.id]} />)}
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20">
+              <Plus className="w-3.5 h-3.5" /> Dodaj kolejne wydarzenie
             </Link>
           </div>
         )}
@@ -353,51 +210,22 @@ export function DashboardClient({
         <div className="hidden md:block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-              Nadchodzące
-            </h2>
+            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Nadchodzące</h2>
           </div>
           {(() => {
-            const wszystkie = Object.values(eventMap)
-              .flat()
-              .filter((t) => t.data > dzisStr)
-              .sort(
-                (a, b) =>
-                  a.data.localeCompare(b.data) || a.godzina.localeCompare(b.godzina)
-              )
-              .slice(0, 3);
-            if (wszystkie.length === 0)
-              return <div className="text-center py-6 text-white/40 text-sm">Brak</div>;
+            const wszystkie = Object.values(eventMap).flat().filter((t) => t.data > dzisStr).sort((a, b) => a.data.localeCompare(b.data) || a.godzina.localeCompare(b.godzina)).slice(0, 3);
+            if (wszystkie.length === 0) return <div className="text-center py-6 text-white/40 text-sm">Brak</div>;
             return (
               <div className="space-y-2">
                 {wszystkie.map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/kalendarz/${t.id}/obecnosc`}
-                    className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(
-                      t.typ
-                    )} bg-white/5 hover:bg-white/10 transition-all`}
-                  >
+                  <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className={`flex items-center gap-3 p-3 rounded-xl border-l-4 ${typBorder(t.typ)} bg-white/5 hover:bg-white/10 transition-all`}>
                     <div className="flex-shrink-0 text-center w-10">
-                      <div className="text-[10px] text-white/40 uppercase font-bold">
-                        {new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', {
-                          month: 'short',
-                        })}
-                      </div>
-                      <div className="text-lg font-black text-white">
-                        {new Date(t.data + 'T00:00:00').getDate()}
-                      </div>
+                      <div className="text-[10px] text-white/40 uppercase font-bold">{new Date(t.data + 'T00:00:00').toLocaleDateString('pl-PL', { month: 'short' })}</div>
+                      <div className="text-lg font-black text-white">{new Date(t.data + 'T00:00:00').getDate()}</div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-white truncate capitalize">
-                        {t.godzina} · {t.typ}
-                        {t.przeciwnik && ` vs ${t.przeciwnik}`}
-                      </div>
-                      {t.miejsce && (
-                        <div className="text-[10px] text-white/50 truncate mt-0.5">
-                          {t.miejsce}
-                        </div>
-                      )}
+                      <div className="text-xs font-semibold text-white truncate capitalize">{t.godzina} · {t.typ}{t.przeciwnik && ` vs ${t.przeciwnik}`}</div>
+                      {t.miejsce && <div className="text-[10px] text-white/50 truncate mt-0.5">{t.miejsce}</div>}
                     </div>
                   </Link>
                 ))}
@@ -409,59 +237,29 @@ export function DashboardClient({
         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-              Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}
-            </h2>
+            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}</h2>
           </div>
           {(() => {
             const rokMiesiac = dzisStr.substring(0, 7);
-            const treningiMies = Object.values(eventMap)
-              .flat()
-              .filter((t) => t.data.startsWith(rokMiesiac));
+            const treningiMies = Object.values(eventMap).flat().filter((t) => t.data.startsWith(rokMiesiac));
             const idsMies = new Set(treningiMies.map((t) => t.id));
-            const obecnosciMies = wszystkieObecnosci.filter((o) =>
-              idsMies.has(o.trening_id)
-            );
-            const obecniMies = obecnosciMies.filter(
-              (o) => o.status === 'obecny' || o.status === 'spozniony'
-            ).length;
-            const procent =
-              obecnosciMies.length > 0
-                ? Math.round((obecniMies / obecnosciMies.length) * 100)
-                : 0;
+            const obecnosciMies = wszystkieObecnosci.filter((o) => idsMies.has(o.trening_id));
+            const obecniMies = obecnosciMies.filter((o) => o.status === 'obecny' || o.status === 'spozniony').length;
+            const procent = obecnosciMies.length > 0 ? Math.round((obecniMies / obecnosciMies.length) * 100) : 0;
             return (
               <>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-black text-white leading-none">
-                    {procent}
-                  </span>
+                  <span className="text-5xl font-black text-white leading-none">{procent}</span>
                   <span className="text-2xl text-white/40 font-bold">%</span>
                 </div>
                 <div className="w-full h-3 bg-slate-950/60 rounded-full overflow-hidden mb-3 shadow-inner">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      procent >= 80
-                        ? 'bg-gradient-to-r from-green-500 to-green-400'
-                        : procent >= 60
-                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                        : 'bg-gradient-to-r from-red-500 to-red-400'
-                    }`}
-                    style={{ width: `${procent}%` }}
-                  />
+                  <div className={`h-full rounded-full transition-all ${procent >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' : procent >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${procent}%` }} />
                 </div>
                 <div className="flex items-center justify-between text-xs text-white/50 mb-4">
-                  <span>
-                    <span className="text-green-400 font-semibold">
-                      {obecniMies}
-                    </span>{' '}
-                    obecnych
-                  </span>
+                  <span><span className="text-green-400 font-semibold">{obecniMies}</span> obecnych</span>
                   <span>{obecnosciMies.length} wpisów</span>
                 </div>
-                <Link
-                  href="/statystyki"
-                  className="w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all"
-                >
+                <Link href="/statystyki" className="w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
                   <BarChart3Icon className="w-3.5 h-3.5" /> Pełne statystyki
                 </Link>
               </>
