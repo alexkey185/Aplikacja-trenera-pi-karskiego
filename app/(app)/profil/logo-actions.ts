@@ -4,11 +4,16 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getErrorMessage } from '@/lib/errors';
+import { isDemoMode } from '@/lib/demo';
 import { revalidatePath } from 'next/cache';
 
 const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp'];
 
 export async function uploadLogo(formData: FormData) {
+  if (await isDemoMode()) {
+    return { error: 'W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.' };
+  }
+
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
 
@@ -37,7 +42,6 @@ export async function uploadLogo(formData: FormData) {
   const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
   const filePath = `${druzynaId}/logo.${ext}`;
 
-  // 1. Usuwanie starych plików (rotacja)
   try {
     const { data: existingFiles } = await supabase.storage.from('club-logos').list(druzynaId);
     if (existingFiles && existingFiles.length > 0) {
@@ -48,7 +52,6 @@ export async function uploadLogo(formData: FormData) {
     console.error('Błąd czyszczenia starego logo:', err);
   }
 
-  // 2. Upload nowego pliku
   const { error: uploadError } = await supabase.storage
     .from('club-logos')
     .upload(filePath, file, { upsert: true, contentType: file.type });
@@ -57,7 +60,6 @@ export async function uploadLogo(formData: FormData) {
     return { error: getErrorMessage(uploadError) };
   }
 
-  // 3. Zapis URL w bazie
   const { data: { publicUrl } } = supabase.storage.from('club-logos').getPublicUrl(filePath);
   const finalUrl = `${publicUrl}?t=${Date.now()}`;
 

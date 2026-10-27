@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
 import { dodajZawodnikaSchema } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
+import { isDemoMode } from '@/lib/demo';
 import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import type { FormState } from '@/lib/action-result';
@@ -13,6 +14,10 @@ export async function aktualizujZawodnika(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  if (await isDemoMode()) {
+    return { error: 'W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.' };
+  }
+
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
@@ -63,6 +68,10 @@ export async function aktualizujZawodnika(
 }
 
 export async function usunZawodnika(formData: FormData) {
+  if (await isDemoMode()) {
+    throw new Error('W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.');
+  }
+
   const idStr = formData.get('id') as string;
   const id = parseInt(idStr, 10);
 
@@ -85,7 +94,7 @@ export async function usunZawodnika(formData: FormData) {
     .single();
 
   if (errFetch || !zawodnik) {
-    throw new Error('Nie znaleziono zawodnika w aktywnej druzynie.');
+    throw new Error('Nie znaleziono zawodnika w aktywnej drużynie.');
   }
 
   const { error, count } = await supabase
