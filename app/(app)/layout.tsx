@@ -5,7 +5,6 @@ import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
 import { BottomNavSkeleton } from '@/components/BottomNavSkeleton';
-import { DemoBanner } from '@/components/DemoBanner';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { getDzisISO } from '@/lib/dates';
@@ -43,10 +42,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
       <Suspense fallback={null}>
         <ToastListener />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <DemoBanner />
       </Suspense>
 
       <AppBackground priority />

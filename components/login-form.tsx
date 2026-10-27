@@ -76,10 +76,8 @@ export function LoginForm() {
         </div>
 
         <form onSubmit={handleLogin} noValidate className="space-y-4">
-          {/* Google OAuth */}
           <GoogleSignInButton nextPath="/dashboard" />
 
-          {/* Separator */}
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10" />
@@ -101,7 +99,8 @@ export function LoginForm() {
             value={email}
             onChange={(v) => {
               setEmail(v);
-              if (fieldErrors.email) setFieldErrors((fe) => ({ ...fe, email: undefined }));
+              if (fieldErrors.email)
+                setFieldErrors((fe) => ({ ...fe, email: undefined }));
             }}
             placeholder="trener@example.com"
             error={fieldErrors.email}
@@ -117,7 +116,8 @@ export function LoginForm() {
             value={password}
             onChange={(v) => {
               setPassword(v);
-              if (fieldErrors.password) setFieldErrors((fe) => ({ ...fe, password: undefined }));
+              if (fieldErrors.password)
+                setFieldErrors((fe) => ({ ...fe, password: undefined }));
             }}
             placeholder="Wpisz hasło"
             error={fieldErrors.password}

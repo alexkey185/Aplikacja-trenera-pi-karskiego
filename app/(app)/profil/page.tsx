@@ -65,7 +65,9 @@ export default async function Profil() {
       <header className="mb-6 flex items-center gap-3 animate-fadeIn">
         <PageHeaderLogo icon={User} logoUrl={activeDruzyna?.logo_url ?? null} />
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">Profil</h1>
+          <h1 className="text-2xl font-bold leading-tight text-white drop-shadow-lg">
+            Profil
+          </h1>
           <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">
             Twoje konto i ustawienia
           </p>
@@ -95,7 +97,9 @@ export default async function Profil() {
                 <div className="text-xs text-white/50 uppercase tracking-widest font-bold mb-1">
                   Zalogowany jako
                 </div>
-                <div className="font-bold text-white text-lg truncate drop-shadow">{email}</div>
+                <div className="font-bold text-white text-lg truncate drop-shadow">
+                  {email}
+                </div>
               </>
             )}
             <div className="text-xs text-white/60 mt-1 flex items-center gap-1.5">
@@ -118,7 +122,6 @@ export default async function Profil() {
         </div>
       )}
 
-      {/* Podmieniony formularz na nowy komponent */}
       <ProfilForm imie={imie} nazwisko={nazwisko} />
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
@@ -158,7 +161,9 @@ export default async function Profil() {
                 <div className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">
                   Ostatnie logowanie
                 </div>
-                <div className="text-sm text-white truncate">{ostatnieLogowanie}</div>
+                <div className="text-sm text-white truncate">
+                  {ostatnieLogowanie}
+                </div>
               </div>
             </div>
           </div>
@@ -188,14 +193,16 @@ export default async function Profil() {
                 </div>
               </div>
               <div className="text-[10px] font-bold text-green-400 bg-green-500/15 border border-green-400/30 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
-                <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                v{consent.terms_version}
+                <Check className="w-2.5 h-2.5" strokeWidth={3} />v
+                {consent.terms_version}
               </div>
             </div>
 
             <div className="flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-white/5">
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-white">Polityka prywatności</div>
+                <div className="text-xs font-semibold text-white">
+                  Polityka prywatności
+                </div>
                 <div className="text-[10px] text-white/50">
                   Zaakceptowana{' '}
                   {new Intl.DateTimeFormat('pl-PL', {
@@ -226,8 +233,8 @@ export default async function Profil() {
           </h3>
         </div>
         <p className="text-xs text-white/60 mb-4 leading-relaxed">
-          Pobierz kopię zapasową swojej drużyny — wszyscy zawodnicy, treningi i historia obecności
-          w jednym pliku JSON. Zapisz na dysku lub w chmurze.
+          Pobierz kopię zapasową swojej drużyny — wszyscy zawodnicy, treningi i
+          historia obecności w jednym pliku JSON. Zapisz na dysku lub w chmurze.
         </p>
         <a
           href="/api/export/backup"
@@ -247,7 +254,8 @@ export default async function Profil() {
           </h3>
         </div>
         <p className="text-xs text-white/60 mb-4 leading-relaxed">
-          Znalazłeś błąd? Masz pomysł na nową funkcję? Napisz - to pomaga ulepszyć aplikację.
+          Znalazłeś błąd? Masz pomysł na nową funkcję? Napisz — to pomaga ulepszyć
+          aplikację.
         </p>
         <Link
           href="/profil/pomoc"
@@ -276,8 +284,11 @@ export default async function Profil() {
           </h3>
         </div>
         <p className="text-xs text-white/50 mb-4 leading-relaxed">
-          Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane (zawodnicy, treningi, obecności) zostaną
-          trwale usunięte. <strong className="text-white/70">Przed usunięciem pobierz kopię zapasową.</strong>
+          Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane (zawodnicy,
+          treningi, obecności) zostaną trwale usunięte.{' '}
+          <strong className="text-white/70">
+            Przed usunięciem pobierz kopię zapasową.
+          </strong>
         </p>
         <DeleteAccountButton />
       </div>

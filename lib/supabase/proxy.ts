@@ -1,8 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Dodajemy '/demo' do ścieżek publicznych!
-const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin', '/auth', '/demo'];
+const PUBLIC_PATHS = ['/', '/prywatnosc', '/regulamin', '/auth'];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => {
@@ -14,14 +13,12 @@ function isPublicPath(pathname: string): boolean {
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Redirect OAuth ?code= na root
   if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/callback';
     return NextResponse.redirect(url);
   }
 
-  // FAST PATH: ścieżki publiczne (w tym /demo) - zwróć next() bez sprawdzania sesji
   if (isPublicPath(pathname)) {
     return NextResponse.next({ request });
   }

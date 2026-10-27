@@ -6,13 +6,16 @@ import { toast } from 'sonner';
 
 const MESSAGES: Record<
   string,
-  { type: 'success' | 'error' | 'info' | 'warning'; title: string; description?: string }
+  {
+    type: 'success' | 'error' | 'info' | 'warning';
+    title: string;
+    description?: string;
+  }
 > = {
   // Zawodnicy
   zawodnik_dodany: { type: 'success', title: 'Zawodnik dodany' },
   zawodnik_zapisany: { type: 'success', title: 'Zawodnik zapisany' },
   zawodnik_usuniety: { type: 'success', title: 'Zawodnik usunięty' },
-  // (zawodnicy_zaimportowani — obsługiwane osobno z licznikami)
 
   // Treningi
   trening_dodany: { type: 'success', title: 'Trening dodany' },
@@ -58,7 +61,9 @@ export function ToastListener() {
       const slowoImp = imp === 1 ? 'zawodnika' : 'zawodników';
       const desc =
         skip > 0
-          ? `Dodano ${imp} ${slowoImp}, pominięto ${skip} ${skip === 1 ? 'duplikat' : 'duplikatów'}`
+          ? `Dodano ${imp} ${slowoImp}, pominięto ${skip} ${
+              skip === 1 ? 'duplikat' : 'duplikatów'
+            }`
           : `Dodano ${imp} ${slowoImp}`;
       toast.success('Import zakończony', { description: desc });
     } else {

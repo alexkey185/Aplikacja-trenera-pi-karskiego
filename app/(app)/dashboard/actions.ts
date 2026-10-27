@@ -64,7 +64,6 @@ export async function zapiszWynikLubNotatke(
     return { error: parsed.error.issues[0].message };
   }
 
-  // FIX: count przekazywany do update(), nie do select()
   const { error, count } = await supabase
     .from('treningi')
     .update({ notatki: parsed.data.notatki }, { count: 'exact' })

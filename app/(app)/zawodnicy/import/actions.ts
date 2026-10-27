@@ -16,7 +16,9 @@ export async function importZawodnicy(formData: FormData) {
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) throw new Error('Brak aktywnej drużyny.');
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'importZawodnicy', 5, 3600);
   }
@@ -41,7 +43,6 @@ export async function importZawodnicy(formData: FormData) {
     throw new Error(`Maksymalnie ${MAX_ROWS} zawodników na raz.`);
   }
 
-  // Duplikaty: sprawdź (imie, nazwisko) case-insensitive w tej drużynie
   const { data: istniejacy } = await supabase
     .from('zawodnicy')
     .select('imie, nazwisko')
@@ -68,7 +69,6 @@ export async function importZawodnicy(formData: FormData) {
     );
   }
 
-  // RLS: druzyna_id musi należeć do zalogowanego usera — getActiveDruzynaId() to gwarantuje
   const insertRows = nowi.map((r) => ({ ...r, druzyna_id: druzynaId }));
 
   const { error } = await supabase.from('zawodnicy').insert(insertRows);

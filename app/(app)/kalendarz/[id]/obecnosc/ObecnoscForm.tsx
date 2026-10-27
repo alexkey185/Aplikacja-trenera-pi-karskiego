@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo } from 'react';
 import { zapiszObecnosc } from './actions';
-import { Save, TrendingUp, Lock } from 'lucide-react';
-import { toast } from 'sonner';
+import { Save, TrendingUp } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -20,14 +18,16 @@ const opcje = [
     icon: '✓',
     title: 'Obecny',
     color: 'text-green-400',
-    bgActive: 'bg-gradient-to-br from-green-500 to-green-700 border-green-400 shadow-lg shadow-green-900/50',
+    bgActive:
+      'bg-gradient-to-br from-green-500 to-green-700 border-green-400 shadow-lg shadow-green-900/50',
   },
   {
     value: 'nieobecny',
     icon: '✗',
     title: 'Nieobecny',
     color: 'text-red-400',
-    bgActive: 'bg-gradient-to-br from-red-500 to-red-700 border-red-400 shadow-lg shadow-red-900/50',
+    bgActive:
+      'bg-gradient-to-br from-red-500 to-red-700 border-red-400 shadow-lg shadow-red-900/50',
   },
 ] as const;
 
@@ -44,9 +44,6 @@ export function ObecnoscForm({
   previousStatus?: Record<number, string>;
   typTreningu?: string;
 }) {
-  const searchParams = useSearchParams();
-  const isDemo = searchParams.get('demo') === 'true';
-
   const [statuses, setStatuses] = useState<Record<number, string>>(() => {
     const init: Record<number, string> = {};
     zawodnicy.forEach((z) => {
@@ -82,12 +79,6 @@ export function ObecnoscForm({
   const procent = total > 0 ? Math.round((stats.obecny / total) * 100) : 0;
 
   const zmienStatus = (id: number, status: string) => {
-    if (isDemo) {
-      toast.error('W wersji demo nie zapisujemy zmian', {
-        description: 'Załóż konto, aby zarządzać obecnością.',
-      });
-      return;
-    }
     setStatuses((s) => ({ ...s, [id]: status }));
   };
 
@@ -96,17 +87,7 @@ export function ObecnoscForm({
 
   return (
     <form action={zapiszObecnosc.bind(null, treningId)} className="space-y-3">
-      {isDemo && (
-        <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3 flex items-start gap-2 text-xs text-blue-200">
-          <Lock className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>
-            <strong>Wersja demonstracyjna.</strong> Możesz przeglądać listę, ale nie możesz zmieniać obecności. Załóż konto, aby zarządzać swoją drużyną.
-          </span>
-        </div>
-      )}
-
-      {/* Licznik na żywo */}
-      <div className={`bg-slate-900/80 backdrop-blur-lg border border-white/20 rounded-2xl p-3 animate-fadeIn sticky top-4 z-10 shadow-2xl shadow-black/40 ${isDemo ? 'opacity-70 pointer-events-none' : ''}`}>
+      <div className="bg-slate-900/80 backdrop-blur-lg border border-white/20 rounded-2xl p-3 animate-fadeIn sticky top-4 z-10 shadow-2xl shadow-black/40">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-700 rounded-xl blur-md opacity-60" />
@@ -116,16 +97,22 @@ export function ObecnoscForm({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white drop-shadow leading-none">{stats.obecny}</span>
+              <span className="text-2xl font-bold text-white drop-shadow leading-none">
+                {stats.obecny}
+              </span>
               <span className="text-white/60 text-sm">/ {total}</span>
-              <span className="text-white/80 text-xs ml-auto font-semibold">{procent}%</span>
+              <span className="text-white/80 text-xs ml-auto font-semibold">
+                {procent}%
+              </span>
             </div>
             <div className="text-[10px] text-white/60 mt-0.5 flex items-center gap-2">
               <span>obecnych na treningu</span>
               {stats.nieobecny > 0 && (
                 <>
                   <span className="text-white/30">·</span>
-                  <span className="text-red-400/80 font-medium">{stats.nieobecny} nieob.</span>
+                  <span className="text-red-400/80 font-medium">
+                    {stats.nieobecny} nieob.
+                  </span>
                 </>
               )}
             </div>
@@ -145,15 +132,17 @@ export function ObecnoscForm({
         </div>
       </div>
 
-      {/* Lista zawodników */}
-      <ul className={`space-y-1 md:space-y-1.5 ${isDemo ? 'opacity-80' : ''}`}>
+      <ul className="space-y-1 md:space-y-1.5">
         {zawodnicy.map((z, i) => {
           const aktualny = statuses[z.id];
           const opcjaAktywna = opcje.find((o) => o.value === aktualny);
           return (
             <li
               key={z.id}
-              className={`bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-lg md:rounded-xl px-2.5 md:px-3 py-1.5 md:py-2 animate-fadeIn stagger-${Math.min(i + 1, 8)} ${isDemo ? 'cursor-not-allowed' : ''}`}
+              className={`bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-lg md:rounded-xl px-2.5 md:px-3 py-1.5 md:py-2 animate-fadeIn stagger-${Math.min(
+                i + 1,
+                8
+              )}`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
                 <div className="relative flex-shrink-0">
@@ -171,7 +160,11 @@ export function ObecnoscForm({
                   <div className="font-semibold text-xs md:text-sm truncate text-white leading-tight">
                     {z.imie} {z.nazwisko}
                   </div>
-                  <div className={`text-[9px] md:text-[11px] font-medium truncate leading-tight mt-0.5 ${opcjaAktywna?.color ?? 'text-white/60'}`}>
+                  <div
+                    className={`text-[9px] md:text-[11px] font-medium truncate leading-tight mt-0.5 ${
+                      opcjaAktywna?.color ?? 'text-white/60'
+                    }`}
+                  >
                     {opcjaAktywna?.title ?? '-'}
                   </div>
                 </div>
@@ -186,14 +179,17 @@ export function ObecnoscForm({
                         title={o.title}
                         aria-label={o.title}
                         onClick={() => zmienStatus(z.id, o.value)}
-                        disabled={isDemo}
                         className={`relative w-9 h-9 md:w-10 md:h-10 rounded-lg border flex items-center justify-center transition-all ${
                           aktywny
                             ? `${o.bgActive} scale-105`
                             : 'bg-white/5 border-white/15 hover:border-white/30 hover:bg-white/10 hover:scale-105'
-                        } ${isDemo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        }`}
                       >
-                        <span className={`text-lg font-bold ${aktywny ? 'text-white' : o.color}`}>
+                        <span
+                          className={`text-lg font-bold ${
+                            aktywny ? 'text-white' : o.color
+                          }`}
+                        >
                           {o.icon}
                         </span>
                       </button>
@@ -206,15 +202,18 @@ export function ObecnoscForm({
         })}
       </ul>
 
-      {/* Ukryte pola dla formularza */}
       {Object.entries(statuses).map(([zawodnikId, status]) => (
-        <input key={zawodnikId} type="hidden" name={`status_${zawodnikId}`} value={status} />
+        <input
+          key={zawodnikId}
+          type="hidden"
+          name={`status_${zawodnikId}`}
+          value={status}
+        />
       ))}
 
       <button
         type="submit"
-        disabled={isDemo}
-        className={`group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-0.5 animate-glow text-sm md:text-base mt-2 ${isDemo ? 'opacity-50 cursor-not-allowed hover:translate-y-0 hover:shadow-none' : ''}`}
+        className="group w-full flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold py-3.5 rounded-2xl transition-all hover:shadow-2xl hover:shadow-green-500/60 hover:-translate-y-0.5 animate-glow text-sm md:text-base mt-2"
       >
         <Save className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
         Zapisz obecność

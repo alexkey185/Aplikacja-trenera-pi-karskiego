@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
-import { isDemoMode } from '@/lib/demo';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -15,10 +14,6 @@ const DOZWOLONE_STATUSY = new Set<string>([
 ]);
 
 export async function zapiszObecnosc(treningId: number, formData: FormData) {
-  if (await isDemoMode()) {
-    throw new Error('W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.');
-  }
-
   if (!Number.isInteger(treningId) || treningId <= 0) {
     throw new Error('Nieprawidłowe ID treningu.');
   }

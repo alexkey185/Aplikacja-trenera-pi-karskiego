@@ -1,16 +1,6 @@
-﻿// lib/dates.ts
+// lib/dates.ts
 export const TIMEZONE = 'Europe/Warsaw' as const;
 
-// ═══════════════════════════════════════════════════════════════
-// CACHE FORMATTERÓW Intl
-//
-// `toLocaleDateString('sv-SE', { timeZone })` tworzy nowy
-// Intl.DateTimeFormat przy KAŻDYM wywołaniu. To ~5-10x wolniejsze
-// niż reużycie formattera. Na mobile (wolny CPU) odczuwalne
-// przy renderach list z wieloma datami.
-//
-// `format()` dla 'sv-SE' zwraca dokładnie YYYY-MM-DD (ISO).
-// ═══════════════════════════════════════════════════════════════
 const DZIS_FORMATTER = new Intl.DateTimeFormat('sv-SE', {
   timeZone: TIMEZONE,
 });
@@ -119,4 +109,16 @@ export function formatPelnePL(iso: string): string {
 
 export function formatMiesiacRok(date: Date): string {
   return date.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+}
+
+// ── NOWE FUNKCJE (współdzielone dla serwera i klienta) ──
+
+export function formatMiesiac(iso: string): string {
+  const [rr, mm] = iso.split('-').map(Number);
+  const nazwa = new Date(rr, mm - 1, 1).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+  return nazwa.charAt(0).toUpperCase() + nazwa.slice(1);
+}
+
+export function formatDataKrotka(iso: string): string {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' });
 }

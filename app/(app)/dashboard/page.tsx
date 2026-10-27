@@ -17,11 +17,7 @@ type TreningZObecnoscia = {
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
-export default async function Dashboard({
-  searchParams,
-}: {
-  searchParams: Promise<{ w?: string }>;
-}) {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ w?: string }> }) {
   const params = await searchParams;
   const teraz = new Date();
   const dzisStr = getDzisISO();
@@ -29,48 +25,43 @@ export default async function Dashboard({
   let poniedzialek = getMonday(teraz);
   if (params.w) {
     const parsed = new Date(params.w + 'T00:00:00');
-    if (!isNaN(parsed.getTime())) {
-      poniedzialek = getMonday(parsed);
-    }
+    if (!isNaN(parsed.getTime())) poniedzialek = getMonday(parsed);
   }
 
   const niedziela = addDays(poniedzialek, 6);
-
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) redirect('/druzyny/nowa');
 
   const activeDruzyna = await getActiveDruzyna();
 
-  const odD = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
-  const doD = new Date(teraz.getFullYear(), teraz.getMonth() + 2, 0);
+  // Pobieramy tylko to, co potrzebne na ten widok.
+  // Optymalizacja: nie pobieramy już 3 miesięcy do pamięci, a tylko wyświetlany tydzień i bieżący miesiąc do statystyk.
+  const poczatekMiesiaca = new Date(teraz.getFullYear(), teraz.getMonth(), 1);
+  const koniecMiesiaca = new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0);
+
+  const odData = toISO(poniedzialek) < toISO(poczatekMiesiaca) ? toISO(poniedzialek) : toISO(poczatekMiesiaca);
+  const doData = toISO(niedziela) > toISO(koniecMiesiaca) ? toISO(niedziela) : toISO(koniecMiesiaca);
 
   const [treningiRes] = await Promise.all([
     supabase
       .from('treningi')
-      .select(`
-        id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
-        obecnosc (trening_id, status)
-      `)
+      .select(`id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, obecnosc (trening_id, status)`)
       .eq('druzyna_id', druzynaId)
-      .gte('data', toISO(odD))
-      .lte('data', toISO(doD))
+      .gte('data', odData)
+      .lte('data', doData)
       .order('data', { ascending: true })
       .order('godzina', { ascending: true }),
   ]);
 
-  if (treningiRes.error) {
-    console.error('Błąd pobierania treningów:', treningiRes.error);
-  }
+  if (treningiRes.error) console.error('Błąd pobierania treningów:', treningiRes.error);
 
   const lista = (treningiRes.data ?? []) as unknown as TreningZObecnoscia[];
-
   const wszystkieObecnosci = lista.flatMap((t) => t.obecnosc ?? []);
 
   const stats = new Map<number, { obecni: number; nieobecni: number }>();
   lista.forEach((t) => {
-    let obecni = 0;
-    let nieobecni = 0;
+    let obecni = 0; let nieobecni = 0;
     for (const o of t.obecnosc ?? []) {
       if (o.status === 'obecny' || o.status === 'spozniony') obecni++;
       else nieobecni++;
@@ -79,30 +70,21 @@ export default async function Dashboard({
   });
 
   const dni = Array.from({ length: 7 }, (_, i) => addDays(poniedzialek, i));
-
   const eventMap: Record<string, TreningZObecnoscia[]> = {};
   lista.forEach((t) => {
     if (!eventMap[t.data]) eventMap[t.data] = [];
     eventMap[t.data].push(t);
   });
 
-  const jestWTygodniu =
-    dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
+  const jestWTygodniu = dzisStr >= toISO(poniedzialek) && dzisStr <= toISO(niedziela);
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto">
       <DashboardClient
-        initialDni={dni}
-        poniedzialekISO={toISO(poniedzialek)}
-        niedzielaISO={toISO(niedziela)}
-        prevWeek={toISO(addDays(poniedzialek, -7))}
-        nextWeek={toISO(addDays(poniedzialek, 7))}
-        jestWTygodniu={jestWTygodniu}
-        eventMap={eventMap}
-        stats={stats}
-        wszystkieObecnosci={wszystkieObecnosci}
-        topBar={<TopBar />}
-        logoUrl={activeDruzyna?.logo_url ?? null}
+        initialDni={dni} poniedzialekISO={toISO(poniedzialek)} niedzielaISO={toISO(niedziela)}
+        prevWeek={toISO(addDays(poniedzialek, -7))} nextWeek={toISO(addDays(poniedzialek, 7))}
+        jestWTygodniu={jestWTygodniu} eventMap={eventMap} stats={stats}
+        wszystkieObecnosci={wszystkieObecnosci} topBar={<TopBar />} logoUrl={activeDruzyna?.logo_url ?? null}
       />
     </div>
   );

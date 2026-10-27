@@ -13,7 +13,6 @@ import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
 import { z } from 'zod';
 
-// P1.2: Walidacja formatu UUID
 const uuidSchema = z.string().uuid();
 
 export async function aktualizujDruzyna(id: string, formData: FormData) {
@@ -35,7 +34,6 @@ export async function aktualizujDruzyna(id: string, formData: FormData) {
   const parsed = parseFormData(dodajDruzynaSchema, formData);
   const { nazwa, rocznik, kolor } = parsed;
 
-  // P1.2: Dodanie .eq('user_id', user.id) dla Defense in Depth
   const { error } = await supabase
     .from('druzyny')
     .update({ nazwa, rocznik, kolor })
@@ -70,7 +68,6 @@ export async function usunDruzyna(formData: FormData) {
 
   await enforceRateLimit(`user:${user.id}`, 'usunDruzyna', 5, 3600);
 
-  // P1.2: Filtr user_id przy sprawdzaniu istnienia
   const { data: druzyna, error: errFetch } = await supabase
     .from('druzyny')
     .select('id')
@@ -82,7 +79,6 @@ export async function usunDruzyna(formData: FormData) {
     throw new Error('Nie znaleziono druzyny.');
   }
 
-  // P1.2: Filtr user_id przy usuwaniu
   const { error } = await supabase
     .from('druzyny')
     .delete()
@@ -100,7 +96,7 @@ export async function usunDruzyna(formData: FormData) {
     const { data: pozostale } = await supabase
       .from('druzyny')
       .select('id')
-      .eq('user_id', user.id) // P1.2: zawężenie do drużyn użytkownika
+      .eq('user_id', user.id)
       .order('created_at', { ascending: true })
       .limit(1);
 

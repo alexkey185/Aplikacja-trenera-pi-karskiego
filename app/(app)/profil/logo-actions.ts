@@ -4,22 +4,19 @@ import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getErrorMessage } from '@/lib/errors';
-import { isDemoMode } from '@/lib/demo';
 import { revalidatePath } from 'next/cache';
 
 const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp'];
 
 export async function uploadLogo(formData: FormData) {
-  if (await isDemoMode()) {
-    return { error: 'W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.' };
-  }
-
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
 
   if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (user) {
     try {
       await enforceRateLimit(`user:${user.id}`, 'uploadLogo', 10, 3600);
@@ -60,7 +57,9 @@ export async function uploadLogo(formData: FormData) {
     return { error: getErrorMessage(uploadError) };
   }
 
-  const { data: { publicUrl } } = supabase.storage.from('club-logos').getPublicUrl(filePath);
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('club-logos').getPublicUrl(filePath);
   const finalUrl = `${publicUrl}?t=${Date.now()}`;
 
   const { error: dbError } = await supabase

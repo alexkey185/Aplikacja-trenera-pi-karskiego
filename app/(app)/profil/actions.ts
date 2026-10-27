@@ -6,7 +6,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getErrorMessage } from '@/lib/errors';
-import { isDemoMode } from '@/lib/demo';
 
 export type ProfilFormState = {
   error?: string;
@@ -22,10 +21,6 @@ export async function zaktualizujProfil(
   prevState: ProfilFormState,
   formData: FormData
 ): Promise<ProfilFormState> {
-  if (await isDemoMode()) {
-    return { error: 'W wersji demo nie zapisujemy zmian. Załóż konto, aby korzystać z aplikacji.' };
-  }
-
   const supabase = await createClient();
 
   const raw = {
@@ -65,10 +60,6 @@ export async function wyloguj() {
 }
 
 export async function usunKonto(): Promise<{ error?: string }> {
-  if (await isDemoMode()) {
-    return { error: 'W wersji demo nie można usunąć konta.' };
-  }
-
   const supabase = await createClient();
 
   const {

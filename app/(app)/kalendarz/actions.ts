@@ -30,7 +30,9 @@ export async function przeniesTrening(
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (user) {
     try {
       await enforceRateLimit(`user:${user.id}`, 'przeniesTrening', 100, 3600);

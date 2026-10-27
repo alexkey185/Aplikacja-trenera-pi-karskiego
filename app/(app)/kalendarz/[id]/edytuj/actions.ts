@@ -19,7 +19,9 @@ export async function aktualizujTrening(
     throw new Error('Brak aktywnej druzyny.');
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'aktualizujTrening', 100, 3600);
   }
@@ -82,11 +84,17 @@ export async function usunTreningZakres(
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) return { error: 'Brak aktywnej druzyny.' };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (user) {
     const rl = await checkRateLimit(`user:${user.id}`, 'usunTreningZakres', 50, 3600);
     if (!rl.allowed) {
-      return { error: `Za duzo operacji. Sprobuj ponownie za ${Math.ceil(rl.retryAfter / 60)} min.` };
+      return {
+        error: `Za duzo operacji. Sprobuj ponownie za ${Math.ceil(
+          rl.retryAfter / 60
+        )} min.`,
+      };
     }
   }
 
