@@ -14,7 +14,7 @@ export type Druzyna = {
   kolor: string;
   created_at: string;
   logo_url: string | null;
-  rola: Rola; // <-- Nowe pole
+  rola: Rola;
 };
 
 export const DRUZYNY_CACHE_TAG = 'druzyny';
@@ -25,7 +25,6 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  // Pobieramy drużyny przez tabelę łączącą
   const { data } = await supabase
     .from('druzyna_czlonkowie')
     .select(`
@@ -36,7 +35,6 @@ export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
 
   if (!data) return [];
 
-  // Mapujemy wynik z bazy na nasz płaski obiekt
   return data.map((item: any) => ({
     ...item.druzyny,
     rola: item.rola as Rola,
@@ -63,3 +61,28 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
   const druzyny = await getDruzyny();
   return druzyny.find((d) => d.id === id) ?? null;
 });
+
+export const getZawodnicyCounts = cache(
+  async (): Promise<Record<string, number>> => {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return {};
+
+    const druzyny = await getDruzyny();
+    if (druzyny.length === 0) return {};
+    const druzynaIds = druzyny.map((d) => d.id);
+
+    const { data: zawodnicy } = await supabase
+      .from('zawodnicy')
+      .select('druzyna_id')
+      .in('druzyna_id', druzynaIds);
+
+    const counts: Record<string, number> = {};
+    (zawodnicy ?? []).forEach((z) => {
+      if (z.druzyna_id) {
+        counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
+      }
+    });
+    return counts;
+  }
+);
