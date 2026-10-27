@@ -4,16 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { aktualizujDruzyna, usunDruzyna } from './actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import {
-  Users,
-  Hash,
-  Palette,
-  Save,
-  Check,
-  Trash2,
-  AlertTriangle,
-  X,
-} from 'lucide-react';
+import { Users, Hash, Palette, Save, Check, Trash2, AlertTriangle, X } from 'lucide-react';
 
 const KOLORY = [
   { value: 'green', bg: 'bg-green-500', ring: 'peer-checked:ring-green-400' },
@@ -122,7 +113,6 @@ export function EdytujDruzynaForm({
           </div>
         </fieldset>
 
-        {/* Zapisz + Anuluj obok siebie */}
         <div className="flex gap-2 pt-2">
           <Link
             href="/druzyny"
@@ -143,7 +133,7 @@ export function EdytujDruzynaForm({
         </div>
       </form>
 
-      {/* Strefa niebezpieczna - usuwanie */}
+      {/* Strefa niebezpieczna - chroniona po stronie serwera, ale dla pewności ukrywamy przycisk */}
       <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle className="w-4 h-4 text-red-400" />
@@ -165,7 +155,6 @@ export function EdytujDruzynaForm({
         </button>
       </div>
 
-      {/* Ukryty formularz usuwania */}
       <form ref={deleteFormRef} action={usunDruzyna} className="hidden">
         <input type="hidden" name="id" value={druzyna.id} />
       </form>

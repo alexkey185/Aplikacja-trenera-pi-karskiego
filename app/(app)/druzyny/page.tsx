@@ -76,6 +76,8 @@ export default async function DruzynyPage() {
               const gradient = KOLORY[d.kolor] ?? KOLORY.green;
               const count = countMap[d.id] ?? 0;
               const inicjal = d.nazwa.charAt(0).toUpperCase();
+              const isAdmin = d.rola === 'admin'; // Sprawdzamy rolę
+              
               return (
                 <div
                   key={d.id}
@@ -105,6 +107,9 @@ export default async function DruzynyPage() {
                           <Check className="w-2.5 h-2.5" strokeWidth={3} /> Aktywna
                         </span>
                       )}
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-blue-400 bg-blue-500/15 border border-blue-400/30 px-1.5 py-0.5 rounded">
+                        {d.rola}
+                      </span>
                     </div>
                     <div className="text-xs text-white/50 mt-0.5">
                       {d.rocznik ? `Rocznik ${d.rocznik} · ` : ''}
@@ -113,9 +118,16 @@ export default async function DruzynyPage() {
                   </div>
 
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Link href={`/druzyny/${d.id}/edytuj`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/60 hover:text-white transition-all" title="Edytuj drużynę">
-                      <Pencil className="w-4 h-4" />
-                    </Link>
+                    {/* Ukrywamy edycję dla nie-adminów */}
+                    {isAdmin ? (
+                      <Link href={`/druzyny/${d.id}/edytuj`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 flex items-center justify-center text-white/60 hover:text-white transition-all" title="Edytuj drużynę">
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl border border-white/5 flex items-center justify-center text-white/20 cursor-not-allowed" title="Brak uprawnień do edycji">
+                        <Pencil className="w-4 h-4" />
+                      </div>
+                    )}
                   </div>
                 </div>
               );

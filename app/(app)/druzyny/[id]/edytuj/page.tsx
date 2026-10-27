@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveDruzyna } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
 import { EdytujDruzynaForm } from './EdytujDruzynaForm';
 import { ArrowLeft, Pencil } from 'lucide-react';
@@ -13,6 +14,13 @@ export default async function EdytujDruzyna({
   const { id } = await params;
 
   if (!id) notFound();
+
+  const activeDruzyna = await getActiveDruzyna();
+  
+  // OCHRONA: Tylko admin może wejść na tę stronę
+  if (!activeDruzyna || activeDruzyna.rola !== 'admin' || activeDruzyna.id !== id) {
+    redirect('/druzyny');
+  }
 
   const supabase = await createClient();
   const { data: druzyna, error } = await supabase

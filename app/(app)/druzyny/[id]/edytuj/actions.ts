@@ -4,118 +4,37 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import {
-  ACTIVE_DRUZYNA_COOKIE,
-  DRUZYNY_CACHE_TAG,
-  ZAWODNICY_CACHE_TAG,
-} from '@/lib/druzyny';
-import { enforceRateLimit } from '@/lib/rate-limit';
-import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
+import { ACTIVE_DRUZYNA_COOKIE, DRUZYNY_CACHE_TAG, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
+import { requireRole } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 const uuidSchema = z.string().uuid();
 
-export async function aktualizujDruzyna(id: string, formData: FormData) {
-  if (!uuidSchema.safeParse(id).success) {
-    throw new Error('Nieprawidłowe ID drużyny.');
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Musisz byc zalogowany.');
-  }
-
-  await enforceRateLimit(`user:${user.id}`, 'aktualizujDruzyna', 20, 3600);
-
-  const parsed = parseFormData(dodajDruzynaSchema, formData);
-  const { nazwa, rocznik, kolor } = parsed;
-
-  const { error } = await supabase
-    .from('druzyny')
-    .update({ nazwa, rocznik, kolor })
-    .eq('id', id)
-    .eq('user_id', user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidateTag(DRUZYNY_CACHE_TAG, 'default');
-  revalidatePath('/', 'layout');
-  revalidatePath('/druzyny');
-  redirect('/druzyny?toast=druzyna_zapisana');
-}
-
 export async function usunDruzyna(formData: FormData) {
-  const id = formData.get('id') as string;
+  // WYMUSZENIE ROLI: Tylko admin może usunąć drużynę
+  const druzyna = await requireRole(['admin']);
 
+  const id = formData.get('id') as string;
   if (!id || !uuidSchema.safeParse(id).success) {
     throw new Error('Nieprawidłowe ID drużyny.');
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error('Musisz byc zalogowany.');
-  }
-
-  await enforceRateLimit(`user:${user.id}`, 'usunDruzyna', 5, 3600);
-
-  const { data: druzyna, error: errFetch } = await supabase
-    .from('druzyny')
-    .select('id')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single();
-
-  if (errFetch || !druzyna) {
-    throw new Error('Nie znaleziono druzyny.');
-  }
-
+  // Usunięcie drużyny (kaskadowo usunie członków przez ON DELETE CASCADE)
   const { error } = await supabase
     .from('druzyny')
     .delete()
-    .eq('id', id)
-    .eq('user_id', user.id);
+    .eq('id', id);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
   const cookieStore = await cookies();
   const activeId = cookieStore.get(ACTIVE_DRUZYNA_COOKIE)?.value;
-
-  if (activeId === id) {
-    const { data: pozostale } = await supabase
-      .from('druzyny')
-      .select('id')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true })
-      .limit(1);
-
-    if (pozostale && pozostale.length > 0) {
-      cookieStore.set(ACTIVE_DRUZYNA_COOKIE, pozostale[0].id, {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-        secure: process.env.NODE_ENV === 'production',
-      });
-    } else {
-      cookieStore.delete(ACTIVE_DRUZYNA_COOKIE);
-    }
-  }
+  if (activeId === id) cookieStore.delete(ACTIVE_DRUZYNA_COOKIE);
 
   revalidateTag(DRUZYNY_CACHE_TAG, 'default');
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
-  revalidatePath('/druzyny');
   redirect('/druzyny?toast=druzyna_usunieta');
 }
