@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,7 +49,7 @@ function saveDraft(draft: Draft) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
   } catch {
-    // sessionStorage zablokowane (tryb prywatny) â€” pomiĹ„
+    // sessionStorage zablokowane (tryb prywatny) Ă˘â‚¬â€ť pomiÄąâ€ž
   }
 }
 
@@ -58,7 +58,7 @@ function clearDraft() {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {
-    // pomiĹ„
+    // pomiÄąâ€ž
   }
 }
 
@@ -79,7 +79,7 @@ export function SignUpForm() {
 
   const supabase = useMemo(() => createClient(), []);
 
-  // Wczytaj draft przy montaĹĽu
+  // Wczytaj draft przy montaÄąÄ˝u
   useEffect(() => {
     const draft = loadDraft();
     setEmail(draft.email);
@@ -88,7 +88,7 @@ export function SignUpForm() {
     setAcceptedTerms(draft.acceptedTerms);
   }, []);
 
-  // Zapisz draft przy kaĹĽdej zmianie
+  // Zapisz draft przy kaÄąÄ˝dej zmianie
   useEffect(() => {
     saveDraft({ email, password, repeatPassword, acceptedTerms });
   }, [email, password, repeatPassword, acceptedTerms]);
@@ -295,12 +295,7 @@ export function SignUpForm() {
             </div>
           )}
 
-          <SubmitButton
-            icon={UserPlus}
-            label="Zarejestruj sie"
-            loadingLabel="Tworzenie konta..."
-            loading={isLoading}
-          />
+          <SubmitButton loadingLabel="Tworzenie konta..." loading={isLoading}><UserPlus className="w-4 h-4 flex-shrink-0" /><span>Zarejestruj sie</span></SubmitButton>
         </form>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">

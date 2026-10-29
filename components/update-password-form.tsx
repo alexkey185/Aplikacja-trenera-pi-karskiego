@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -39,20 +39,20 @@ export function UpdatePasswordForm() {
 
       if (error) throw error;
 
-      // ═══════════════════════════════════════════════════
-      // Sukces: pełne wylogowanie + hard redirect na login.
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // Sukces: peĹ‚ne wylogowanie + hard redirect na login.
       //
       // Dlaczego nie signOut({ scope: 'others' }):
-      //   - scope: 'others' wylogowuje tylko INNE sesje, bieżąca
-      //     zostaje aktywna. User ląduje na /auth/login, ale
+      //   - scope: 'others' wylogowuje tylko INNE sesje, bieĹĽÄ…ca
+      //     zostaje aktywna. User lÄ…duje na /auth/login, ale
       //     login/page.tsx widzi zalogowanego usera i robi
-      //     redirect('/dashboard') - wygląda jakby wylogowanie
-      //     nie zadziałało.
+      //     redirect('/dashboard') - wyglÄ…da jakby wylogowanie
+      //     nie zadziaĹ‚aĹ‚o.
       //
       // Dlaczego window.location.href zamiast router.push:
-      //   - hard reload czyści cały stan klienta (loading, cache SW)
+      //   - hard reload czyĹ›ci caĹ‚y stan klienta (loading, cache SW)
       //   - standard dla operacji logout
-      // ═══════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       await supabase.auth.signOut();
       window.location.href = '/auth/login';
     } catch (err) {
@@ -69,17 +69,17 @@ export function UpdatePasswordForm() {
             <Lock className="w-7 h-7 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-white drop-shadow-lg">
-            Nowe hasło
+            Nowe hasĹ‚o
           </h1>
           <p className="text-xs text-white/60 mt-1 max-w-xs mx-auto">
-            Wpisz nowe hasło do swojego konta. Po zapisie zaloguj się ponownie.
+            Wpisz nowe hasĹ‚o do swojego konta. Po zapisie zaloguj siÄ™ ponownie.
           </p>
         </div>
 
         <form onSubmit={handleUpdatePassword} noValidate className="space-y-4">
           <AuthField
             icon={Lock}
-            label="Nowe hasło"
+            label="Nowe hasĹ‚o"
             name="password"
             id="update-password"
             type="password"
@@ -89,13 +89,13 @@ export function UpdatePasswordForm() {
               setPassword(v);
               if (fieldErrors.password) setFieldErrors((fe) => ({ ...fe, password: undefined }));
             }}
-            placeholder="Minimum 8 znaków"
+            placeholder="Minimum 8 znakĂłw"
             error={fieldErrors.password}
           />
 
           <AuthField
             icon={Lock}
-            label="Powtórz nowe hasło"
+            label="PowtĂłrz nowe hasĹ‚o"
             name="repeat-password"
             id="update-repeat-password"
             type="password"
@@ -105,7 +105,7 @@ export function UpdatePasswordForm() {
               setRepeatPassword(v);
               if (fieldErrors.repeatPassword) setFieldErrors((fe) => ({ ...fe, repeatPassword: undefined }));
             }}
-            placeholder="Powtórz hasło"
+            placeholder="PowtĂłrz hasĹ‚o"
             error={fieldErrors.repeatPassword}
           />
 
@@ -119,22 +119,17 @@ export function UpdatePasswordForm() {
             </div>
           )}
 
-          <SubmitButton
-            icon={Save}
-            label="Zmień hasło"
-            loadingLabel="Zapisywanie..."
-            loading={isLoading}
-          />
+          <SubmitButton loadingLabel="Zapisywanie..." loading={isLoading}><Save className="w-4 h-4 flex-shrink-0" /><span>ZmieĹ„ hasĹ‚o</span></SubmitButton>
         </form>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <p className="text-xs text-white/50">
-            Nie chcesz zmieniać?{' '}
+            Nie chcesz zmieniaÄ‡?{' '}
             <Link
               href="/profil"
               className="text-green-400 hover:text-green-300 font-semibold transition-colors"
             >
-              Wróć do profilu
+              WrĂłÄ‡ do profilu
             </Link>
           </p>
         </div>
@@ -146,7 +141,7 @@ export function UpdatePasswordForm() {
           className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Powrót do strony głównej
+          PowrĂłt do strony gĹ‚Ăłwnej
         </Link>
       </div>
     </div>

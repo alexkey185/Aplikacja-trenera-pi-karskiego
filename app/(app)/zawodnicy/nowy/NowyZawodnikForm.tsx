@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useActionState } from 'react';
 import { FormField } from '@/components/FormField';
@@ -24,7 +24,7 @@ export function NowyZawodnikForm() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField icon={User} label="Imię" required>
+        <FormField icon={User} label="ImiÄ™" required>
           <input 
             name="imie" 
             placeholder="np. Kamil" 
@@ -71,10 +71,10 @@ export function NowyZawodnikForm() {
           defaultValue=""
           options={[
             { value: '', label: '- wybierz -' },
-            { value: 'Bramkarz', label: '🧤 Bramkarz' },
-            { value: 'Obrońca', label: '🛡️ Obrońca' },
-            { value: 'Pomocnik', label: '⚽ Pomocnik' },
-            { value: 'Napastnik', label: '⚡ Napastnik' },
+            { value: 'Bramkarz', label: 'đź§¤ Bramkarz' },
+            { value: 'ObroĹ„ca', label: 'đź›ˇď¸Ź ObroĹ„ca' },
+            { value: 'Pomocnik', label: 'âš˝ Pomocnik' },
+            { value: 'Napastnik', label: 'âšˇ Napastnik' },
           ]}
         />
       </FormField>
@@ -84,11 +84,14 @@ export function NowyZawodnikForm() {
       </FormField>
 
       <FormField icon={FileText} label="Notatki">
-        <textarea name="notatki" rows={3} placeholder="np. Dobra gra lewą nogą" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none" />
+        <textarea name="notatki" rows={3} placeholder="np. Dobra gra lewÄ… nogÄ…" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none" />
       </FormField>
 
       <div className="pt-2">
-        <SubmitButton icon={User} label="Zapisz zawodnika" loadingLabel="Zapisywanie..." />
+        <SubmitButton loadingLabel="Zapisywanie...">
+            <User className="w-4 h-4 flex-shrink-0" />
+            <span>Zapisz zawodnika</span>
+          </SubmitButton>
       </div>
     </form>
   );

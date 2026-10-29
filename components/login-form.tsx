@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ export function LoginForm() {
 
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
-      setError('Przekierowanie trwa zbyt długo. Spróbuj odświeżyć stronę.');
+      setError('Przekierowanie trwa zbyt dĹ‚ugo. SprĂłbuj odĹ›wieĹĽyÄ‡ stronÄ™.');
     }, 10000);
 
     try {
@@ -68,10 +68,10 @@ export function LoginForm() {
             <LogIn className="w-7 h-7 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-white drop-shadow-lg">
-            Zaloguj się
+            Zaloguj siÄ™
           </h1>
           <p className="text-xs text-white/60 mt-1">
-            Wpisz email i hasło, żeby wejść do aplikacji
+            Wpisz email i hasĹ‚o, ĹĽeby wejĹ›Ä‡ do aplikacji
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export function LoginForm() {
 
           <AuthField
             icon={Lock}
-            label="Hasło"
+            label="HasĹ‚o"
             name="password"
             id="login-password"
             type="password"
@@ -119,14 +119,14 @@ export function LoginForm() {
               if (fieldErrors.password)
                 setFieldErrors((fe) => ({ ...fe, password: undefined }));
             }}
-            placeholder="Wpisz hasło"
+            placeholder="Wpisz hasĹ‚o"
             error={fieldErrors.password}
             labelRight={
               <Link
                 href="/auth/forgot-password"
                 className="text-[10px] text-green-400 hover:text-green-300 font-semibold transition-colors"
               >
-                Zapomniałeś?
+                ZapomniaĹ‚eĹ›?
               </Link>
             }
           />
@@ -141,12 +141,7 @@ export function LoginForm() {
             </div>
           )}
 
-          <SubmitButton
-            icon={LogIn}
-            label="Zaloguj się"
-            loadingLabel="Logowanie..."
-            loading={isLoading}
-          />
+          <SubmitButton loadingLabel="Logowanie..." loading={isLoading}><LogIn className="w-4 h-4 flex-shrink-0" /><span>Zaloguj siÄ™</span></SubmitButton>
         </form>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
@@ -156,7 +151,7 @@ export function LoginForm() {
               href="/auth/sign-up"
               className="text-green-400 hover:text-green-300 font-semibold transition-colors"
             >
-              Zarejestruj się
+              Zarejestruj siÄ™
             </Link>
           </p>
         </div>
@@ -168,7 +163,7 @@ export function LoginForm() {
           className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Powrót do strony głównej
+          PowrĂłt do strony gĹ‚Ăłwnej
         </Link>
       </div>
     </div>

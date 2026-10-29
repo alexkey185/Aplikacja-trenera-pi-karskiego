@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { dodajDruzyna } from './actions';
 import { TopBar } from '@/components/TopBar';
 import { ArrowLeft, Users, Hash, Palette, Save, Check, X } from 'lucide-react';
@@ -32,7 +32,7 @@ export default function NowaDruzyna() {
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">Nowa drużyna</h1>
+            <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">Nowa druĹĽyna</h1>
             <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">Nazwa, rocznik i kolor</p>
           </div>
         </div>
@@ -44,11 +44,11 @@ export default function NowaDruzyna() {
           <div className="flex items-center gap-2 mb-1.5">
             <Users className="w-3.5 h-3.5 text-white/50 group-focus-within:text-green-400 transition-colors" />
             <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-              Nazwa drużyny <span className="text-green-400 ml-1">*</span>
+              Nazwa druĹĽyny <span className="text-green-400 ml-1">*</span>
             </span>
           </div>
           <div className="bg-white/5 border border-white/15 focus-within:border-green-400/60 focus-within:bg-white/10 rounded-xl px-3 transition-all">
-            <input name="nazwa" type="text" required maxLength={80} placeholder="np. Orły 2012" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
+            <input name="nazwa" type="text" required maxLength={80} placeholder="np. OrĹ‚y 2012" className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2" />
           </div>
         </label>
 
@@ -65,7 +65,7 @@ export default function NowaDruzyna() {
         <fieldset>
           <div className="flex items-center gap-2 mb-2">
             <Palette className="w-3.5 h-3.5 text-white/50" />
-            <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">Kolor drużyny</span>
+            <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">Kolor druĹĽyny</span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {KOLORY.map((k, i) => (
@@ -77,10 +77,10 @@ export default function NowaDruzyna() {
               </label>
             ))}
           </div>
-          <p className="text-[10px] text-white/40 mt-2">Kolor pojawi się jako odznaka drużyny w przełączniku.</p>
+          <p className="text-[10px] text-white/40 mt-2">Kolor pojawi siÄ™ jako odznaka druĹĽyny w przeĹ‚Ä…czniku.</p>
         </fieldset>
 
-        {/* Utwórz + Anuluj */}
+        {/* UtwĂłrz + Anuluj */}
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Link
             href="/druzyny"
@@ -90,7 +90,7 @@ export default function NowaDruzyna() {
             Anuluj
           </Link>
           <div className="flex-1">
-            <SubmitButton icon={Save} label="Utwórz drużynę" loadingLabel="Tworzenie..." />
+            <SubmitButton loadingLabel="Tworzenie..."><Save className="w-4 h-4 flex-shrink-0" /><span>UtwĂłrz druĹĽynÄ™</span></SubmitButton>
           </div>
         </div>
       </form>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -47,10 +47,10 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
     const endDate = new Date(dataDo + 'T00:00:00');
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      return 'Wybierz poprawną datę.';
+      return 'Wybierz poprawnÄ… datÄ™.';
     }
     if (endDate < startDate) {
-      return 'Data końcowa musi być po dacie startu.';
+      return 'Data koĹ„cowa musi byÄ‡ po dacie startu.';
     }
 
     const stepDays = cykl === 'co_2_tygodnie' ? 14 : 7;
@@ -60,10 +60,10 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
     const liczba = Math.floor(diffDays / stepDays) + 1;
 
     if (liczba < 2) {
-      return 'Data końcowa daje tylko 1 wystąpienie. Zwiększ zakres lub wybierz „Nie powtarzaj".';
+      return 'Data koĹ„cowa daje tylko 1 wystÄ…pienie. ZwiÄ™ksz zakres lub wybierz â€žNie powtarzaj".';
     }
     if (liczba > 52) {
-      return `Zbyt dużo wystąpień (${liczba}). Skróć zakres do maksymalnie roku.`;
+      return `Zbyt duĹĽo wystÄ…pieĹ„ (${liczba}). SkrĂłÄ‡ zakres do maksymalnie roku.`;
     }
 
     const format = (d: Date) =>
@@ -74,7 +74,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
       });
 
     const slowo =
-      liczba === 1 ? 'wydarzenie' : liczba < 5 ? 'wydarzenia' : 'wydarzeń';
+      liczba === 1 ? 'wydarzenie' : liczba < 5 ? 'wydarzenia' : 'wydarzeĹ„';
 
     return `Zostanie utworzonych ${liczba} ${slowo} - od ${format(
       startDate
@@ -104,10 +104,10 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
             if (v !== 'trening') setCykl('nie_powtarzaj');
           }}
           options={[
-            { value: 'trening', label: '🏦 Trening' },
-            { value: 'mecz', label: '🏆 Mecz' },
-            { value: 'sparing', label: '🔥 Sparing' },
-            { value: 'turniej', label: '🎯 Turniej' },
+            { value: 'trening', label: 'đźŹ¦ Trening' },
+            { value: 'mecz', label: 'đźŹ† Mecz' },
+            { value: 'sparing', label: 'đź”Ą Sparing' },
+            { value: 'turniej', label: 'đźŽŻ Turniej' },
           ]}
         />
       </FormField>
@@ -126,8 +126,8 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              title="Otwórz w Google Maps"
-              aria-label="Otwórz lokalizację w Google Maps"
+              title="OtwĂłrz w Google Maps"
+              aria-label="OtwĂłrz lokalizacjÄ™ w Google Maps"
               className="w-7 h-7 rounded-lg bg-white/5 hover:bg-green-500/20 border border-white/10 hover:border-green-400/40 flex items-center justify-center text-white/50 hover:text-green-400 transition-all flex-shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -139,7 +139,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
       <FormField icon={Trophy} label="Przeciwnik (dla meczu/sparingu)">
         <input
           name="przeciwnik"
-          placeholder="np. Orzeł Warszawa"
+          placeholder="np. OrzeĹ‚ Warszawa"
           className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2"
         />
       </FormField>
@@ -148,7 +148,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
         <textarea
           name="notatki"
           rows={3}
-          placeholder="np. Zbiórka 17:30"
+          placeholder="np. ZbiĂłrka 17:30"
           className="w-full bg-transparent border-0 outline-none text-white placeholder:text-white/40 py-2 resize-none"
         />
       </FormField>
@@ -158,7 +158,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
           <div className="flex items-center gap-2">
             <Repeat className="w-4 h-4 text-green-400" />
             <span className="text-xs font-bold text-white/70 uppercase tracking-widest">
-              Cykliczność
+              CyklicznoĹ›Ä‡
             </span>
             <span className="text-[10px] text-white/40 ml-auto">
               (tylko dla treningu)
@@ -172,7 +172,7 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
               onChange={setCykl}
               options={[
                 { value: 'nie_powtarzaj', label: 'Nie powtarzaj (jednorazowo)' },
-                { value: 'co_tydzien', label: 'Co tydzień' },
+                { value: 'co_tydzien', label: 'Co tydzieĹ„' },
                 { value: 'co_2_tygodnie', label: 'Co 2 tygodnie' },
               ]}
             />
@@ -214,7 +214,10 @@ export function NowyTreningForm({ defaultData }: { defaultData?: string }) {
           Anuluj
         </Link>
         <div className="flex-1">
-          <SubmitButton icon={Save} label="Zapisz wydarzenie" loadingLabel="Zapisywanie..." />
+          <SubmitButton loadingLabel="Zapisywanie...">
+            <Save className="w-4 h-4 flex-shrink-0" />
+            <span>Zapisz wydarzenie</span>
+          </SubmitButton>
         </div>
       </div>
     </form>

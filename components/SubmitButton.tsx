@@ -1,33 +1,31 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { Loader2, type LucideIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 type SubmitButtonProps = {
-  icon: LucideIcon;
-  label: string;
+  /** Etykieta + opcjonalna ikona jako JSX (np. <Save /> Etykieta) */
+  children: ReactNode;
   loadingLabel?: string;
   /**
    * Opcjonalne. Używane w formularzach klienckich (np. logowanie, rejestracja),
-   * gdzie stan ładowania jest zarządzany ręcznie przez `useState`.
+   * gdzie stan ładowania jest zarządzane ręcznie przez useState.
    * W Server Actions (np. dodawanie zawodnika) można pominąć — komponent
-   * sam wykryje `pending` przez `useFormStatus`.
+   * sam wykryje pending przez useFormStatus.
    */
   loading?: boolean;
   className?: string;
 };
 
 export function SubmitButton({
-  icon: Icon,
-  label,
+  children,
   loadingLabel = 'Zapisywanie...',
   loading: loadingProp,
   className = '',
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
-  // Jeśli rodzic przekazał `loading` — używamy jego.
-  // Jeśli nie (undefined) — używamy `pending` z formularza.
   const isPending = loadingProp !== undefined ? loadingProp : pending;
 
   return (
@@ -42,10 +40,9 @@ export function SubmitButton({
           <span>{loadingLabel}</span>
         </>
       ) : (
-        <>
-          <Icon className="w-4 h-4 flex-shrink-0" />
-          <span>{label}</span>
-        </>
+        <span className="flex items-center justify-center gap-2">
+          {children}
+        </span>
       )}
     </button>
   );

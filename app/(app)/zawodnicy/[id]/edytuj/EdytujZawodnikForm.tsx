@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useActionState } from 'react';
 import Link from 'next/link';
@@ -40,7 +40,7 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField icon={User} label="Imię" required>
+        <FormField icon={User} label="ImiÄ™" required>
           <input
             name="imie"
             required
@@ -89,10 +89,10 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
           defaultValue={zawodnik.pozycja ?? ''}
           options={[
             { value: '', label: '- wybierz -' },
-            { value: 'Bramkarz', label: '🧤 Bramkarz' },
-            { value: 'Obrońca', label: '🛡️ Obrońca' },
-            { value: 'Pomocnik', label: '⚽ Pomocnik' },
-            { value: 'Napastnik', label: '⚡ Napastnik' },
+            { value: 'Bramkarz', label: 'đź§¤ Bramkarz' },
+            { value: 'ObroĹ„ca', label: 'đź›ˇď¸Ź ObroĹ„ca' },
+            { value: 'Pomocnik', label: 'âš˝ Pomocnik' },
+            { value: 'Napastnik', label: 'âšˇ Napastnik' },
           ]}
         />
       </FormField>
@@ -124,7 +124,10 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
           Anuluj
         </Link>
         <div className="flex-1">
-          <SubmitButton icon={Save} label="Zapisz zmiany" loadingLabel="Zapisywanie..." />
+          <SubmitButton loadingLabel="Zapisywanie...">
+            <Save className="w-4 h-4 flex-shrink-0" />
+            <span>Zapisz zmiany</span>
+          </SubmitButton>
         </div>
         <DeleteButton id={zawodnik.id} />
       </div>
