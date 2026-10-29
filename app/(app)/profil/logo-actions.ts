@@ -5,14 +5,17 @@ import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getErrorMessage } from '@/lib/errors';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/lib/auth-utils';
 
 const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp'];
+const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 
 export async function uploadLogo(formData: FormData) {
   const supabase = await createClient();
-  const druzynaId = await getActiveDruzynaId();
 
-  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
+  // ↓↓↓ KLUCZOWA ZMIANA: wymagamy roli admina ↓↓↓
+  const druzyna = await requireRole(['admin']);
+  const druzynaId = druzyna.id;
 
   const {
     data: { user },
@@ -28,8 +31,8 @@ export async function uploadLogo(formData: FormData) {
   const file = formData.get('logo') as File;
   if (!file || file.size === 0) return { error: 'Nie wybrano pliku.' };
 
-  if (file.size > 2 * 1024 * 1024) {
-    return { error: 'Plik jest za duży (maksymalnie 2 MB).' };
+  if (file.size > MAX_SIZE) {
+    return { error: `Plik jest za duży (maksymalnie ${MAX_SIZE / 1024 / 1024} MB).`;
   }
 
   if (!ALLOWED_MIMES.includes(file.type)) {
@@ -57,15 +60,15 @@ export async function uploadLogo(formData: FormData) {
     return { error: getErrorMessage(uploadError) };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from('club-logos').getPublicUrl(filePath);
+  const { data: { publicUrl } } = supabase.storage.from('club-logos').getPublicUrl(filePath);
   const finalUrl = `${publicUrl}?t=${Date.now()}`;
 
+  // ↓↓↓ KLUCZOWA ZMIANA: filtr user_id jako druga warstwa obrony ↓↓↓
   const { error: dbError } = await supabase
     .from('druzyny')
     .update({ logo_url: finalUrl })
-    .eq('id', druzynaId);
+    .eq('id', druzynaId)
+    .eq('user_id', user?.id);
 
   if (dbError) {
     await supabase.storage.from('club-logos').remove([filePath]);
