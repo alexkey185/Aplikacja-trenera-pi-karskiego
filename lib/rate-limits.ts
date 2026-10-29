@@ -41,7 +41,7 @@ export async function enforceRateLimitByKey(
 export async function checkRateLimitByKey(
   userId: string,
   key: RateLimitKey
-): Promise<{ allowed: boolean; retryAfter: number }> {
+): Promise<{ allowed: boolean; retryAfter?: number }> {
   const { checkRateLimit } = await import('@/lib/rate-limit');
   const cfg = RATE_LIMITS[key];
   return checkRateLimit(userId, key, cfg.max, cfg.windowSec);
