@@ -32,8 +32,7 @@ export async function uploadLogo(formData: FormData) {
   if (!file || file.size === 0) return { error: 'Nie wybrano pliku.' };
 
   if (file.size > MAX_SIZE) {
-    return { error: `Plik jest za duży (maksymalnie ${MAX_SIZE / 1024 / 1024} MB).`;
-  }
+return { error: `Plik jest za duży (maksymalnie ${MAX_SIZE / 1024 / 1024} MB).` };  }
 
   if (!ALLOWED_MIMES.includes(file.type)) {
     return { error: 'Dozwolone formaty: PNG, JPG, WEBP.' };
