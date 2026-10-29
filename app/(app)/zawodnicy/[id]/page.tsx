@@ -49,7 +49,7 @@ export default async function KartaZawodnika({
 
   const { data: zawodnik, error: errZ } = await supabase
     .from('zawodnicy')
-    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki')
+    .select('id, imie, nazwisko, rocznik, pozycja, numer, kontakt_rodzica, notatki, has_consent')
     .eq('id', idNum)
     .eq('druzyna_id', druzynaId)
     .single();
@@ -180,11 +180,7 @@ export default async function KartaZawodnika({
         <h1 className="text-xl font-semibold text-white/70 drop-shadow">Karta zawodnika</h1>
       </header>
 
-      {/* ═══════════════════════════════════════════════════════════
-          KARTA ZAWODNIKA - nowy layout
-          Mobile: duza litera/numer po lewej, imie+nazwisko pod spodem
-          Desktop: poziomo
-          ═══════════════════════════════════════════════════════════ */}
+      {/* KARTA ZAWODNIKA */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 md:p-6 mb-4 animate-fadeIn relative overflow-hidden shadow-2xl shadow-black/60">
         <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
@@ -197,7 +193,7 @@ export default async function KartaZawodnika({
             </div>
           </div>
 
-          {/* Imie + nazwisko (na mobile zawijaja sie) */}
+          {/* Imie + nazwisko */}
           <div className="flex-1 min-w-0">
             <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-lg leading-tight break-words">
               {zawodnik.imie} {zawodnik.nazwisko}
@@ -213,11 +209,36 @@ export default async function KartaZawodnika({
                   <Trophy className="w-3 h-3" /> {zawodnik.rocznik}
                 </span>
               )}
+              {/* ↓↓↓ NOWY: badge zgody rodzica ↓↓↓ */}
+              {zawodnik.has_consent ? (
+                <span className="inline-flex items-center gap-1 bg-blue-500/20 border border-blue-400/40 rounded-full px-2.5 py-1 text-xs font-medium text-blue-200" title="Zarejestrowana zgoda rodzica/opiekuna">
+                  <FileCheck2 className="w-3 h-3" /> Zgoda
+                </span>
+              ) : (
+                <Link
+                  href={`/zawodnicy/${idNum}/consent`}
+                  className="inline-flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 rounded-full px-2.5 py-1 text-xs font-medium text-amber-200 hover:bg-amber-500/30 transition-colors"
+                  title="Brak zgody rodzica — kliknij aby dodać"
+                >
+                  <FileCheck2 className="w-3 h-3" /> Brak zgody
+                </Link>
+              )}
+              {/* ↑↑↑ KONIEC NOWEGO ↑↑↑ */}
             </div>
           </div>
 
-          {/* Akcje (edycja + usuwanie) */}
+          {/* Akcje */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* ↓↓↓ NOWY: Link do zgody rodzica ↓↓↓ */}
+            <Link
+              href={`/zawodnicy/${idNum}/consent`}
+              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-blue-500/20 backdrop-blur-md border border-white/20 hover:border-blue-400/40 flex items-center justify-center text-white hover:text-blue-300 transition-colors"
+              title="Zgoda rodzica"
+              aria-label="Zgoda rodzica"
+            >
+              <FileCheck2 className="w-4 h-4" />
+            </Link>
+            {/* ↑↑↑ KONIEC NOWEGO ↑↑↑ */}
             <Link
               href={`/zawodnicy/${idNum}/edytuj`}
               className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-colors"
@@ -253,10 +274,10 @@ export default async function KartaZawodnika({
             </div>
             <div className="text-xs text-white/60 mt-1">
               {procent >= 80
-                ? '🌟 Świetna frekwencja'
+                ? 'Świetna frekwencja'
                 : procent >= 60
-                ? '👍 Dobra frekwencja'
-                : '⚠️ Warto poprawić'}
+                ? 'Dobra frekwencja'
+                : 'Warto poprawić'}
             </div>
           </div>
         </div>
