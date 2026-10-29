@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
@@ -17,7 +17,7 @@ export async function dodajZawodnika(
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    return { error: 'Brak aktywnej drużyny.' };
+    return { error: 'Brak aktywnej druĹĽyny.' };
   }
 
   const {
@@ -66,5 +66,16 @@ export async function dodajZawodnika(
 
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/kadra');
+    // RODO-03: audit log dla dodania zawodnika
+  try {
+    await supabase.rpc('log_audit', {
+      p_action: 'create_zawodnik',
+      p_entity_type: 'zawodnik',
+      p_entity_id: 'auto',
+    });
+  } catch (auditErr) {
+    console.error('Audit log failed:', auditErr);
+  }
+
   redirect('/kadra?toast=zawodnik_dodany');
 }

@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
@@ -14,7 +14,7 @@ export async function importZawodnicy(formData: FormData) {
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) throw new Error('Brak aktywnej drużyny.');
+  if (!druzynaId) throw new Error('Brak aktywnej druĹĽyny.');
 
   const {
     data: { user },
@@ -26,7 +26,7 @@ export async function importZawodnicy(formData: FormData) {
   const text = (formData.get('dane') as string) ?? '';
   if (!text.trim()) throw new Error('Wklej dane do zaimportowania.');
   if (text.length > MAX_TEXT_LENGTH) {
-    throw new Error(`Za dużo danych (max ${MAX_TEXT_LENGTH / 1024} KB).`);
+    throw new Error(`Za duĹĽo danych (max ${MAX_TEXT_LENGTH / 1024} KB).`);
   }
 
   const parsed = parseImportText(text);
@@ -35,12 +35,12 @@ export async function importZawodnicy(formData: FormData) {
   if (rows.length === 0) {
     throw new Error(
       parsed.errorCount > 0
-        ? `Brak poprawnych wierszy (${parsed.errorCount} z błędami).`
+        ? `Brak poprawnych wierszy (${parsed.errorCount} z bĹ‚Ä™dami).`
         : 'Nie znaleziono danych do importu.'
     );
   }
   if (rows.length > MAX_ROWS) {
-    throw new Error(`Maksymalnie ${MAX_ROWS} zawodników na raz.`);
+    throw new Error(`Maksymalnie ${MAX_ROWS} zawodnikĂłw na raz.`);
   }
 
   const { data: istniejacy } = await supabase
@@ -64,8 +64,8 @@ export async function importZawodnicy(formData: FormData) {
   if (nowi.length === 0) {
     throw new Error(
       pominietych > 0
-        ? `Wszyscy (${pominietych}) już istnieją w drużynie.`
-        : 'Brak nowych zawodników.'
+        ? `Wszyscy (${pominietych}) juĹĽ istniejÄ… w druĹĽynie.`
+        : 'Brak nowych zawodnikĂłw.'
     );
   }
 

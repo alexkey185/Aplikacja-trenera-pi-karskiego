@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -50,9 +50,13 @@ export default async function Obecnosc({
     initialStatus[o.zawodnik_id] = o.status;
   });
 
-  const { data: previousTrening } = await supabase
+  // PERF-01: polaczone zapytanie z join zamiast 2 osobnych (N+1 fix)
+  const { data: prevData } = await supabase
     .from('treningi')
-    .select('id')
+    .select(`
+      id,
+      obecnosc (zawodnik_id, status)
+    `)
     .eq('typ', trening.typ)
     .eq('druzyna_id', druzynaId)
     .lt('data', trening.data)
@@ -61,17 +65,13 @@ export default async function Obecnosc({
     .maybeSingle();
 
   const previousStatus: Record<number, string> = {};
-  if (previousTrening) {
-    const { data: prevObecnosc } = await supabase
-      .from('obecnosc')
-      .select('zawodnik_id, status')
-      .eq('trening_id', previousTrening.id);
-    (prevObecnosc ?? []).forEach((o) => {
+  if (prevData?.obecnosc) {
+    (prevData.obecnosc as Array<{ zawodnik_id: number; status: string }>).forEach((o) => {
       previousStatus[o.zawodnik_id] = o.status;
     });
   }
 
-  const typIkona = trening.typ === 'mecz' ? '🏆' : '🏃';
+  const typIkona = trening.typ === 'mecz' ? 'đźŹ†' : 'đźŹ';
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -91,7 +91,7 @@ export default async function Obecnosc({
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">
-              Obecność
+              ObecnoĹ›Ä‡
             </h1>
             <p className="text-xs text-white/70 font-medium mt-0.5 truncate capitalize drop-shadow">
               {typIkona} {trening.typ}
@@ -102,10 +102,10 @@ export default async function Obecnosc({
         <TopBar />
       </header>
 
-      {/* ═══════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           Pasek informacyjny z przyciskiem edycji treningu.
           Info (data, godzina, miejsce) po lewej, edycja po prawej.
-          ═══════════════════════════════════════════════════════════ */}
+          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 mb-5 animate-fadeIn shadow-xl shadow-black/40">
         <div className="flex items-start gap-4">
           <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
@@ -148,8 +148,8 @@ export default async function Obecnosc({
           <div className="w-16 h-16 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-white/50" strokeWidth={1.5} />
           </div>
-          <h3 className="font-bold text-lg mb-2 text-white drop-shadow">Brak zawodników</h3>
-          <p className="text-sm text-white/70">Dodaj najpierw zawodników w zakładce Kadra.</p>
+          <h3 className="font-bold text-lg mb-2 text-white drop-shadow">Brak zawodnikĂłw</h3>
+          <p className="text-sm text-white/70">Dodaj najpierw zawodnikĂłw w zakĹ‚adce Kadra.</p>
         </div>
       ) : (
         <ObecnoscForm

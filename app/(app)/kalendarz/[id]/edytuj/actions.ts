@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -16,7 +16,7 @@ export async function aktualizujTrening(
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej druzyny.');
+    throw new Error('Brak aktywnej drużyny.');
   }
 
   const {
@@ -45,7 +45,7 @@ export async function aktualizujTrening(
     .single();
 
   if (errFetch || !trening) {
-    throw new Error('Nie znaleziono treningu w aktywnej druzynie.');
+    throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
   }
 
   const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed.data;
@@ -77,12 +77,12 @@ export async function usunTreningZakres(
   scope: 'single' | 'all'
 ): Promise<{ success: true; count: number } | { error: string }> {
   if (!id || isNaN(id)) {
-    return { error: 'Nieprawidlowe ID.' };
+    return { error: 'Nieprawidłowe ID.' };
   }
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) return { error: 'Brak aktywnej druzyny.' };
+  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
 
   const {
     data: { user },
@@ -127,6 +127,18 @@ export async function usunTreningZakres(
       .eq('druzyna_id', druzynaId);
     if (error) return { error: getErrorMessage(error) };
     count = deletedCount ?? 0;
+  }
+
+  // RODO-03: audit log dla delete treningu (kaskada obecnosci)
+  try {
+    await supabase.rpc('log_audit', {
+      p_action: scope === 'all' ? 'delete_trening_cycle' : 'delete_trening',
+      p_entity_type: 'trening',
+      p_entity_id: String(id),
+      p_details: { scope, count },
+    });
+  } catch (auditErr) {
+    console.error('Audit log failed:', auditErr);
   }
 
   revalidateKalendarz();

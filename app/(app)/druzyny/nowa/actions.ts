@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
@@ -40,7 +40,7 @@ export async function dodajDruzyna(formData: FormData) {
     .single();
 
   if (error || !nowa) {
-    throw new Error(error?.message ?? 'Nie udalo sie utworzyc druzyny.');
+    throw new Error(error?.message ?? 'Nie udało się utworzyć drużyny.');
   }
 
   const cookieStore = await cookies();
