@@ -62,21 +62,15 @@ export function BottomNav({
   userImie: string | null;
   userNazwisko: string | null;
 }) {
-  const pathname = usePathname();
+    const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-
-  const hidden = shouldHideNav(pathname);
 
   async function handleLogout() {
     setLogoutLoading(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = '/auth/login';
-  }
-
-  if (hidden) {
-    return null;
   }
 
   const pelneImie =
