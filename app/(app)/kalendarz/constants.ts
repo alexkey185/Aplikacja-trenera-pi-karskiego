@@ -16,11 +16,6 @@ export const DAYS_LONG = [
   'Czwartek', 'Piatek', 'Sobota',
 ];
 
-export const HOLIDAYS = new Set([
-  '2026-01-01', '2026-01-06', '2026-04-06', '2026-05-01', '2026-05-03',
-  '2026-06-04', '2026-08-15', '2026-11-01', '2026-11-11',
-  '2026-12-25', '2026-12-26',
-]);
 
 export type TypConfigEntry = {
   color: string;

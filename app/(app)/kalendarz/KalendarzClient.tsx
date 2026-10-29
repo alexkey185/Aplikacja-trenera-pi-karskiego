@@ -25,8 +25,8 @@ import {
   MONTHS_PL_GENITIVE,
   DAYS_SHORT,
   DAYS_LONG,
-  HOLIDAYS,
 } from './constants';
+import { getPolishHolidays } from '@/lib/holidays';
 import {
   pad2,
   toISO,
@@ -221,7 +221,15 @@ export function KalendarzClient({ treningi, stats, topBar, logoUrl }: Props) {
     const isToday = iso === todayISO;
     const isSelected = iso === selectedDate;
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const isHoliday = HOLIDAYS.has(iso);
+// Oblicz święta dynamicznie — działa dla każdego roku
+const HOLIDAYS = useMemo(() => {
+  const s = new Set<string>();
+  [viewYear - 1, viewYear, viewYear + 1].forEach(y => {
+    getPolishHolidays(y).forEach(d => s.add(d));
+  });
+  return s;
+}, [viewYear]);
+const isHoliday = HOLIDAYS.has(iso);
     const isDragOver = dragOverDate === iso;
     const events = eventsByDate[iso] ?? [];
 
