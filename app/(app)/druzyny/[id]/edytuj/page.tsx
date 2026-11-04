@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzyna } from '@/lib/druzyny';
+import { getDruzyny } from '@/lib/druzyny';
 import { TopBar } from '@/components/TopBar';
 import { EdytujDruzynaForm } from './EdytujDruzynaForm';
 import { ArrowLeft, Pencil } from 'lucide-react';
@@ -15,10 +15,13 @@ export default async function EdytujDruzyna({
 
   if (!id) notFound();
 
-  const activeDruzyna = await getActiveDruzyna();
-  
-  // OCHRONA: Tylko admin może wejść na tę stronę
-  if (!activeDruzyna || activeDruzyna.rola !== 'admin' || activeDruzyna.id !== id) {
+  // Pobieramy listę wszystkich drużyn użytkownika, aby sprawdzić jego rolę
+  // dla KONKRETNEJ drużyny, którą próbuje edytować (a nie tylko dla aktywnej).
+  const druzyny = await getDruzyny();
+  const targetDruzyna = druzyny.find((d) => d.id === id);
+
+  // OCHRONA: Tylko admin danej drużyny może wejść na tę stronę
+  if (!targetDruzyna || targetDruzyna.rola !== 'admin') {
     redirect('/druzyny');
   }
 

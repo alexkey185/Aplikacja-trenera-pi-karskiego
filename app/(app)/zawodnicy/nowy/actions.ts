@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
@@ -17,7 +17,7 @@ export async function dodajZawodnika(
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    return { error: 'Brak aktywnej druĹĽyny.' };
+    return { error: 'Brak aktywnej drużyny.' };
   }
 
   const {

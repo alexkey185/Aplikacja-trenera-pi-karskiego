@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
@@ -17,7 +17,7 @@ export async function aktualizujZawodnika(
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    return { error: 'Brak aktywnej druĹĽyny.' };
+    return { error: 'Brak aktywnej drużyny.' };
   }
 
   const raw: Record<string, string> = {};
@@ -67,12 +67,12 @@ export async function usunZawodnika(formData: FormData) {
   const id = parseInt(idStr, 10);
 
   if (!id || isNaN(id)) {
-    throw new Error('NieprawidĹ‚owe ID zawodnika.');
+    throw new Error('Nieprawidłowe ID zawodnika.');
   }
 
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) {
-    throw new Error('Brak aktywnej druĹĽyny.');
+    throw new Error('Brak aktywnej drużyny.');
   }
 
   const supabase = await createClient();
@@ -85,7 +85,7 @@ export async function usunZawodnika(formData: FormData) {
     .single();
 
   if (errFetch || !zawodnik) {
-    throw new Error('Nie znaleziono zawodnika w aktywnej druĹĽynie.');
+    throw new Error('Nie znaleziono zawodnika w aktywnej drużynie.');
   }
 
   const { error, count } = await supabase
@@ -99,7 +99,7 @@ export async function usunZawodnika(formData: FormData) {
   }
 
   if (!count || count === 0) {
-    throw new Error('Nie usuniÄ™to ĹĽadnego wiersza.');
+    throw new Error('Nie usunięto żadnego wiersza.');
   }
 
   revalidateTag(ZAWODNICY_CACHE_TAG, 'default');

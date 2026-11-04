@@ -5,7 +5,7 @@ import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO } from '@/lib/dates';
 import { TopBar } from '@/components/TopBar';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
-import { Users, Plus, Search, ArrowUpDown, Upload } from 'lucide-react';
+import { Users, Plus, Search, ArrowUpDown, Upload, ChevronRight } from 'lucide-react';
 
 type Zawodnik = {
   id: number;
@@ -35,7 +35,7 @@ function kolorKropki(status: string): string {
 
 function labelStatusu(status: string): string {
   if (status === 'obecny') return 'Obecny';
-  if (status === 'spozniony') return 'SpĂłĹşniony';
+  if (status === 'spozniony') return 'Spóźniony';
   if (status === 'nieobecny') return 'Nieobecny';
   if (status === 'usprawiedliwiony') return 'Usprawiedliwiony';
   return 'Brak wpisu';
@@ -79,8 +79,8 @@ export default async function Kadra({
     .eq('druzyna_id', druzynaId);
 
   if (q) {
-    // SEC-04: escape SQL LIKE wildcards (\\ % _) + PostgREST special chars (, . ( ))
-    const safe = q.trim().replace(/[\\\\%_]/g, '\\\\$&').replace(/[,.()]/g, '\\\\$&');
+    // Escapowanie znaków specjalnych dla PostgREST (w tym podkreślnika i backslasha)
+    const safe = q.replace(/[\\,()%_]/g, '\\$&');
     zawQuery = zawQuery.or(`imie.ilike.%${safe}%,nazwisko.ilike.%${safe}%`);
   }
 
@@ -176,10 +176,10 @@ export default async function Kadra({
             <PageHeaderLogo icon={Users} logoUrl={activeDruzyna?.logo_url ?? null} />
             <div>
               <h1 className="text-sm md:text-2xl font-bold leading-tight text-white drop-shadow-lg tracking-wide">
-                LISTA ZAWODNIKĂ“W
+                LISTA ZAWODNIKÓW
               </h1>
               <p className="text-[10px] md:text-xs text-white/60 font-medium md:mt-0.5">
-                {liczba} {liczba === 1 ? 'zawodnik' : 'zawodnikĂłw'} na liĹ›cie
+                {liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'} na liście
               </p>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default async function Kadra({
 
       {error && (
         <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3 mb-3 text-xs animate-fadeIn text-red-200">
-          BĹ‚Ä…d: {error.message}
+          Błąd: {error.message}
         </div>
       )}
 
@@ -275,7 +275,7 @@ export default async function Kadra({
                     </div>
                     <div className="text-[10px] md:text-xs text-white/40 leading-tight truncate md:mt-0.5">
                       {z.rocznik ?? '-'}
-                      {z.pozycja ? ` Â· ${z.pozycja}` : ''}
+                      {z.pozycja ? ` · ${z.pozycja}` : ''}
                     </div>
                   </div>
 
@@ -290,7 +290,7 @@ export default async function Kadra({
                             })
                           : '';
                         const title = wydarzenie
-                          ? `${dataStr} Â· ${wydarzenie.typ} - ${labelStatusu(status)}`
+                          ? `${dataStr} · ${wydarzenie.typ} - ${labelStatusu(status)}`
                           : labelStatusu(status);
 
                         const hideOnMobile = idx >= 3;
@@ -312,7 +312,7 @@ export default async function Kadra({
                   )}
 
                   <span className="text-white/30 text-base md:text-xl flex-shrink-0 leading-none">
-                    â€ş
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                   </span>
                 </Link>
               </li>
@@ -341,10 +341,10 @@ function EmptyState() {
           <Users className="w-8 h-8 md:w-10 md:h-10 text-green-400" strokeWidth={1.5} />
         </div>
         <h3 className="font-bold text-base md:text-xl mb-1 md:mb-2 text-white drop-shadow">
-          Zacznijmy od skĹ‚adu
+          Zacznijmy od składu
         </h3>
         <p className="text-xs md:text-sm text-white/60 mb-5 md:mb-6 max-w-xs mx-auto">
-          Dodaj pierwszego zawodnika, ĹĽeby zarzÄ…dzaÄ‡ druĹĽynÄ…, treningami i frekwencjÄ….
+          Dodaj pierwszego zawodnika, żeby zarządzać drużyną, treningami i frekwencją.
         </p>
         <Link
           href="/zawodnicy/nowy"

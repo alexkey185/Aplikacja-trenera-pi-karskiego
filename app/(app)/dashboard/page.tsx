@@ -1,4 +1,4 @@
-﻿import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
@@ -82,13 +82,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto">
-      {/* NAGĹĂ“WEK PRZENIESIONY TUTAJ (na serwerze) */}
+      {/* NAGŁÓWEK PRZENIESIONY TUTAJ (na serwerze) */}
       <header className="mb-5 lg:mb-4 flex items-center gap-3 animate-fadeIn flex-shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <PageHeaderLogo icon={Zap} logoUrl={activeDruzyna?.logo_url ?? null} />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl lg:text-2xl font-bold leading-tight text-white drop-shadow-lg">Dzisiaj</h1>
-            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">TwĂłj plan na najbliĹĽsze dni</p>
+            <p className="text-xs lg:text-sm text-white/70 font-medium mt-0.5 drop-shadow">Twój plan na najbliższe dni</p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">

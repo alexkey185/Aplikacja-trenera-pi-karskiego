@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -40,17 +40,17 @@ export function UpdatePasswordForm() {
       if (error) throw error;
 
       // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-      // Sukces: peĹ‚ne wylogowanie + hard redirect na login.
+      // Sukces: pełne wylogowanie + hard redirect na login.
       //
       // Dlaczego nie signOut({ scope: 'others' }):
-      //   - scope: 'others' wylogowuje tylko INNE sesje, bieĹĽÄ…ca
-      //     zostaje aktywna. User lÄ…duje na /auth/login, ale
+      //   - scope: 'others' wylogowuje tylko INNE sesje, bieżąca
+      //     zostaje aktywna. User ląduje na /auth/login, ale
       //     login/page.tsx widzi zalogowanego usera i robi
-      //     redirect('/dashboard') - wyglÄ…da jakby wylogowanie
-      //     nie zadziaĹ‚aĹ‚o.
+      //     redirect('/dashboard') - wygląda jakby wylogowanie
+      //     nie zadziałało.
       //
       // Dlaczego window.location.href zamiast router.push:
-      //   - hard reload czyĹ›ci caĹ‚y stan klienta (loading, cache SW)
+      //   - hard reload czyści cały stan klienta (loading, cache SW)
       //   - standard dla operacji logout
       // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       await supabase.auth.signOut();
@@ -69,17 +69,17 @@ export function UpdatePasswordForm() {
             <Lock className="w-7 h-7 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-white drop-shadow-lg">
-            Nowe hasĹ‚o
+            Nowe hasło
           </h1>
           <p className="text-xs text-white/60 mt-1 max-w-xs mx-auto">
-            Wpisz nowe hasĹ‚o do swojego konta. Po zapisie zaloguj siÄ™ ponownie.
+            Wpisz nowe hasło do swojego konta. Po zapisie zaloguj się ponownie.
           </p>
         </div>
 
         <form onSubmit={handleUpdatePassword} noValidate className="space-y-4">
           <AuthField
             icon={Lock}
-            label="Nowe hasĹ‚o"
+            label="Nowe hasło"
             name="password"
             id="update-password"
             type="password"
@@ -89,13 +89,13 @@ export function UpdatePasswordForm() {
               setPassword(v);
               if (fieldErrors.password) setFieldErrors((fe) => ({ ...fe, password: undefined }));
             }}
-            placeholder="Minimum 8 znakĂłw"
+            placeholder="Minimum 8 znaków"
             error={fieldErrors.password}
           />
 
           <AuthField
             icon={Lock}
-            label="PowtĂłrz nowe hasĹ‚o"
+            label="Powtórz nowe hasło"
             name="repeat-password"
             id="update-repeat-password"
             type="password"
@@ -105,7 +105,7 @@ export function UpdatePasswordForm() {
               setRepeatPassword(v);
               if (fieldErrors.repeatPassword) setFieldErrors((fe) => ({ ...fe, repeatPassword: undefined }));
             }}
-            placeholder="PowtĂłrz hasĹ‚o"
+            placeholder="Powtórz hasło"
             error={fieldErrors.repeatPassword}
           />
 
@@ -119,17 +119,17 @@ export function UpdatePasswordForm() {
             </div>
           )}
 
-          <SubmitButton loadingLabel="Zapisywanie..." loading={isLoading}><Save className="w-4 h-4 flex-shrink-0" /><span>ZmieĹ„ hasĹ‚o</span></SubmitButton>
+          <SubmitButton loadingLabel="Zapisywanie..." loading={isLoading}><Save className="w-4 h-4 flex-shrink-0" /><span>Zmień hasło</span></SubmitButton>
         </form>
 
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <p className="text-xs text-white/50">
-            Nie chcesz zmieniaÄ‡?{' '}
+            Nie chcesz zmieniać?{' '}
             <Link
               href="/profil"
               className="text-green-400 hover:text-green-300 font-semibold transition-colors"
             >
-              WrĂłÄ‡ do profilu
+              Wróć do profilu
             </Link>
           </p>
         </div>
@@ -141,7 +141,7 @@ export function UpdatePasswordForm() {
           className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          PowrĂłt do strony gĹ‚Ăłwnej
+          Powrót do strony głównej
         </Link>
       </div>
     </div>

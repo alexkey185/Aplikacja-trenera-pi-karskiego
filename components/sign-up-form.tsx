@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,7 +49,7 @@ function saveDraft(draft: Draft) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
   } catch {
-    // sessionStorage zablokowane (tryb prywatny) Ă˘â‚¬â€ť pomiÄąâ€ž
+    // sessionStorage zablokowane (tryb prywatny) Ă˘â‚¬” pomiÄą„
   }
 }
 
@@ -58,7 +58,7 @@ function clearDraft() {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {
-    // pomiÄąâ€ž
+    // pomiÄą„
   }
 }
 

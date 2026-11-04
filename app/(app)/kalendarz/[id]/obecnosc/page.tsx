@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -91,7 +91,7 @@ export default async function Obecnosc({
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">
-              ObecnoĹ›Ä‡
+              Obecność
             </h1>
             <p className="text-xs text-white/70 font-medium mt-0.5 truncate capitalize drop-shadow">
               {typIkona} {trening.typ}
@@ -148,8 +148,8 @@ export default async function Obecnosc({
           <div className="w-16 h-16 rounded-3xl bg-slate-800/70 border border-white/10 flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-white/50" strokeWidth={1.5} />
           </div>
-          <h3 className="font-bold text-lg mb-2 text-white drop-shadow">Brak zawodnikĂłw</h3>
-          <p className="text-sm text-white/70">Dodaj najpierw zawodnikĂłw w zakĹ‚adce Kadra.</p>
+          <h3 className="font-bold text-lg mb-2 text-white drop-shadow">Brak zawodników</h3>
+          <p className="text-sm text-white/70">Dodaj najpierw zawodników w zakładce Kadra.</p>
         </div>
       ) : (
         <ObecnoscForm

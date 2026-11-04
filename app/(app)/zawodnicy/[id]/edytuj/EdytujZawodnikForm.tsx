@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useActionState } from 'react';
 import Link from 'next/link';
@@ -6,7 +6,16 @@ import { FormField } from '@/components/FormField';
 import { Select } from '@/components/Select';
 import { SubmitButton } from '@/components/SubmitButton';
 import { DeleteButton } from './DeleteButton';
-import { User, Hash, Trophy, Phone, FileText, Save, X, AlertCircle } from 'lucide-react';
+import {
+  User,
+  Hash,
+  Trophy,
+  Phone,
+  FileText,
+  Save,
+  X,
+  AlertCircle,
+} from 'lucide-react';
 import { aktualizujZawodnika } from './actions';
 import type { FormState } from '@/lib/action-result';
 
@@ -23,7 +32,10 @@ type Zawodnik = {
 
 export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
   const boundAction = aktualizujZawodnika.bind(null, zawodnik.id);
-  const [state, formAction] = useActionState<FormState, FormData>(boundAction, null);
+  const [state, formAction] = useActionState<FormState, FormData>(
+    boundAction,
+    null
+  );
 
   const err = state?.fieldErrors ?? {};
 
@@ -40,14 +52,18 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField icon={User} label="ImiÄ™" required>
+        <FormField icon={User} label="Imię" required>
           <input
             name="imie"
             required
             defaultValue={zawodnik.imie}
-            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${err.imie ? 'text-red-400' : ''}`}
+            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${
+              err.imie ? 'text-red-400' : ''
+            }`}
           />
-          {err.imie && <p className="text-[10px] text-red-400 mt-1">{err.imie}</p>}
+          {err.imie && (
+            <p className="text-[10px] text-red-400 mt-1">{err.imie}</p>
+          )}
         </FormField>
 
         <FormField icon={User} label="Nazwisko" required>
@@ -55,9 +71,13 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
             name="nazwisko"
             required
             defaultValue={zawodnik.nazwisko}
-            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${err.nazwisko ? 'text-red-400' : ''}`}
+            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${
+              err.nazwisko ? 'text-red-400' : ''
+            }`}
           />
-          {err.nazwisko && <p className="text-[10px] text-red-400 mt-1">{err.nazwisko}</p>}
+          {err.nazwisko && (
+            <p className="text-[10px] text-red-400 mt-1">{err.nazwisko}</p>
+          )}
         </FormField>
       </div>
 
@@ -67,9 +87,13 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
             name="rocznik"
             type="number"
             defaultValue={zawodnik.rocznik ?? ''}
-            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${err.rocznik ? 'text-red-400' : ''}`}
+            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${
+              err.rocznik ? 'text-red-400' : ''
+            }`}
           />
-          {err.rocznik && <p className="text-[10px] text-red-400 mt-1">{err.rocznik}</p>}
+          {err.rocznik && (
+            <p className="text-[10px] text-red-400 mt-1">{err.rocznik}</p>
+          )}
         </FormField>
 
         <FormField icon={Hash} label="Numer">
@@ -77,9 +101,13 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
             name="numer"
             type="number"
             defaultValue={zawodnik.numer ?? ''}
-            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${err.numer ? 'text-red-400' : ''}`}
+            className={`w-full bg-transparent border-0 outline-none text-white py-2 ${
+              err.numer ? 'text-red-400' : ''
+            }`}
           />
-          {err.numer && <p className="text-[10px] text-red-400 mt-1">{err.numer}</p>}
+          {err.numer && (
+            <p className="text-[10px] text-red-400 mt-1">{err.numer}</p>
+          )}
         </FormField>
       </div>
 
@@ -89,10 +117,10 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
           defaultValue={zawodnik.pozycja ?? ''}
           options={[
             { value: '', label: '- wybierz -' },
-            { value: 'Bramkarz', label: 'đź§¤ Bramkarz' },
-            { value: 'ObroĹ„ca', label: 'đź›ˇď¸Ź ObroĹ„ca' },
-            { value: 'Pomocnik', label: 'âš˝ Pomocnik' },
-            { value: 'Napastnik', label: 'âšˇ Napastnik' },
+            { value: 'Bramkarz', label: 'Bramkarz' },
+            { value: 'Obrońca', label: 'Obrońca' },
+            { value: 'Pomocnik', label: 'Pomocnik' },
+            { value: 'Napastnik', label: 'Napastnik' },
           ]}
         />
       </FormField>
@@ -124,10 +152,11 @@ export function EdytujZawodnikForm({ zawodnik }: { zawodnik: Zawodnik }) {
           Anuluj
         </Link>
         <div className="flex-1">
-          <SubmitButton loadingLabel="Zapisywanie...">
-            <Save className="w-4 h-4 flex-shrink-0" />
-            <span>Zapisz zmiany</span>
-          </SubmitButton>
+          <SubmitButton
+            icon={Save}
+            label="Zapisz zmiany"
+            loadingLabel="Zapisywanie..."
+          />
         </div>
         <DeleteButton id={zawodnik.id} />
       </div>

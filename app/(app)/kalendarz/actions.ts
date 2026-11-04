@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
@@ -10,11 +10,11 @@ export async function przeniesTrening(
   newDate: string
 ): Promise<{ error?: string; success?: boolean }> {
   if (!Number.isInteger(id) || id <= 0) {
-    return { error: 'NieprawidĹ‚owe ID treningu.' };
+    return { error: 'Nieprawidłowe ID treningu.' };
   }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
-    return { error: 'NieprawidĹ‚owy format daty.' };
+    return { error: 'Nieprawidłowy format daty.' };
   }
   const [y, m, d] = newDate.split('-').map(Number);
   const roundTrip = new Date(y, m - 1, d);
@@ -23,12 +23,12 @@ export async function przeniesTrening(
     roundTrip.getMonth() !== m - 1 ||
     roundTrip.getDate() !== d
   ) {
-    return { error: 'NieprawidĹ‚owa data.' };
+    return { error: 'Nieprawidłowa data.' };
   }
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) return { error: 'Brak aktywnej druĹĽyny.' };
+  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
 
   const {
     data: { user },
@@ -37,7 +37,7 @@ export async function przeniesTrening(
     try {
       await enforceRateLimit(`user:${user.id}`, 'przeniesTrening', 100, 3600);
     } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Za duĹĽo operacji.' };
+      return { error: err instanceof Error ? err.message : 'Za dużo operacji.' };
     }
   }
 

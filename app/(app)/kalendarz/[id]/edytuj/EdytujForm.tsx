@@ -122,10 +122,10 @@ export function EdytujForm({ trening }: { trening: Trening }) {
             name="typ"
             defaultValue={trening.typ}
             options={[
-              { value: 'trening', label: '🏦 Trening' },
-              { value: 'mecz', label: '🏆 Mecz' },
-              { value: 'sparing', label: '🔥 Sparing' },
-              { value: 'turniej', label: '🎯 Turniej' },
+              { value: 'trening', label: 'Trening' },
+              { value: 'mecz', label: 'Mecz' },
+              { value: 'sparing', label: 'Sparing' },
+              { value: 'turniej', label: 'Turniej' },
             ]}
           />
         </FormField>
@@ -171,7 +171,6 @@ export function EdytujForm({ trening }: { trening: Trening }) {
           />
         </FormField>
 
-        {/* Zapisz + Anuluj obok siebie */}
         <div className="flex gap-2 pt-2">
           <Link
             href="/kalendarz"
@@ -218,7 +217,7 @@ export function EdytujForm({ trening }: { trening: Trening }) {
                 }`}
               >
                 <div className="text-xs font-bold text-white mb-1">
-                  📅 Tylko ten dzień
+                  Tylko ten dzień
                 </div>
                 <div className="text-[10px] text-white/60 leading-tight">
                   Zmieniasz {trening.data}
@@ -235,7 +234,7 @@ export function EdytujForm({ trening }: { trening: Trening }) {
                 }`}
               >
                 <div className="text-xs font-bold text-white mb-1">
-                  🔁 Cała seria
+                  Cała seria
                 </div>
                 <div className="text-[10px] text-white/60 leading-tight">
                   Wszystkie z tego cyklu
@@ -245,7 +244,7 @@ export function EdytujForm({ trening }: { trening: Trening }) {
 
             {pendingScope === 'all' && (
               <div className="text-[10px] text-purple-200 bg-purple-500/10 border border-purple-400/30 rounded-lg p-2">
-                ℹ️ Daty poszczególnych treningów <strong>nie zmienią się</strong> - tylko godzina, miejsce i notatki.
+                Daty poszczególnych treningów <strong>nie zmienią się</strong> - tylko godzina, miejsce i notatki.
               </div>
             )}
           </div>
