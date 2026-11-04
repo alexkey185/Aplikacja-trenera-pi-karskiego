@@ -5,8 +5,8 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .root {
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-manrope), system-ui, sans-serif;
 
   --bg: #0a0e1a;
   --bg-elev: #0f172a;

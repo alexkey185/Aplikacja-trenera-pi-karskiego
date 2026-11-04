@@ -13,18 +13,21 @@ async function BottomNavServer() {
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
 
-  const [userResult, dzisiajResult] = await Promise.all([
-    supabase.auth.getUser(),
+  // OPTYMALIZACJA MOBILE: 
+  // getSession() czyta z ciasteczek lokalnie, zamiast pytać serwer Supabase (getUser).
+  // Zapobiega to "zawieszaniu" aplikacji na 5 sekund przy porannym otwarciu.
+  const [sessionResult, dzisiajResult] = await Promise.all([
+    supabase.auth.getSession(),
     druzynaId
       ? supabase
           .from('treningi')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true }) // Tylko 'id' zamiast '*'
           .eq('druzyna_id', druzynaId)
           .eq('data', getDzisISO())
       : Promise.resolve({ count: 0, data: null, error: null }),
   ]);
 
-  const user = userResult.data.user;
+  const user = sessionResult.data.session?.user;
   const dzisiajCount = dzisiajResult.count ?? 0;
 
   return (

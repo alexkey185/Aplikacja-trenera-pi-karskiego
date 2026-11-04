@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist } from 'next/font/google';
+import { Geist, Manrope, Space_Grotesk } from 'next/font/google';
 import { ContentWrapper } from '@/components/ContentWrapper';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
@@ -47,11 +47,10 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  display: 'swap',
-  subsets: ['latin'],
-});
+// Optymalizacja: Ładujemy czcionki lokalnie z serwera Next.js
+const geistSans = Geist({ variable: '--font-geist-sans', display: 'swap', subsets: ['latin'] });
+const manrope = Manrope({ variable: '--font-manrope', display: 'swap', subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({ variable: '--font-space-grotesk', display: 'swap', subsets: ['latin'] });
 
 export default function RootLayout({
   children,
@@ -67,17 +66,9 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={supabaseUrl} />
           </>
         )}
-
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
-          rel="stylesheet"
-        />
-
         <meta name="theme-color" content="#0a0e1a" />
       </head>
-      <body className={`${geistSans.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${manrope.variable} ${spaceGrotesk.variable} antialiased`}>
         <ContentWrapper>{children}</ContentWrapper>
         <ServiceWorkerRegister />
       </body>
