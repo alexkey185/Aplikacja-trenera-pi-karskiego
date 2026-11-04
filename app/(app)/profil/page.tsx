@@ -115,8 +115,7 @@ export default async function Profil() {
               Logo klubu ({activeDruzyna.nazwa})
             </h3>
           </div>
-          <ClubLogoUpload currentLogo={activeDruzyna.logo_url} />
-        </div>
+          <ClubLogoUpload druzynaId={activeDruzyna.id} currentLogo={activeDruzyna.logo_url} />        </div>
       )}
 
       <ProfilForm imie={imie} nazwisko={nazwisko} />

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { aktualizujDruzyna, usunDruzyna } from './actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { ClubLogoUpload } from '@/components/ClubLogoUpload'; // DODANY IMPORT
 import { Users, Hash, Palette, Save, Check, Trash2, AlertTriangle, X } from 'lucide-react';
 
 const KOLORY = [
@@ -22,6 +23,7 @@ type Druzyna = {
   nazwa: string;
   rocznik: number | null;
   kolor: string;
+  logo_url: string | null; // DODANE POLE
 };
 
 export function EdytujDruzynaForm({
@@ -44,6 +46,17 @@ export function EdytujDruzynaForm({
         action={aktualizujDruzyna.bind(null, druzyna.id)}
         className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-5 animate-fadeIn shadow-2xl shadow-black/60 mb-4"
       >
+        {/* SEKCJA LOGO */}
+        <div className="pb-5 border-b border-white/10">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-3.5 h-3.5 text-white/50" />
+            <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+              Logo drużyny
+            </span>
+          </div>
+          <ClubLogoUpload druzynaId={druzyna.id} currentLogo={druzyna.logo_url} />
+        </div>
+
         <label className="block group">
           <div className="flex items-center gap-2 mb-1.5">
             <Users className="w-3.5 h-3.5 text-white/50 group-focus-within:text-green-400 transition-colors" />
@@ -133,7 +146,6 @@ export function EdytujDruzynaForm({
         </div>
       </form>
 
-      {/* Strefa niebezpieczna - chroniona po stronie serwera, ale dla pewności ukrywamy przycisk */}
       <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle className="w-4 h-4 text-red-400" />

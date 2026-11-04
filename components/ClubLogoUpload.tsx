@@ -5,7 +5,13 @@ import { Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { uploadLogo } from '@/app/(app)/profil/logo-actions';
 import { toast } from 'sonner';
 
-export function ClubLogoUpload({ currentLogo }: { currentLogo: string | null }) {
+export function ClubLogoUpload({
+  druzynaId,
+  currentLogo,
+}: {
+  druzynaId: string;
+  currentLogo: string | null;
+}) {
   const [preview, setPreview] = useState<string | null>(currentLogo);
   const [isPending, setIsPending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +26,7 @@ export function ClubLogoUpload({ currentLogo }: { currentLogo: string | null }) 
     formData.append('logo', file);
 
     setIsPending(true);
-    const result = await uploadLogo(formData);
+    const result = await uploadLogo(druzynaId, formData);
     setIsPending(false);
 
     if (result.error) {

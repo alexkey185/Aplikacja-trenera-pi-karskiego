@@ -15,12 +15,9 @@ export default async function EdytujDruzyna({
 
   if (!id) notFound();
 
-  // Pobieramy listę wszystkich drużyn użytkownika, aby sprawdzić jego rolę
-  // dla KONKRETNEJ drużyny, którą próbuje edytować (a nie tylko dla aktywnej).
   const druzyny = await getDruzyny();
   const targetDruzyna = druzyny.find((d) => d.id === id);
 
-  // OCHRONA: Tylko admin danej drużyny może wejść na tę stronę
   if (!targetDruzyna || targetDruzyna.rola !== 'admin') {
     redirect('/druzyny');
   }
@@ -28,7 +25,7 @@ export default async function EdytujDruzyna({
   const supabase = await createClient();
   const { data: druzyna, error } = await supabase
     .from('druzyny')
-    .select('id, nazwa, rocznik, kolor')
+    .select('id, nazwa, rocznik, kolor, logo_url') // Dodano logo_url
     .eq('id', id)
     .single();
 

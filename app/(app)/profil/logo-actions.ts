@@ -1,18 +1,16 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getErrorMessage } from '@/lib/errors';
 import { revalidatePath } from 'next/cache';
 
 const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp'];
 
-export async function uploadLogo(formData: FormData) {
+export async function uploadLogo(druzynaId: string, formData: FormData) {
   const supabase = await createClient();
-  const druzynaId = await getActiveDruzynaId();
 
-  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
+  if (!druzynaId) return { error: 'Brak ID drużyny.' };
 
   const {
     data: { user },
@@ -72,10 +70,11 @@ export async function uploadLogo(formData: FormData) {
     return { error: getErrorMessage(dbError) };
   }
 
+  revalidatePath('/', 'layout');
   revalidatePath('/profil');
   revalidatePath('/dashboard');
   revalidatePath('/druzyny');
-  revalidatePath('/', 'layout');
+  revalidatePath(`/druzyny/${druzynaId}/edytuj`);
 
   return { success: true, url: finalUrl };
 }
