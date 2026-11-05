@@ -69,7 +69,11 @@ export function ServiceWorkerRegister() {
       },
       icon: <RefreshCw className="w-4 h-4" />,
     });
-    return () => toast.dismiss(toastId);
+    
+    // POPRAWKA: Dodane nawiasy klamrowe, aby funkcja nie zwracała string/number
+    return () => { 
+      toast.dismiss(toastId); 
+    };
   }, [waitingWorker]);
 
   return null;
