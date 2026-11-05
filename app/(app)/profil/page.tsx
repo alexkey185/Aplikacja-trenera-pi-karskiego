@@ -38,6 +38,8 @@ export default async function Profil() {
     .maybeSingle();
 
   const email = user.email ?? 'brak';
+  const isDemo = email === 'test@test.pl'; // <-- Flaga trybu DEMO
+  
   const imie = user.user_metadata?.imie ?? '';
   const nazwisko = user.user_metadata?.nazwisko ?? '';
   const inicjal = (imie?.charAt(0) || email.charAt(0)).toUpperCase();
@@ -61,7 +63,7 @@ export default async function Profil() {
     : '—';
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto pb-12">
       <header className="mb-6 flex items-center gap-3 animate-fadeIn">
         <PageHeaderLogo icon={User} logoUrl={activeDruzyna?.logo_url ?? null} />
         <div className="flex-1 min-w-0">
@@ -106,7 +108,6 @@ export default async function Profil() {
         </div>
       </div>
 
-      {/* UKRYWAMY ZMIANĘ LOGO DLA NIE-ADMINÓW */}
       {activeDruzyna && activeDruzyna.rola === 'admin' && (
         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
           <div className="flex items-center gap-2 mb-4">
@@ -115,7 +116,8 @@ export default async function Profil() {
               Logo klubu ({activeDruzyna.nazwa})
             </h3>
           </div>
-          <ClubLogoUpload druzynaId={activeDruzyna.id} currentLogo={activeDruzyna.logo_url} />        </div>
+          <ClubLogoUpload druzynaId={activeDruzyna.id} currentLogo={activeDruzyna.logo_url} />
+        </div>
       )}
 
       <ProfilForm imie={imie} nazwisko={nazwisko} />
@@ -265,19 +267,37 @@ export default async function Profil() {
         </button>
       </form>
 
-      <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
-          <h3 className="text-xs font-bold text-red-400/90 uppercase tracking-widest">
-            Strefa niebezpieczna
-          </h3>
+      {/* Strefa niebezpieczna - zablokowana dla konta testowego (DEMO) */}
+      {!isDemo ? (
+        <div className="bg-red-500/[0.03] backdrop-blur-md border border-red-400/20 rounded-3xl p-5 animate-fadeIn shadow-2xl shadow-black/60">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-red-400" />
+            <h3 className="text-xs font-bold text-red-400/90 uppercase tracking-widest">
+              Strefa niebezpieczna
+            </h3>
+          </div>
+          <p className="text-xs text-white/50 mb-4 leading-relaxed">
+            Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane (zawodnicy, treningi, obecności) zostaną
+            trwale usunięte. <strong className="text-white/70">Przed usunięciem pobierz kopię zapasową.</strong>
+          </p>
+          <DeleteAccountButton />
         </div>
-        <p className="text-xs text-white/50 mb-4 leading-relaxed">
-          Usunięcie konta jest nieodwracalne. Wszystkie Twoje dane (zawodnicy, treningi, obecności) zostaną
-          trwale usunięte. <strong className="text-white/70">Przed usunięciem pobierz kopię zapasową.</strong>
-        </p>
-        <DeleteAccountButton />
-      </div>
+      ) : (
+        <div className="bg-orange-500/10 border border-orange-400/30 rounded-3xl p-5 text-center animate-fadeIn shadow-2xl shadow-black/60">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-orange-400" />
+            <h3 className="text-xs font-bold text-orange-400/90 uppercase tracking-widest">
+              Konto Demo
+            </h3>
+          </div>
+          <p className="text-xs text-orange-200 leading-relaxed">
+            Przeglądasz wersję demonstracyjną aplikacji. Aby usunąć konto lub założyć własną drużynę,{' '}
+            <Link href="/auth/sign-up" className="underline font-bold hover:text-white transition-colors">
+              zarejestruj się
+            </Link>.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

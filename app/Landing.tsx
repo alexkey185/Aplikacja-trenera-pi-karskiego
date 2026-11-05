@@ -297,14 +297,15 @@ export function Landing() {
                 <p className={`${styles.lead} ${styles.fd}`}>
                   Obecność i plan treningów w jednym miejscu. Koniec z kartkami, Excelem i szukaniem wiadomości na grupach.
                 </p>
-                <div className={`${styles.ctas} ${styles.fd}`}>
-                  <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnP}`}>
-                    Zapisz się na testy
-                  </Link>
-                  <a href="#funkcje" className={`${styles.btn} ${styles.btnS}`}>
-                    Zobacz, jak to działa
-                  </a>
-                </div>
+               // app/Landing.tsx
+<div className={`${styles.ctas} ${styles.fd}`}>
+  <Link href="/demo" className={`${styles.btn} ${styles.btnP}`}>
+    Zobacz Demo (bez logowania)
+  </Link>
+  <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnS}`}>
+    Zapisz się na testy
+  </Link>
+</div>
               </div>
 
               {/* ─── Demo ───────────────────────────────────── */}

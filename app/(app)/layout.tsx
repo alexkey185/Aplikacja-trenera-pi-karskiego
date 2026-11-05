@@ -8,20 +8,18 @@ import { BottomNavSkeleton } from '@/components/BottomNavSkeleton';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveDruzynaId } from '@/lib/druzyny';
 import { getDzisISO } from '@/lib/dates';
+import Link from 'next/link';
 
 async function BottomNavServer() {
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
 
-  // OPTYMALIZACJA MOBILE: 
-  // getSession() czyta z ciasteczek lokalnie, zamiast pytać serwer Supabase (getUser).
-  // Zapobiega to "zawieszaniu" aplikacji na 5 sekund przy porannym otwarciu.
   const [sessionResult, dzisiajResult] = await Promise.all([
     supabase.auth.getSession(),
     druzynaId
       ? supabase
           .from('treningi')
-          .select('id', { count: 'exact', head: true }) // Tylko 'id' zamiast '*'
+          .select('id', { count: 'exact', head: true })
           .eq('druzyna_id', druzynaId)
           .eq('data', getDzisISO())
       : Promise.resolve({ count: 0, data: null, error: null }),
@@ -40,16 +38,31 @@ async function BottomNavServer() {
   );
 }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // Sprawdzamy czy to konto demo (ZMIEŃ E-MAIL NA SWÓJ TESTOWY)
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const isDemo = session?.user?.email === 'test@test.pl';
+
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+      
+      {/* PASEK DEMO */}
+      {isDemo && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-orange-500 to-red-600 text-white text-center py-1.5 px-4 text-xs font-bold shadow-lg flex items-center justify-center gap-2">
+          <span>To jest wersja DEMO. Możesz klikać i testować bez ograniczeń.</span>
+          <Link href="/auth/login" className="underline hover:text-white/80 ml-2">Wyjdź z Demo</Link>
+        </div>
+      )}
+
       <Suspense fallback={null}>
         <ToastListener />
       </Suspense>
 
       <AppBackground priority />
 
-      <div className="app-content relative z-20 px-4 md:px-6 lg:px-8 md:pt-6 lg:pt-8">
+      {/* Dodajemy margines na górze, jeśli jest pasek demo */}
+      <div className={`app-content relative z-20 px-4 md:px-6 lg:px-8 md:pt-6 lg:pt-8 ${isDemo ? 'pt-12 md:pt-14' : ''}`}>
         {children}
       </div>
 
@@ -58,7 +71,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Suspense>
 
       <PWAInstallPrompt />
-
       <Toaster
         position="top-right"
         richColors
