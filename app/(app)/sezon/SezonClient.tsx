@@ -17,12 +17,14 @@ export type MeczSezon = {
 };
 
 const formatDzien = (iso: string) => {
-  return new Date(iso + 'T00:00:00').toLocaleDateString('pl-PL', {
+  const date = new Date(iso + 'T00:00:00');
+  // Zwraca np. "Sob, 14 Lis"
+  const formatted = date.toLocaleDateString('pl-PL', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
-    year: 'numeric',
-  }).replace(',', '');
+  });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
 export function SezonClient({ mecze }: { mecze: MeczSezon[] }) {
@@ -84,113 +86,105 @@ export function SezonClient({ mecze }: { mecze: MeczSezon[] }) {
   }
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-6 md:space-y-8 animate-fadeIn pb-10">
       {Object.entries(grouped).map(([miesiac, lista]) => (
         <div key={miesiac}>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-3 pl-2">
+          <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-3 pl-1">
             {miesiac}
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {lista.map((mecz) => {
               const isEditing = editingId === mecz.id;
               const isDom = mecz.is_home ?? true;
               
-              let scoreClass = 'bg-white/5 text-white/40 border border-white/10';
+              // Kolorystyka przycisku z wynikiem
+              let scoreBtnClass = 'bg-white/5 text-white/50 border-white/10 hover:border-white/20';
               if (mecz.wynik_gospodarzy !== null && mecz.wynik_gosci !== null) {
-                if (mecz.wynik_gospodarzy > mecz.wynik_gosci) scoreClass = 'bg-green-500/20 text-green-400 border border-green-500/30';
-                else if (mecz.wynik_gospodarzy < mecz.wynik_gosci) scoreClass = 'bg-red-500/20 text-red-400 border border-red-500/30';
-                else scoreClass = 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+                if (mecz.wynik_gospodarzy > mecz.wynik_gosci) scoreBtnClass = 'bg-green-500/15 text-green-400 border-green-500/30 hover:bg-green-500/25';
+                else if (mecz.wynik_gospodarzy < mecz.wynik_gosci) scoreBtnClass = 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25';
+                else scoreBtnClass = 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/25';
               }
 
               return (
-                <div key={mecz.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-900/50 hover:bg-slate-800/80 border border-white/5 transition-all text-sm">
-                  
-                  {/* Data i Godzina */}
-                  <div className="flex items-center gap-3 w-[200px] shrink-0">
-                    <span className="text-white/50 text-xs w-[110px]">{formatDzien(mecz.data)}</span>
-                    <span className="font-bold text-white/90">{mecz.godzina}</span>
-                  </div>
-
-                  {/* Przeciwnik */}
-                  <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded-md bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                      {mecz.przeciwnik?.charAt(0).toUpperCase() || '?'}
+                <div 
+                  key={mecz.id} 
+                  className="flex items-center justify-between gap-3 p-3 md:p-4 rounded-xl bg-slate-900/60 border border-white/5 hover:border-white/10 transition-all text-sm overflow-hidden"
+                >
+                  {/* LEWA STRONA: Info */}
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 text-[10px] md:text-xs text-white/50 font-medium">
+                      <span>{formatDzien(mecz.data)}</span>
+                      <span>•</span>
+                      <span>{mecz.godzina}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        {mecz.typ === 'mecz' ? <Trophy className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
+                        <span className="capitalize">{mecz.typ}</span>
+                      </span>
                     </div>
-                    <span className="font-semibold text-white truncate">
-                      {mecz.przeciwnik || 'Nieznany przeciwnik'}
-                    </span>
+                    
+                    <div className="flex items-center gap-2 truncate">
+                      <span className={`text-[11px] font-black w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 ${isDom ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`} title={isDom ? 'Mecz u siebie' : 'Mecz na wyjeździe'}>
+                        {isDom ? 'D' : 'W'}
+                      </span>
+                      <span className="font-semibold text-white truncate text-sm md:text-base">
+                        {mecz.przeciwnik || 'Nieznany przeciwnik'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Dom / Wyjazd */}
-                  <div className="w-8 text-center shrink-0">
-                    <span className={`font-black text-xs ${isDom ? 'text-green-400' : 'text-orange-400'}`} title={isDom ? 'Mecz u siebie' : 'Mecz na wyjeździe'}>
-                      {isDom ? 'D' : 'W'}
-                    </span>
-                  </div>
-
-                  {/* WYNIK (klikalny) */}
-                  <div className="w-[100px] flex justify-center shrink-0">
+                  {/* PRAWA STRONA: Wynik / Edycja */}
+                  <div className="flex-shrink-0 flex items-center justify-end min-w-[100px]">
                     {isEditing ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-white/10">
                         <input
                           type="number"
                           value={gospInput}
                           onChange={(e) => setGospInput(e.target.value)}
-                          className="w-8 h-8 bg-slate-950 border border-green-400/50 rounded text-center text-white font-bold outline-none focus:border-green-400"
+                          className="w-8 h-8 md:w-9 md:h-9 bg-transparent text-center text-white font-bold outline-none focus:bg-white/5 rounded-lg"
                           placeholder="-"
                           autoFocus
                         />
-                        <span className="text-white/30">:</span>
+                        <span className="text-white/30 font-bold">:</span>
                         <input
                           type="number"
                           value={goscInput}
                           onChange={(e) => setGoscInput(e.target.value)}
-                          className="w-8 h-8 bg-slate-950 border border-green-400/50 rounded text-center text-white font-bold outline-none focus:border-green-400"
+                          className="w-8 h-8 md:w-9 md:h-9 bg-transparent text-center text-white font-bold outline-none focus:bg-white/5 rounded-lg"
                           placeholder="-"
                         />
+                        <div className="flex gap-1 ml-1 pl-2 border-l border-white/10">
+                          <button
+                            onClick={() => handleSave(mecz.id)}
+                            disabled={isPending}
+                            className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-green-500/20 hover:bg-green-500/40 text-green-400 flex items-center justify-center transition-colors disabled:opacity-50"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            disabled={isPending}
+                            className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-400 flex items-center justify-center transition-colors disabled:opacity-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <button
                         onClick={() => startEdit(mecz)}
-                        className={`group flex items-center justify-center gap-1.5 px-3 py-1 rounded-md font-bold text-xs transition-all min-w-[60px] ${scoreClass}`}
+                        className={`group flex items-center justify-center gap-1.5 px-3 py-1.5 md:py-2 rounded-xl border font-bold text-sm md:text-base transition-all ${scoreBtnClass}`}
                         title="Kliknij, aby edytować wynik"
                       >
                         {mecz.wynik_gospodarzy !== null && mecz.wynik_gosci !== null ? (
                           <span>{mecz.wynik_gospodarzy} : {mecz.wynik_gosci}</span>
                         ) : (
-                          <span className="opacity-50 group-hover:opacity-100">- : -</span>
+                          <span className="opacity-70 text-xs">Wpisz wynik</span>
                         )}
-                        <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Edit2 className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
                       </button>
                     )}
                   </div>
-
-                  {/* Typ (Mecz/Sparing) */}
-                  <div className="w-[100px] flex items-center justify-end gap-1.5 text-xs text-white/50 shrink-0">
-                    {mecz.typ === 'mecz' ? <Trophy className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
-                    <span className="capitalize">{mecz.typ}</span>
-                  </div>
-
-                  {/* Przyciski akcji (tylko w trybie edycji) */}
-                  <div className={`w-[60px] flex items-center justify-end gap-1 shrink-0 transition-opacity ${isEditing ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <button
-                      onClick={() => handleSave(mecz.id)}
-                      disabled={isPending}
-                      className="w-7 h-7 rounded bg-green-500/20 hover:bg-green-500/40 text-green-400 flex items-center justify-center transition-colors disabled:opacity-50"
-                      title="Zapisz"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      disabled={isPending}
-                      className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/40 text-red-400 flex items-center justify-center transition-colors disabled:opacity-50"
-                      title="Anuluj"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
                 </div>
               );
             })}
