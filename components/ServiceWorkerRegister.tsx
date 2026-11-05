@@ -86,7 +86,7 @@ export function ServiceWorkerRegister() {
       icon: <RefreshCw className="w-4 h-4" />,
     });
 
-    return () => toast.dismiss(toastId);
+return () => { toast.dismiss(toastId); };
   }, [waitingWorker]);
 
   return null;
