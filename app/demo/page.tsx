@@ -11,15 +11,19 @@ export default function DemoPage() {
     const supabase = createClient();
 
     const loginDemo = async () => {
-      // 1. Zapisujemy odwiedziny w tle (nie czekamy na odpowiedź, żeby nie spowalniać)
+      // 1. NAJWAŻNIEJSZE: Najpierw wylogowujemy obecną sesję (jeśli istnieje).
+      // To czyści ciasteczka i zapobiega "przełogowywaniu" po odświeżeniu.
+      await supabase.auth.signOut();
+
+      // 2. Zapisujemy odwiedziny w tle
       supabase.from('demo_visits').insert({
         user_agent: navigator.userAgent,
         referer: document.referrer || 'wpisany_z_reki',
       }).then();
 
-      // 2. Logowanie na konto demo
+      // 3. Logowanie na konto demo
       const { error } = await supabase.auth.signInWithPassword({
-        email: 'test@test.pl', // Upewnij się, że to Twoje konto testowe
+        email: 'test@test.pl', 
         password: 'Testowe123!',
       });
 
@@ -28,7 +32,7 @@ export default function DemoPage() {
         return;
       }
 
-      // 3. Twarde przekierowanie
+      // 4. Twarde przekierowanie (gwarantuje, że nowe ciasteczka zostaną wysłane)
       window.location.href = '/dashboard';
     };
 
