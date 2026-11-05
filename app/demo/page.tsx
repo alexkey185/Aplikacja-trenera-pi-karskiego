@@ -11,8 +11,15 @@ export default function DemoPage() {
     const supabase = createClient();
 
     const loginDemo = async () => {
+      // 1. Zapisujemy odwiedziny w tle (nie czekamy na odpowiedź, żeby nie spowalniać)
+      supabase.from('demo_visits').insert({
+        user_agent: navigator.userAgent,
+        referer: document.referrer || 'wpisany_z_reki',
+      }).then();
+
+      // 2. Logowanie na konto demo
       const { error } = await supabase.auth.signInWithPassword({
-        email: 'test@test.pl', // Upewnij się, że dane są poprawne
+        email: 'test@test.pl', // Upewnij się, że to Twoje konto testowe
         password: 'Testowe123!',
       });
 
@@ -21,6 +28,7 @@ export default function DemoPage() {
         return;
       }
 
+      // 3. Twarde przekierowanie
       window.location.href = '/dashboard';
     };
 

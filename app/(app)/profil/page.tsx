@@ -19,6 +19,7 @@ import {
   Check,
   Download,
   HardDrive,
+  BarChart3, // <-- Dodano ikonę do statystyk
 } from 'lucide-react';
 
 export default async function Profil() {
@@ -37,8 +38,15 @@ export default async function Profil() {
     .eq('user_id', user.id)
     .maybeSingle();
 
+  // --- POBIERANIE STATYSTYK DEMO ---
+  const { count: demoCount, data: demoVisits } = await supabase
+    .from('demo_visits')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .limit(5);
+
   const email = user.email ?? 'brak';
-  const isDemo = email === 'test@test.pl'; // <-- Flaga trybu DEMO
+  const isDemo = email === 'test@test.pl'; // Flaga trybu DEMO
   
   const imie = user.user_metadata?.imie ?? '';
   const nazwisko = user.user_metadata?.nazwisko ?? '';
@@ -121,6 +129,46 @@ export default async function Profil() {
       )}
 
       <ProfilForm imie={imie} nazwisko={nazwisko} />
+
+      {/* KARTA STATYSTYK DEMO */}
+      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-4 animate-fadeIn shadow-2xl shadow-black/60">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-4 h-4 text-orange-400" />
+          <h3 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+            Statystyki Demo
+          </h3>
+        </div>
+        
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-orange-500/15 border border-orange-400/30 flex items-center justify-center flex-shrink-0">
+            <span className="text-2xl font-black text-orange-400">{demoCount ?? 0}</span>
+          </div>
+          <div>
+            <div className="text-sm font-bold text-white">Wyświetleń Demo</div>
+            <div className="text-xs text-white/50">Łącznie wejść na link demo</div>
+          </div>
+        </div>
+
+        {demoVisits && demoVisits.length > 0 ? (
+          <div className="space-y-2">
+            <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1">Ostatnie wejścia:</div>
+            {demoVisits.map((v) => {
+              const date = new Date(v.created_at).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+              const isMobile = /mobile|android|iphone/i.test(v.user_agent ?? '');
+              return (
+                <div key={v.id} className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-white/5 border border-white/5">
+                  <span className="text-white/70">{date}</span>
+                  <span className="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded">
+                    {isMobile ? '📱 Telefon' : '💻 Komputer'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-xs text-white/40 text-center py-2">Brak wejść na demo.</div>
+        )}
+      </div>
 
       <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden mb-4 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="p-5">
