@@ -1,19 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 export default function DemoPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
 
     const loginDemo = async () => {
-      // UPEWNIJ SIĘ, ŻE MASZ TU SWOJE POPRAWNE DANE TESTOWE!
+      // Logowanie
       const { error } = await supabase.auth.signInWithPassword({
         email: 'test@test.pl',
         password: 'Testowe123!',
@@ -24,13 +22,13 @@ export default function DemoPage() {
         return;
       }
 
-      // Przekierowanie i odświeżenie, aby chmura/middleware zobaczyły nowe ciasteczka
-      router.push('/dashboard');
-      router.refresh();
+      // KLUCZOWA ZMIANA: Twarde przekierowanie (hard reload)
+      // Gwarantuje, że przeglądarka zapisze ciasteczka PRZED zapytaniem do serwera
+      window.location.href = '/dashboard';
     };
 
     loginDemo();
-  }, [router]);
+  }, []);
 
   if (error) {
     return (
@@ -39,9 +37,6 @@ export default function DemoPage() {
           <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-xl font-bold mb-2 text-red-400">Błąd logowania demo</h1>
           <p className="text-sm text-white/70 mb-4">{error}</p>
-          <p className="text-xs text-white/40">
-            Upewnij się, że e-mail i hasło w kodzie (app/demo/page.tsx) są poprawne.
-          </p>
         </div>
       </div>
     );

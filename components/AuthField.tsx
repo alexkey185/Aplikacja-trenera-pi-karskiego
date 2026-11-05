@@ -3,27 +3,16 @@
 import { AlertCircle, type LucideIcon } from 'lucide-react';
 
 type AuthFieldProps = {
-  /** Ikona po lewej stronie labelki */
   icon: LucideIcon;
-  /** Etykieta pola (np. "Email", "Hasło") */
   label: string;
-  /** HTML name - wymagane dla autouzupełniania i FormData */
   name: string;
-  /** HTML id - do powiązania label↔input (a11y) */
   id: string;
-  /** Typ pola: email, password, text, tel */
   type?: 'email' | 'password' | 'text' | 'tel';
-  /** Wartość pola (kontrolowany) */
   value: string;
-  /** Handler zmiany */
   onChange: (value: string) => void;
-  /** Placeholder */
   placeholder?: string;
-  /** Komunikat błędu (jeśli jest - pole na czerwono) */
   error?: string;
-  /** Atrybut autocomplete (email, current-password, new-password, tel) */
   autoComplete?: string;
-  /** Opcjonalny element po prawej stronie labelki (np. "Zapomniałeś?") */
   labelRight?: React.ReactNode;
 };
 
@@ -66,6 +55,8 @@ export function AuthField({
         placeholder={placeholder}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
+        spellCheck={false} // <-- WYŁĄCZA CZERWONĄ FALKĘ
+        autoCapitalize="none" // <-- Zapobiega wielkiej literze na początku na telefonach
         className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-all ${
           hasError
             ? 'border-red-400/70 focus:border-red-400 bg-red-500/5'
