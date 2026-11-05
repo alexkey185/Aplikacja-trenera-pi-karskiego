@@ -4,17 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import styles from './landing.module.css';
 
-/* ═══════════════════════════════════════════════════════════════
-   LANDING PAGE — talent-landing-wow-v2
-   Konwersja z HTML → React
-   - demo z klikaniem kropek obecności
-   - intro animation (raz na sesję)
-   - parallax demo
-   - scroll progress bar
-   - mobile sticky CTA
-   ═══════════════════════════════════════════════════════════════ */
-
-// Typy dla danych demo
 type DemoZawodnik = {
   imie: string;
   inicjaly: string;
@@ -22,7 +11,6 @@ type DemoZawodnik = {
   kropki: number[];
 };
 
-// Dane demo — te same co w HTML
 const DEMO_DANE: DemoZawodnik[] = [
   { imie: 'Antoni Adamski', inicjaly: 'AA', opis: '2018 · Pomocnik', kropki: [1, 1, 0, 1, 1] },
   { imie: 'Bruno Bielski', inicjaly: 'BB', opis: '2020 · Napastnik', kropki: [1, 0, 1, 1, 1] },
@@ -49,7 +37,6 @@ export function Landing() {
   const shownPctRef = useRef(80);
   const rafRef = useRef<number | null>(null);
 
-  // ═══ Intro animation — tylko raz na sesję ═══
   useEffect(() => {
     try {
       const shown = sessionStorage.getItem(INTRO_KEY);
@@ -57,12 +44,9 @@ export function Landing() {
         setShowIntro(true);
         sessionStorage.setItem(INTRO_KEY, '1');
       }
-    } catch {
-      // sessionStorage może być zablokowane (tryb prywatny) — pomiń intro
-    }
+    } catch {}
   }, []);
 
-  // ═══ Scroll progress + mobile CTA ═══
   useEffect(() => {
     let tick = false;
     let vis = false;
@@ -91,7 +75,6 @@ export function Landing() {
     window.addEventListener('scroll', onScroll, { passive: true });
     update();
 
-    // IntersectionObserver dla mobile CTA (ukryj gdy widoczne CTA na dole)
     let io: IntersectionObserver | null = null;
     if (testyRef.current) {
       io = new IntersectionObserver(
@@ -110,7 +93,6 @@ export function Landing() {
     };
   }, []);
 
-  // ═══ Parallax demo (tylko desktop + bez reduced motion) ═══
   useEffect(() => {
     const hw = hwRef.current;
     const demoEl = demoRef.current;
@@ -145,7 +127,6 @@ export function Landing() {
     };
   }, []);
 
-  // ═══ Reveal on scroll (IntersectionObserver) ═══
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
@@ -174,7 +155,6 @@ export function Landing() {
     return () => io.disconnect();
   }, []);
 
-  // ═══ Karta hover — podświetlenie pod kursorem ═══
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
@@ -197,7 +177,6 @@ export function Landing() {
     };
   }, []);
 
-  // ═══ Obliczanie frekwencji z demo ═══
   useEffect(() => {
     const on = demo.reduce((sum, z) => sum + z.kropki.reduce((a, b) => a + b, 0), 0);
     const all = demo.length * 5;
@@ -239,7 +218,6 @@ export function Landing() {
 
   return (
     <div ref={rootRef} className={styles.root}>
-      {/* Intro animation — tylko raz na sesję */}
       {showIntro && (
         <div className={styles.intro} aria-hidden="true">
           <div className={styles.introLogo}>
@@ -248,10 +226,8 @@ export function Landing() {
         </div>
       )}
 
-      {/* Scroll progress bar */}
       <div ref={spRef} className={styles.sp} aria-hidden="true" />
 
-      {/* ─── Nav bar ─────────────────────────────────────────── */}
       <div className={styles.bar}>
         <div className={styles.wrap}>
           <div className={styles.nav}>
@@ -264,7 +240,6 @@ export function Landing() {
           </div>
         </div>
 
-        {/* ─── Hero ─────────────────────────────────────────── */}
         <div className={styles.hw} ref={hwRef}>
           <svg
             className={styles.pitch}
@@ -297,18 +272,16 @@ export function Landing() {
                 <p className={`${styles.lead} ${styles.fd}`}>
                   Obecność i plan treningów w jednym miejscu. Koniec z kartkami, Excelem i szukaniem wiadomości na grupach.
                 </p>
-               // app/Landing.tsx
-<div className={`${styles.ctas} ${styles.fd}`}>
-  <Link href="/demo" className={`${styles.btn} ${styles.btnP}`}>
-    Zobacz Demo (bez logowania)
-  </Link>
-  <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnS}`}>
-    Zapisz się na testy
-  </Link>
-</div>
+                                <div className={`${styles.ctas} ${styles.fd}`}>
+                  <Link href="/demo" className={`${styles.btn} ${styles.btnP} ${styles.btnDemo}`}>
+                    Zobacz Demo (bez logowania)
+                  </Link>
+                  <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnS}`}>
+                    Zapisz się na testy
+                  </Link>
+                </div>
               </div>
 
-              {/* ─── Demo ───────────────────────────────────── */}
               <div className={styles.demoWrap}>
                 <div className={styles.demo} ref={demoRef}>
                   <div className={styles.dh}>
@@ -369,7 +342,6 @@ export function Landing() {
           </div>
         </div>
 
-        {/* ─── Marquee ─────────────────────────────────────── */}
         <div className={styles.mq} aria-hidden="true">
           <div>
             <span>KADRA</span>
@@ -388,7 +360,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Trust bar ─────────────────────────────────────── */}
       <div className={styles.wrap}>
         <div className={styles.tr}>
           <div><i>●</i>Darmowe na start</div>
@@ -398,7 +369,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Przed / Po ──────────────────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <h2 className={styles.h2}>Przed i po talent.</h2>
@@ -425,7 +395,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Jak to działa ───────────────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <h2 className={styles.h2}>Jak to działa</h2>
@@ -449,7 +418,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Funkcje ────────────────────────────────────────── */}
       <div className={styles.sec} id="funkcje">
         <div className={styles.wrap}>
           <h2 className={styles.h2}>Wszystko, czego trener potrzebuje na co dzień</h2>
@@ -491,7 +459,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Frekwencja bez liczenia ─────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split}>
@@ -507,7 +474,6 @@ export function Landing() {
               </ul>
             </div>
             <div className={`${styles.media} ${styles.rv}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/screenshots/screen3-statystyki.png"
                 alt="Widok statystyk frekwencji drużyny w aplikacji talent."
@@ -520,7 +486,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Zawsze pod ręką ─────────────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={`${styles.split} ${styles.splitRev}`}>
@@ -537,7 +502,6 @@ export function Landing() {
             </div>
             <div className={styles.media}>
               <div className={`${styles.phone} ${styles.media}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/screenshots/screen4-kalendarz-mobile.png"
                   alt="Kalendarz w aplikacji talent. na telefonie"
@@ -551,7 +515,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Zbudowana przez trenera ─────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <div className={styles.split} style={{ gridTemplateColumns: '1fr' }}>
@@ -565,7 +528,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── FAQ ─────────────────────────────────────────────── */}
       <div className={styles.sec}>
         <div className={styles.wrap}>
           <h2 className={styles.h2}>Najczęstsze pytania</h2>
@@ -590,7 +552,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── CTA końcowe ─────────────────────────────────────── */}
       <div className={styles.sec} id="testy" ref={testyRef}>
         <div className={styles.wrap}>
           <div className={styles.ctaBox}>
@@ -599,7 +560,10 @@ export function Landing() {
               Dla trenerów piłki nożnej. W zamian za darmowy dostęp proszę o szczerą opinię, co poprawić.
             </p>
             <div className={styles.ctas} style={{ justifyContent: 'center' }}>
-              <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnP}`}>
+              <Link href="/demo" className={`${styles.btn} ${styles.btnP}`}>
+                Zobacz Demo
+              </Link>
+              <Link href="/auth/sign-up" className={`${styles.btn} ${styles.btnS}`}>
                 Zapisz się na testy
               </Link>
             </div>
@@ -610,7 +574,6 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Footer ──────────────────────────────────────────── */}
       <div className={styles.wrap}>
         <div className={styles.foot}>
           <span>© 2026 talent.</span>
@@ -621,41 +584,18 @@ export function Landing() {
         </div>
       </div>
 
-      {/* ─── Mobile sticky CTA ──────────────────────────────── */}
-      <a
-        ref={mctaRef}
-        href="/auth/sign-up"
-        className={styles.mcta}
-      >
-        Zapisz się na testy
+      <a ref={mctaRef} href="/demo" className={styles.mcta}>
+        Zobacz Demo
       </a>
     </div>
   );
 }
 
-/* ─── Helper: karta funkcji ─────────────────────────────── */
-function FeatureCard({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
+function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string; }) {
   return (
     <div className={styles.card}>
       <div className={styles.ico}>
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#4ade80"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           {icon}
         </svg>
       </div>
@@ -665,20 +605,10 @@ function FeatureCard({
   );
 }
 
-/* ─── Helper: tick na liście ────────────────────────────── */
 function Tick({ children }: { children: React.ReactNode }) {
   return (
     <li>
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#4ade80"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 6L9 17l-5-5" />
       </svg>
       <span>{children}</span>

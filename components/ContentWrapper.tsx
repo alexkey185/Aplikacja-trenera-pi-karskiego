@@ -9,7 +9,8 @@ export function ContentWrapper({ children }: { children: React.ReactNode }) {
     pathname === '/' ||
     pathname.startsWith('/auth') ||
     pathname === '/prywatnosc' ||
-    pathname === '/regulamin';
+    pathname === '/regulamin' ||
+    pathname === '/demo'; // <-- DODANO TĘ LINIJKĘ
 
   return (
     <div className={noSidebar ? '' : 'md:pl-60'}>

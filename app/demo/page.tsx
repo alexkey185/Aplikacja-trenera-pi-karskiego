@@ -11,9 +11,8 @@ export default function DemoPage() {
     const supabase = createClient();
 
     const loginDemo = async () => {
-      // Logowanie
       const { error } = await supabase.auth.signInWithPassword({
-        email: 'test@test.pl',
+        email: 'test@test.pl', // Upewnij się, że dane są poprawne
         password: 'Testowe123!',
       });
 
@@ -22,8 +21,6 @@ export default function DemoPage() {
         return;
       }
 
-      // KLUCZOWA ZMIANA: Twarde przekierowanie (hard reload)
-      // Gwarantuje, że przeglądarka zapisze ciasteczka PRZED zapytaniem do serwera
       window.location.href = '/dashboard';
     };
 
@@ -32,7 +29,7 @@ export default function DemoPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] text-white p-4">
+      <div className="w-full h-[100dvh] flex items-center justify-center bg-[#0a0e1a] text-white p-4">
         <div className="max-w-md w-full text-center bg-slate-900/80 border border-red-400/30 rounded-3xl p-6 shadow-2xl">
           <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-xl font-bold mb-2 text-red-400">Błąd logowania demo</h1>
@@ -43,7 +40,7 @@ export default function DemoPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0e1a] text-white">
+    <div className="w-full h-[100dvh] flex flex-col items-center justify-center bg-[#0a0e1a] text-white">
       <Loader2 className="w-10 h-10 animate-spin text-green-500 mb-4" />
       <h1 className="text-xl font-bold">Przygotowujemy Twoje demo...</h1>
       <p className="text-white/50 text-sm mt-2">Za chwilę przeniesiemy Cię do aplikacji.</p>
