@@ -1,4 +1,3 @@
-// components/DeleteEventButtonLazy.tsx
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -16,7 +15,7 @@ export const DeleteEventButtonLazy = dynamic(
         type="button"
         disabled
         className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/20"
-        title="Usun wydarzenie"
+        title="Usuń wydarzenie"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>

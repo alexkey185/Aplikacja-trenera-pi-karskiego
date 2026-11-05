@@ -29,7 +29,7 @@ export async function dodajTrening(formData: FormData) {
   const parsed = dodajTreningSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
-  const { data, godzina, miejsce, typ, przeciwnik, notatki, cykl, data_do: dataDo } = parsed.data;
+  const { data, godzina, miejsce, typ, przeciwnik, notatki, cykl, is_home, data_do: dataDo } = parsed.data;
 
   const cyklDostepny = typ === 'trening' && cykl !== 'nie_powtarzaj';
   const dates: string[] = [];
@@ -57,7 +57,17 @@ export async function dodajTrening(formData: FormData) {
   }
 
   const cyklId = cyklDostepny ? crypto.randomUUID() : null;
-  const rows = dates.map((d) => ({ data: d, godzina, miejsce, typ, przeciwnik, notatki, cykl_id: cyklId, druzyna_id: druzynaId }));
+  const rows = dates.map((d) => ({ 
+    data: d, 
+    godzina, 
+    miejsce, 
+    typ, 
+    przeciwnik, 
+    notatki, 
+    cykl_id: cyklId, 
+    druzyna_id: druzynaId,
+    is_home: is_home ?? true
+  }));
 
   const { error } = await supabase.from('treningi').insert(rows);
   if (error) throw new Error(getErrorMessage(error));

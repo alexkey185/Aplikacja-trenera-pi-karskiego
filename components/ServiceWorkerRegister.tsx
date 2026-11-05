@@ -13,15 +13,14 @@ export function ServiceWorkerRegister() {
 
     if (process.env.NODE_ENV !== 'production') {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
-        registrations.forEach((reg) => {
-          reg.unregister();
-          console.log('✓ Service Worker wyrejestrowany (tryb dev)');
-        });
+        registrations.forEach((reg) => reg.unregister());
       });
       return;
     }
 
     let cancelled = false;
+    let isUpdating = false; // <-- Flaga zapobiegająca niechcianym reloadom
+    let intervalId: NodeJS.Timeout;
 
     const register = async () => {
       try {
@@ -31,51 +30,41 @@ export function ServiceWorkerRegister() {
         });
 
         if (cancelled) return;
-        console.log('✓ Service Worker zarejestrowany:', reg.scope);
 
-        if (reg.waiting) {
-          setWaitingWorker(reg.waiting);
-        }
+        if (reg.waiting) setWaitingWorker(reg.waiting);
 
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           if (!newWorker) return;
-
           newWorker.addEventListener('statechange', () => {
-            if (
-              newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller
-            ) {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               setWaitingWorker(newWorker);
             }
           });
         });
 
-        setInterval(() => {
+        // Zapisujemy ID interwału, żeby móc go wyczyścić
+        intervalId = setInterval(() => {
           reg.update().catch(() => {});
         }, 60 * 60 * 1000);
       } catch (err) {
-        console.warn('✗ Rejestracja SW nieudana:', err);
+        console.warn('Rejestracja SW nieudana:', err);
       }
     };
 
-    if (document.readyState === 'complete') {
-      register();
-    } else {
-      window.addEventListener('load', register);
-    }
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register);
 
     const onControllerChange = () => {
+      if (!isUpdating) return; // <-- Blokada przy niezamierzonym reloadzie
       window.location.reload();
     };
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
     return () => {
       cancelled = true;
-      navigator.serviceWorker.removeEventListener(
-        'controllerchange',
-        onControllerChange
-      );
+      if (intervalId) clearInterval(intervalId); // <-- Czyszczenie
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
     };
   }, []);
 
@@ -88,16 +77,16 @@ export function ServiceWorkerRegister() {
       action: {
         label: 'Odśwież',
         onClick: () => {
+          // Ręczne kliknięcie zezwala na reload
           waitingWorker.postMessage({ type: 'SKIP_WAITING' });
           toast.dismiss(toastId);
+          window.location.reload(); 
         },
       },
       icon: <RefreshCw className="w-4 h-4" />,
     });
 
-    return () => {
-      toast.dismiss(toastId);
-    };
+    return () => toast.dismiss(toastId);
   }, [waitingWorker]);
 
   return null;

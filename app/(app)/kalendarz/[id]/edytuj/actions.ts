@@ -15,16 +15,10 @@ export async function aktualizujTrening(
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) {
-    throw new Error('Brak aktywnej drużyny.');
-  }
+  if (!druzynaId) throw new Error('Brak aktywnej drużyny.');
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) {
-    await enforceRateLimit(`user:${user.id}`, 'aktualizujTrening', 100, 3600);
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) await enforceRateLimit(`user:${user.id}`, 'aktualizujTrening', 100, 3600);
 
   const raw: Record<string, string> = {};
   for (const [key, value] of formData.entries()) {
@@ -32,10 +26,7 @@ export async function aktualizujTrening(
   }
 
   const parsed = aktualizujTreningSchema.safeParse(raw);
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0].message);
-  }
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
   const { data: trening, error: errFetch } = await supabase
     .from('treningi')
@@ -44,16 +35,14 @@ export async function aktualizujTrening(
     .eq('druzyna_id', druzynaId)
     .single();
 
-  if (errFetch || !trening) {
-    throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
-  }
+  if (errFetch || !trening) throw new Error('Nie znaleziono treningu w aktywnej drużynie.');
 
-  const { data, godzina, miejsce, typ, przeciwnik, notatki } = parsed.data;
+  const { data, godzina, miejsce, typ, przeciwnik, notatki, is_home } = parsed.data;
 
   if (scope === 'single' || !trening.cykl_id) {
     const { error } = await supabase
       .from('treningi')
-      .update({ data, godzina, miejsce, typ, przeciwnik, notatki })
+      .update({ data, godzina, miejsce, typ, przeciwnik, notatki, is_home })
       .eq('id', id)
       .eq('druzyna_id', druzynaId);
 
@@ -61,7 +50,7 @@ export async function aktualizujTrening(
   } else {
     const { error } = await supabase
       .from('treningi')
-      .update({ godzina, miejsce, typ, przeciwnik, notatki })
+      .update({ godzina, miejsce, typ, przeciwnik, notatki, is_home })
       .eq('cykl_id', trening.cykl_id)
       .eq('druzyna_id', druzynaId);
 
@@ -76,26 +65,16 @@ export async function usunTreningZakres(
   id: number,
   scope: 'single' | 'all'
 ): Promise<{ success: true; count: number } | { error: string }> {
-  if (!id || isNaN(id)) {
-    return { error: 'Nieprawidłowe ID.' };
-  }
+  if (!id || isNaN(id)) return { error: 'Nieprawidlowe ID.' };
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
+  if (!druzynaId) return { error: 'Brak aktywnej druzyny.' };
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const rl = await checkRateLimit(`user:${user.id}`, 'usunTreningZakres', 50, 3600);
-    if (!rl.allowed) {
-      return {
-        error: `Za duzo operacji. Sprobuj ponownie za ${Math.ceil(
-          rl.retryAfter / 60
-        )} min.`,
-      };
-    }
+    if (!rl.allowed) return { error: `Za duzo operacji. Sprobuj ponownie za ${Math.ceil(rl.retryAfter / 60)} min.` };
   }
 
   const { data: trening, error: errFetch } = await supabase
@@ -105,9 +84,7 @@ export async function usunTreningZakres(
     .eq('druzyna_id', druzynaId)
     .single();
 
-  if (errFetch || !trening) {
-    return { error: 'Nie znaleziono treningu.' };
-  }
+  if (errFetch || !trening) return { error: 'Nie znaleziono treningu.' };
 
   let count = 0;
 
@@ -127,18 +104,6 @@ export async function usunTreningZakres(
       .eq('druzyna_id', druzynaId);
     if (error) return { error: getErrorMessage(error) };
     count = deletedCount ?? 0;
-  }
-
-  // RODO-03: audit log dla delete treningu (kaskada obecnosci)
-  try {
-    await supabase.rpc('log_audit', {
-      p_action: scope === 'all' ? 'delete_trening_cycle' : 'delete_trening',
-      p_entity_type: 'trening',
-      p_entity_id: String(id),
-      p_details: { scope, count },
-    });
-  } catch (auditErr) {
-    console.error('Audit log failed:', auditErr);
   }
 
   revalidateKalendarz();

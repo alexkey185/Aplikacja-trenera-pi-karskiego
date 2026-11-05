@@ -12,13 +12,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* PODSTAWY                                                        */
-/* ═══════════════════════════════════════════════════════════════ */
-html {
-  background: #0a0e1a;
-}
-
+html { background: #0a0e1a; }
 body {
   background: #0a0e1a;
   color: var(--foreground);
@@ -29,55 +23,30 @@ body {
   overflow-x: hidden;
 }
 
-/* Gradienty w tle (zostaną wyłączone na mobile przez media query na dole pliku) */
 body::before {
-  content: '';
-  position: fixed;
-  top: -200px;
-  left: -200px;
-  width: 600px;
-  height: 600px;
+  content: ''; position: fixed; top: -200px; left: -200px; width: 600px; height: 600px;
   background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+  pointer-events: none; z-index: 0;
 }
-
 body::after {
-  content: '';
-  position: fixed;
-  bottom: -200px;
-  right: -200px;
-  width: 600px;
-  height: 600px;
+  content: ''; position: fixed; bottom: -200px; right: -200px; width: 600px; height: 600px;
   background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+  pointer-events: none; z-index: 0;
 }
 
 main {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  min-height: 100dvh;
-  box-sizing: border-box;
+  position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; box-sizing: border-box;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* SAFE AREA - iOS PWA (dynamic island)                            */
-/* ═══════════════════════════════════════════════════════════════ */
 .app-content {
   padding-top: max(4.5rem, env(safe-area-inset-top));
   padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 }
-
 .auth-content {
   padding-top: max(2rem, env(safe-area-inset-top));
   padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* ANIMACJE                                                        */
-/* ═══════════════════════════════════════════════════════════════ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -88,43 +57,16 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.5); }
-}
-
-@keyframes today-glow {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.35), inset 0 0 8px rgba(34, 197, 94, 0.08);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(34, 197, 94, 0.55), inset 0 0 12px rgba(34, 197, 94, 0.12);
-  }
-}
-
 @keyframes flash-highlight {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
   30% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out;
-  animation-fill-mode: both;
-}
-
-.animate-slideUp {
-  animation: slideUp 0.5s ease-out;
-  animation-fill-mode: both;
-}
-
-.animate-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-flash {
-  animation: flash-highlight 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
+.animate-fadeIn { animation: fadeIn 0.4s ease-out; animation-fill-mode: both; }
+.animate-slideUp { animation: slideUp 0.5s ease-out; animation-fill-mode: both; }
+/* USUNIĘTO animate-glow (obciąża GPU/baterię) */
+.animate-flash { animation: flash-highlight 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
 
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }
@@ -135,157 +77,72 @@ main {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* KOMPONENTY POMOCNICZE                                           */
-/* ═══════════════════════════════════════════════════════════════ */
 .glass {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
-
 .glass-strong {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(148, 163, 184, 0.15);
 }
+.h-dvh { height: 100vh; height: 100dvh; }
 
-.h-dvh {
-  height: 100vh;
-  height: 100dvh;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/* INTERAKCJE                                                      */
-/* ═══════════════════════════════════════════════════════════════ */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+button:active:not(:disabled), a:active { transform: scale(0.97); }
 
-button:active:not(:disabled), a:active {
-  transform: scale(0.97);
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/* SCROLLBAR                                                       */
-/* ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* KALENDARZ - komórki dni                                         */
-/* ═══════════════════════════════════════════════════════════════ */
 .day-today {
   background: rgba(34, 197, 94, 0.12) !important;
   border: 1.5px solid rgba(74, 222, 128, 0.55) !important;
-  animation: today-glow 2.5s ease-in-out infinite;
-  position: relative;
-  z-index: 2;
+  position: relative; z-index: 2;
+  /* USUNIĘTO animację today-glow */
 }
-
-.day-today .day-number {
-  color: #4ade80 !important;
-  font-weight: 800 !important;
-}
-
-.day-today .day-label {
-  color: #4ade80 !important;
-  font-weight: 700 !important;
-  opacity: 0.9;
-}
-
+.day-today .day-number { color: #4ade80 !important; font-weight: 800 !important; }
+.day-today .day-label { color: #4ade80 !important; font-weight: 700 !important; opacity: 0.9; }
 .day-selected {
-  background: rgba(59, 130, 246, 0.1) !important;
-  border: 1.5px solid rgba(96, 165, 250, 0.5) !important;
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
-  position: relative;
-  z-index: 1;
+  background: rgba(59, 130, 246, 0.1) !important; border: 1.5px solid rgba(96, 165, 250, 0.5) !important;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2); position: relative; z-index: 1;
 }
-
-.day-selected .day-number {
-  color: #93c5fd !important;
-  font-weight: 700 !important;
-}
-
+.day-selected .day-number { color: #93c5fd !important; font-weight: 700 !important; }
 .day-weekend { background: rgba(59, 130, 246, 0.05); }
 .day-holiday { background: rgba(239, 68, 68, 0.08); }
+.day-hoverable:hover { background: rgba(255, 255, 255, 0.06) !important; transform: scale(1.06); z-index: 3; }
 
-.day-hoverable:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  transform: scale(1.06);
-  z-index: 3;
-}
+input[type='number']::-webkit-outer-spin-button, input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type='number'] { -moz-appearance: textfield; }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* UKRYJ NATYWNE SPINNERY W POLACH NUMBER                          */
-/* ═══════════════════════════════════════════════════════════════ */
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  appearance: none;
-  margin: 0;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/* CHROME AUTOFILL                                                 */
-/* ═══════════════════════════════════════════════════════════════ */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
-  box-shadow: 0 0 0 30px #0f172a inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-  caret-color: #ffffff !important;
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0f172a inset !important; box-shadow: 0 0 0 30px #0f172a inset !important;
+  -webkit-text-fill-color: #ffffff !important; caret-color: #ffffff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
-
 input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 30px #0f172a inset, 0 0 0 1px rgba(74, 222, 128, 0.6) !important;
   box-shadow: 0 0 0 30px #0f172a inset, 0 0 0 1px rgba(74, 222, 128, 0.6) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* EKSPORT - UKRYWANIE SHELLA APLIKACJI                            */
-/* ═══════════════════════════════════════════════════════════════ */
-body.eksport-mode > *:not(.eksport-shell) {
-  display: none !important;
-}
+body.eksport-mode > *:not(.eksport-shell) { display: none !important; }
+body.eksport-mode { overflow: hidden !important; }
 
-body.eksport-mode {
-  overflow: hidden !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/* PREFERS REDUCED MOTION                                          */
-/* ═══════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  .animate-flash,
-  .animate-fadeIn,
-  .animate-slideUp,
-  .animate-glow,
-  .day-today {
-    animation: none !important;
-  }
+  .animate-flash, .animate-fadeIn, .animate-slideUp, .day-today { animation: none !important; }
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* OPTYMALIZACJA MOBILNA - WYŁĄCZENIE CIĘŻKICH EFEKTÓW TŁA        */
-/* ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  body::before,
-  body::after {
-    display: none !important; /* Ukrywa duże poświaty w tle na telefonach */
+  body::before, body::after { display: none !important; }
+}
+
+/* iOS Fix: Zapobiega autozoomowi przy kliknięciu w input (wymaga min 16px) */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
   }
 }

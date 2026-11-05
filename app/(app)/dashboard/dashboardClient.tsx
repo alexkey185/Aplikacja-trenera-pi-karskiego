@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Clock, BarChart3 as BarChart3Icon, Plus } from 'lucide-react';
 import { getDzisISO, toISO } from '@/lib/dates';
@@ -17,6 +17,9 @@ type TreningZObecnoscia = {
   miejsce: string | null;
   notatki: string | null;
   cykl_id: string | null;
+  is_home?: boolean | null;
+  wynik_gospodarzy?: number | null;
+  wynik_gosci?: number | null;
   obecnosc: { trening_id: number; status: string }[] | null;
 };
 
@@ -32,6 +35,7 @@ const typKolor = (typ: string) => {
   if (typ === 'turniej') return 'bg-purple-500';
   return 'bg-blue-500';
 };
+
 const typBorder = (typ: string) => {
   if (typ === 'mecz') return 'border-l-red-500';
   if (typ === 'sparing') return 'border-l-orange-500';
@@ -41,7 +45,7 @@ const typBorder = (typ: string) => {
 
 export function DashboardClient({
   initialDni, poniedzialekISO, niedzielaISO, prevWeek, nextWeek, jestWTygodniu,
-  eventMap, stats, wszystkieObecnosci,
+  eventMap, stats, frekwencjaMiesiaca,
 }: {
   initialDni: string[];
   poniedzialekISO: string;
@@ -51,14 +55,23 @@ export function DashboardClient({
   jestWTygodniu: boolean;
   eventMap: Record<string, TreningZObecnoscia[]>;
   stats: StatsMap;
-  wszystkieObecnosci: { trening_id: number; status: string }[];
+  frekwencjaMiesiaca: { obecni: number; total: number };
 }) {
   const dzisStr = getDzisISO();
-  const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
-  const [isPending, startTransition] = useTransition();
 
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (dzisStr >= poniedzialekISO && dzisStr <= niedzielaISO) return dzisStr;
+    return poniedzialekISO;
+  });
+
+  useEffect(() => {
+    if (selectedDate < poniedzialekISO || selectedDate > niedzielaISO) {
+      setSelectedDate(dzisStr >= poniedzialekISO && dzisStr <= niedzielaISO ? dzisStr : poniedzialekISO);
+    }
+  }, [poniedzialekISO, niedzielaISO, selectedDate, dzisStr]);
+
+  const [, startTransition] = useTransition();
   const dni = initialDni.map((iso) => new Date(iso + 'T00:00:00'));
-
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
@@ -78,14 +91,10 @@ export function DashboardClient({
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-
     startTransition(async () => {
       const res = await zapiszWynikLubNotatke(id, formData);
-      if (res?.error) {
-        toast.error('Błąd zapisu', { description: res.error });
-      } else if (res?.success) {
-        toast.success('Notatka zapisana');
-      }
+      if (res?.error) toast.error('Błąd zapisu', { description: res.error });
+      else if (res?.success) toast.success('Notatka zapisana');
     });
   };
 
@@ -227,12 +236,7 @@ export function DashboardClient({
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}</h2>
           </div>
           {(() => {
-            const rokMiesiac = dzisStr.substring(0, 7);
-            const treningiMies = Object.values(eventMap).flat().filter((t) => t.data.startsWith(rokMiesiac));
-            const idsMies = new Set(treningiMies.map((t) => t.id));
-            const obecnosciMies = wszystkieObecnosci.filter((o) => idsMies.has(o.trening_id));
-            const obecniMies = obecnosciMies.filter((o) => o.status === 'obecny' || o.status === 'spozniony').length;
-            const procent = obecnosciMies.length > 0 ? Math.round((obecniMies / obecnosciMies.length) * 100) : 0;
+            const procent = frekwencjaMiesiaca.total > 0 ? Math.round((frekwencjaMiesiaca.obecni / frekwencjaMiesiaca.total) * 100) : 0;
             return (
               <>
                 <div className="flex items-baseline gap-2 mb-2">
@@ -243,8 +247,8 @@ export function DashboardClient({
                   <div className={`h-full rounded-full transition-all ${procent >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' : procent >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${procent}%` }} />
                 </div>
                 <div className="flex items-center justify-between text-xs text-white/50 mb-4">
-                  <span><span className="text-green-400 font-semibold">{obecniMies}</span> obecnych</span>
-                  <span>{obecnosciMies.length} wpisów</span>
+                  <span><span className="text-green-400 font-semibold">{frekwencjaMiesiaca.obecni}</span> obecnych</span>
+                  <span>{frekwencjaMiesiaca.total} wpisów</span>
                 </div>
                 <Link href="/statystyki" className="w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
                   <BarChart3Icon className="w-3.5 h-3.5" /> Pełne statystyki

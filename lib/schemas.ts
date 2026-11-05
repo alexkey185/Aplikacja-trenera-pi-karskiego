@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // HELPERY - pola opcjonalne
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 const optionalString = (max: number) =>
   z
@@ -25,14 +25,9 @@ const optionalNumber = (min: number, max: number) =>
       message: `Wartość musi być między ${min} a ${max}`,
     });
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // DATA - walidacja formatu + realnego istnienia
-//
-// Regex sprawdza tylko format (YYYY-MM-DD), ale przepuszcza
-// nieistniejące daty (31 lutego, 32 stycznia, miesiąc 13).
-// Refine sprawdza round-trip przez Date - jeśli JS normalizuje
-// datę (31 lutego → 3 marca), znaczy że była nieprawidłowa.
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 const isoDate = z
   .string()
@@ -40,17 +35,9 @@ const isoDate = z
   .refine(
     (val) => {
       const [y, m, d] = val.split('-').map(Number);
-
-      // Rok w sensownym zakresie (np. 1900-2100)
       if (y < 1900 || y > 2100) return false;
-
-      // Miesiąc 1-12
       if (m < 1 || m > 12) return false;
-
-      // Dzień 1-31 (dalsza weryfikacja przez round-trip niżej)
       if (d < 1 || d > 31) return false;
-
-      // Round-trip: czy Date zwraca dokładnie to samo?
       const date = new Date(y, m - 1, d);
       return (
         date.getFullYear() === y &&
@@ -61,11 +48,9 @@ const isoDate = z
     { message: 'Nieprawidłowa data (np. 31 lutego nie istnieje)' }
   );
 
-// ═══════════════════════════════════════════════════
-// GODZINA - walidacja formatu + realnego zakresu
-//
-// Regex przepuszcza 25:99, 99:99. Refine pilnuje 0-23 : 0-59.
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// GODZINA
+// ═══════════════════════════════════════════════════════════════
 
 const isoTime = z
   .string()
@@ -78,9 +63,9 @@ const isoTime = z
     { message: 'Nieprawidłowa godzina (zakres 00:00-23:59)' }
   );
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // TRENINGI
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 export const TYP_TRENINGU = ['trening', 'mecz', 'sparing', 'turniej'] as const;
 export const CYKL_TRENINGU = ['nie_powtarzaj', 'co_tydzien', 'co_2_tygodnie'] as const;
@@ -94,6 +79,10 @@ export const dodajTreningSchema = z
     przeciwnik: optionalString(100),
     notatki: optionalString(2000),
     cykl: z.enum(CYKL_TRENINGU).default('nie_powtarzaj'),
+    is_home: z
+      .union([z.string(), z.boolean(), z.undefined()])
+      .transform((v) => v === 'true' || v === true)
+      .default(true),
     data_do: z
       .union([isoDate, z.literal(''), z.undefined()])
       .optional()
@@ -101,7 +90,6 @@ export const dodajTreningSchema = z
   })
   .refine(
     (d) => {
-      // Jeśli cykl != nie_powtarzaj, data_do musi być
       if (d.typ === 'trening' && d.cykl !== 'nie_powtarzaj') {
         return !!d.data_do;
       }
@@ -119,13 +107,17 @@ export const aktualizujTreningSchema = z.object({
   typ: z.enum(TYP_TRENINGU),
   przeciwnik: optionalString(100),
   notatki: optionalString(2000),
+  is_home: z
+    .union([z.string(), z.boolean(), z.undefined()])
+    .transform((v) => v === 'true' || v === true)
+    .default(true),
 });
 
 export type AktualizujTreningInput = z.infer<typeof aktualizujTreningSchema>;
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // ZAWODNICY
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 export const POZYCJE = ['Bramkarz', 'Obrońca', 'Pomocnik', 'Napastnik'] as const;
 
@@ -143,19 +135,12 @@ export const dodajZawodnikaSchema = z.object({
 
 export type DodajZawodnikaInput = z.infer<typeof dodajZawodnikaSchema>;
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // DRUŻYNY
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 export const KOLORY_DRUZYNY = [
-  'green',
-  'blue',
-  'purple',
-  'orange',
-  'red',
-  'yellow',
-  'pink',
-  'slate',
+  'green', 'blue', 'purple', 'orange', 'red', 'yellow', 'pink', 'slate',
 ] as const;
 
 export const dodajDruzynaSchema = z.object({
@@ -166,14 +151,10 @@ export const dodajDruzynaSchema = z.object({
 
 export type DodajDruzynaInput = z.infer<typeof dodajDruzynaSchema>;
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // HELPER do parsowania FormData
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
-/**
- * Parsuje FormData i waliduje przez Zod.
- * Rzuca Error z czytelnym komunikatem gdy walidacja się nie powiedzie.
- */
 export function parseFormData<T extends z.ZodTypeAny>(
   schema: T,
   formData: FormData
@@ -192,42 +173,28 @@ export function parseFormData<T extends z.ZodTypeAny>(
 
   return result.data;
 }
-// ═══════════════════════════════════════════════════
-// AUTH - walidacja formularzy logowania/rejestracji
-// ═══════════════════════════════════════════════════
 
-/**
- * Podstawowy schemat adresu email
- */
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+
 export const authEmailSchema = z
   .string()
   .trim()
   .min(1, 'Wpisz swój adres e-mail')
   .email('Adres e-mail jest nieprawidłowy');
 
-/**
- * Hasło - minimum 8 znaków (musi być zgodne z ustawieniem Supabase),
- * maksimum 72 znaki (limit bcrypt)
- */
 export const authPasswordSchema = z
   .string()
   .min(1, 'Wpisz hasło')
   .min(8, 'Hasło musi mieć minimum 8 znaków')
   .max(72, 'Hasło może mieć maksymalnie 72 znaki');
 
-/**
- * Login - email + hasło (bez limitu długości hasła - tylko sprawdzamy czy niepuste)
- */
 export const loginSchema = z.object({
   email: authEmailSchema,
   password: z.string().min(1, 'Wpisz swoje hasło'),
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
-
-/**
- * Sign-up - email + hasło + powtórzenie + akceptacja regulaminu
- */
 export const signUpSchema = z
   .object({
     email: authEmailSchema,
@@ -242,20 +209,10 @@ export const signUpSchema = z
     path: ['repeatPassword'],
   });
 
-export type SignUpInput = z.infer<typeof signUpSchema>;
-
-/**
- * Forgot password - tylko email
- */
 export const forgotPasswordSchema = z.object({
   email: authEmailSchema,
 });
 
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-
-/**
- * Update password - nowe hasło + powtórzenie
- */
 export const updatePasswordSchema = z
   .object({
     password: authPasswordSchema,
@@ -266,17 +223,6 @@ export const updatePasswordSchema = z
     path: ['repeatPassword'],
   });
 
-export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
-
-/**
- * Helper - zamienia ZodError na mapę błędów per pole.
- *
- * Użycie:
- *   const result = signUpSchema.safeParse(data);
- *   if (!result.success) {
- *     setFieldErrors(zodToFieldErrors(result.error));
- *   }
- */
 export function zodToFieldErrors(
   error: z.ZodError
 ): Record<string, string | undefined> {
@@ -289,3 +235,18 @@ export function zodToFieldErrors(
   }
   return out;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// POMOC / ZGŁOSZENIA
+// ═══════════════════════════════════════════════════════════════
+
+export const TYPY_ZGLOSZENIA = ['blad', 'pomysl', 'pytanie', 'inne'] as const;
+
+export const zgloszenieSchema = z.object({
+  typ: z.enum(TYPY_ZGLOSZENIA),
+  email: authEmailSchema,
+  temat: z.string().trim().min(3, 'Temat musi mieć min. 3 znaki').max(100),
+  opis: z.string().trim().min(10, 'Opis musi mieć min. 10 znaków').max(2000),
+  page_url: z.string().trim().max(500).optional().default(''),
+  user_agent: z.string().trim().max(500).optional().default(''),
+});

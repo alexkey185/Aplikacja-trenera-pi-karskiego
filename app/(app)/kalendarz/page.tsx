@@ -14,6 +14,9 @@ type Trening = {
   miejsce: string | null;
   notatki: string | null;
   cykl_id: string | null;
+  is_home?: boolean | null;
+  wynik_gospodarzy?: number | null;
+  wynik_gosci?: number | null;
 };
 
 type TreningZObecnoscia = Trening & {
@@ -40,7 +43,7 @@ export default async function KalendarzPage() {
   const { data: rawTreningi } = await supabase
     .from('treningi')
     .select(`
-      id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id,
+      id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, is_home, wynik_gospodarzy, wynik_gosci,
       obecnosc (trening_id, status)
     `)
     .eq('druzyna_id', druzynaId)
@@ -70,6 +73,9 @@ export default async function KalendarzPage() {
     miejsce: t.miejsce,
     notatki: t.notatki,
     cykl_id: t.cykl_id,
+    is_home: t.is_home,
+    wynik_gospodarzy: t.wynik_gospodarzy,
+    wynik_gosci: t.wynik_gosci,
   }));
 
   return (

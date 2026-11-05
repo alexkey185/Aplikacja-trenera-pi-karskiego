@@ -1,0 +1,1 @@
+export const ACTIVE_DRUZYNA_COOKIE = 'active_druzyna_id';

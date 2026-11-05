@@ -1,4 +1,3 @@
-// app/(app)/kalendarz/types.ts
 export type Trening = {
   id: number;
   data: string;
@@ -8,6 +7,9 @@ export type Trening = {
   miejsce: string | null;
   notatki: string | null;
   cykl_id: string | null;
+  is_home?: boolean | null;
+  wynik_gospodarzy?: number | null;
+  wynik_gosci?: number | null;
 };
 
 export type StatsMap = Record<

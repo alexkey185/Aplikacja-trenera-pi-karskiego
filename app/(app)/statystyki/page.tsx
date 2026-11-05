@@ -26,8 +26,8 @@ function getZakres(okres: string, m?: string): Zakres {
     return { od: toISO(od), do: toISO(dzis), label: 'Ostatnie 3 miesiące', typ: '3mies' };
   }
   if (okres === 'sezon') {
-    const rokStart = miesiac >= 8 ? rok : rok - 1;
-    return { od: toISO(new Date(rokStart, 8, 1)), do: toISO(new Date(rokStart + 1, 5, 30)), label: `Sezon ${rokStart}/${String(rokStart + 1).slice(2)}`, typ: 'sezon' };
+    const rokStart = miesiac >= 7 ? rok : rok - 1; // Poprawka dla sierpnia (miesiac 7)
+    return { od: toISO(new Date(rokStart, 7, 1)), do: toISO(new Date(rokStart + 1, 5, 30)), label: `Sezon ${rokStart}/${String(rokStart + 1).slice(2)}`, typ: 'sezon' };
   }
   if (okres === 'month' && m && /^\d{4}-\d{2}$/.test(m)) {
     const [rr, mm] = m.split('-').map(Number);
@@ -64,17 +64,18 @@ export default async function Statystyki({ searchParams }: { searchParams: Promi
   const activeDruzyna = await getActiveDruzyna();
   const zakres = getZakres(okres, m);
 
-  const { data: rpcData } = await supabase.rpc('get_statystyki_druzyny', {
-    p_druzyna_id: druzynaId, p_od: zakres.od, p_do: zakres.do, p_miesiace: 6,
-  });
+  // OPTYMALIZACJA: Dwa zapytania równolegle (Promise.all)
+  const [rpcStats, rpcMiesiace] = await Promise.all([
+    supabase.rpc('get_statystyki_druzyny', { p_druzyna_id: druzynaId, p_od: zakres.od, p_do: zakres.do, p_miesiace: 6 }),
+    supabase.rpc('get_miesiace_druzyny', { p_druzyna_id: druzynaId })
+  ]);
 
-  const raw = (rpcData ?? {}) as any;
+  const raw = (rpcStats.data ?? {}) as any;
   const stats = raw.stats ?? { total_treningi: 0, total_wpisy: 0, obecni_razem: 0, treningi_z_wpisami: 0, treningi_bez_wpisow: [] };
   const ranking = raw.ranking ?? [];
   const miesiace = raw.miesiace ?? [];
 
-  const { data: miesiaceRaw } = await supabase.rpc('get_miesiace_druzyny', { p_druzyna_id: druzynaId });
-  const unikalneMiesiace = ((miesiaceRaw ?? []) as { miesiac: string }[]).map((r) => r.miesiac);
+  const unikalneMiesiace = ((rpcMiesiace.data ?? []) as { miesiac: string }[]).map((r) => r.miesiac);
 
   const totalWpisy = stats.total_wpisy;
   const obecniRazem = stats.obecni_razem;

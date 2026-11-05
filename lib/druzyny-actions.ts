@@ -3,19 +3,13 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { ACTIVE_DRUZYNA_COOKIE } from './druzyny';
+import { ACTIVE_DRUZYNA_COOKIE } from './constants'; // <-- ZMIANA
 
 export async function setActiveDruzyna(id: string) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('druzyny')
-    .select('id')
-    .eq('id', id)
-    .single();
+  const { data } = await supabase.from('druzyny').select('id').eq('id', id).single();
 
-  if (!data) {
-    return { error: 'Nie znaleziono drużyny.' };
-  }
+  if (!data) return { error: 'Nie znaleziono drużyny.' };
 
   const cookieStore = await cookies();
   cookieStore.set(ACTIVE_DRUZYNA_COOKIE, id, {
@@ -27,6 +21,5 @@ export async function setActiveDruzyna(id: string) {
   });
 
   revalidatePath('/', 'layout');
-
   return { success: true };
 }

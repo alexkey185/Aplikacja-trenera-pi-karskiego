@@ -1,12 +1,32 @@
 import type { NextConfig } from 'next';
 
+// Automatycznie wyciągamy adres Supabase ze zmiennych środowiskowych
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+let supabaseHostname = '**.supabase.co'; // Fallback
+
+if (supabaseUrl) {
+  try {
+    supabaseHostname = new URL(supabaseUrl).hostname;
+  } catch {
+    // Jeśli URL jest niepoprawny, zostawiamy fallback
+  }
+}
+
 const nextConfig: NextConfig = {
   cacheComponents: false,
   images: {
     qualities: [75, 100],
+    // Dodajemy Supabase do białej listy dozwolonych serwerów dla <Image>
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: supabaseHostname,
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   experimental: {
-    // Zwiększamy limit dla Server Actions (domyślnie 1MB, logo może ważyć do 2MB)
     serverActions: {
       bodySizeLimit: '5mb',
     },

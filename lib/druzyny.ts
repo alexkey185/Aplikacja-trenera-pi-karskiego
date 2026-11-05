@@ -2,58 +2,36 @@ import 'server-only';
 import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-
-export const ACTIVE_DRUZYNA_COOKIE = 'active_druzyna_id';
+import { ACTIVE_DRUZYNA_COOKIE } from './constants'; // <-- Import z nowego pliku
 
 export type Rola = 'admin' | 'trener' | 'rodzic';
 
 export type Druzyna = {
-  id: string;
-  nazwa: string;
-  rocznik: number | null;
-  kolor: string;
-  created_at: string;
-  logo_url: string | null;
-  rola: Rola;
+  id: string; nazwa: string; rocznik: number | null; kolor: string; created_at: string; logo_url: string | null; rola: Rola;
 };
-
-export const DRUZYNY_CACHE_TAG = 'druzyny';
-export const ZAWODNICY_CACHE_TAG = 'zawodnicy-counts';
 
 export const getDruzyny = cache(async (): Promise<Druzyna[]> => {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+    const { data: { session } } = await supabase.auth.getSession(); // Szybsze getSession
+    if (!session?.user) return [];
 
     const { data, error } = await supabase
       .from('druzyna_czlonkowie')
-      .select(`
-        rola,
-        druzyny (id, nazwa, rocznik, kolor, created_at, logo_url)
-      `)
-      .eq('user_id', user.id);
+      .select(`rola, druzyny (id, nazwa, rocznik, kolor, created_at, logo_url)`)
+      .eq('user_id', session.user.id);
 
-    if (error) {
-      console.warn('Fallback RLS:', error.message);
+    if (error || !data) {
       const { data: stareDruzyny } = await supabase
         .from('druzyny')
         .select('id, nazwa, rocznik, kolor, created_at, logo_url')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: true });
-
-      if (!stareDruzyny) return [];
-      return stareDruzyny.map((d) => ({ ...d, rola: 'admin' as Rola }));
+      return (stareDruzyny ?? []).map((d) => ({ ...d, rola: 'admin' as Rola }));
     }
 
-    if (!data) return [];
-
-    return data.map((item: any) => {
-      if (!item.druzyny) return null;
-      return { ...item.druzyny, rola: item.rola as Rola };
-    }).filter((d): d is Druzyna => d !== null);
-  } catch (err) {
-    console.error('Krytyczny błąd getDruzyny:', err);
+    return data.map((item: any) => item.druzyny ? { ...item.druzyny, rola: item.rola as Rola } : null).filter((d): d is Druzyna => d !== null);
+  } catch {
     return [];
   }
 });
@@ -65,9 +43,7 @@ export const getActiveDruzynaId = cache(async (): Promise<string | null> => {
   const cookieStore = await cookies();
   const active = cookieStore.get(ACTIVE_DRUZYNA_COOKIE)?.value;
 
-  if (active && druzyny.some((d) => d.id === active)) {
-    return active;
-  }
+  if (active && druzyny.some((d) => d.id === active)) return active;
   return druzyny[0].id;
 });
 
@@ -81,21 +57,12 @@ export const getActiveDruzyna = cache(async (): Promise<Druzyna | null> => {
 export const getZawodnicyCounts = cache(async (): Promise<Record<string, number>> => {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return {};
-
-    const druzyny = await getDruzyny();
-    if (druzyny.length === 0) return {};
-    
-    const druzynaIds = druzyny.map((d) => d.id);
-    const { data: zawodnicy } = await supabase
-      .from('zawodnicy')
-      .select('druzyna_id')
-      .in('druzyna_id', druzynaIds);
+    const { data, error } = await supabase.rpc('get_zawodnicy_counts');
+    if (error || !data) return {};
 
     const counts: Record<string, number> = {};
-    (zawodnicy ?? []).forEach((z) => {
-      if (z.druzyna_id) counts[z.druzyna_id] = (counts[z.druzyna_id] ?? 0) + 1;
+    data.forEach((row: any) => {
+      counts[row.druzyna_id] = Number(row.count);
     });
     return counts;
   } catch {
