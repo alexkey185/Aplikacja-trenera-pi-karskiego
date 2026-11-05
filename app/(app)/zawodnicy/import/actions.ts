@@ -1,11 +1,11 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { parseImportText, rowsToInsert } from '@/lib/import-parser';
 import { redirect } from 'next/navigation';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 const MAX_ROWS = 200;
 const MAX_TEXT_LENGTH = 100_000;
@@ -16,9 +16,7 @@ export async function importZawodnicy(formData: FormData) {
   const druzynaId = await getActiveDruzynaId();
   if (!druzynaId) throw new Error('Brak aktywnej drużyny.');
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     await enforceRateLimit(`user:${user.id}`, 'importZawodnicy', 5, 3600);
   }
@@ -49,8 +47,8 @@ export async function importZawodnicy(formData: FormData) {
     .eq('druzyna_id', druzynaId);
 
   const istniejaceKlucze = new Set(
-    (istniejacy ?? []).map((z) =>
-      `${(z.imie ?? '').toLowerCase().trim()}|${(z.nazwisko ?? '').toLowerCase().trim()}`
+    (istniejacy ?? []).map(
+      (z) => `${(z.imie ?? '').toLowerCase().trim()}|${(z.nazwisko ?? '').toLowerCase().trim()}`
     )
   );
 
@@ -74,7 +72,7 @@ export async function importZawodnicy(formData: FormData) {
   const { error } = await supabase.from('zawodnicy').insert(insertRows);
   if (error) throw new Error(error.message);
 
-  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
+  revalidatePath('/', 'layout');
   revalidatePath('/kadra');
 
   const params = new URLSearchParams();

@@ -3,25 +3,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath, revalidateTag } from 'next/cache';
-import {
-  ACTIVE_DRUZYNA_COOKIE,
-  DRUZYNY_CACHE_TAG,
-  ZAWODNICY_CACHE_TAG,
-} from '@/lib/druzyny';
+import { revalidatePath } from 'next/cache';
+import { ACTIVE_DRUZYNA_COOKIE } from '@/lib/constants'; // <-- Poprawiony import
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajDruzynaSchema, parseFormData } from '@/lib/schemas';
 
 export async function dodajDruzyna(formData: FormData) {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Musisz byc zalogowany.');
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Musisz być zalogowany.');
 
   await enforceRateLimit(`user:${user.id}`, 'dodajDruzyna', 10, 3600);
 
@@ -30,12 +21,7 @@ export async function dodajDruzyna(formData: FormData) {
 
   const { data: nowa, error } = await supabase
     .from('druzyny')
-    .insert({
-      user_id: user.id,
-      nazwa,
-      rocznik,
-      kolor,
-    })
+    .insert({ user_id: user.id, nazwa, rocznik, kolor })
     .select('id')
     .single();
 
@@ -52,8 +38,6 @@ export async function dodajDruzyna(formData: FormData) {
     secure: process.env.NODE_ENV === 'production',
   });
 
-  revalidateTag(DRUZYNY_CACHE_TAG, 'default');
-  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
   revalidatePath('/', 'layout');
   redirect('/druzyny?toast=druzyna_dodana');
 }

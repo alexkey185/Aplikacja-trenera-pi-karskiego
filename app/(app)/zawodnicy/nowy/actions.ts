@@ -1,28 +1,24 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId, ZAWODNICY_CACHE_TAG } from '@/lib/druzyny';
+import { getActiveDruzynaId } from '@/lib/druzyny';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { dodajZawodnikaSchema } from '@/lib/schemas';
 import { getErrorMessage } from '@/lib/errors';
 import { redirect } from 'next/navigation';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import type { FormState } from '@/lib/action-result';
 
 export async function dodajZawodnika(
-  prevState: FormState,
+  _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
   const supabase = await createClient();
 
   const druzynaId = await getActiveDruzynaId();
-  if (!druzynaId) {
-    return { error: 'Brak aktywnej drużyny.' };
-  }
+  if (!druzynaId) return { error: 'Brak aktywnej drużyny.' };
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     try {
       await enforceRateLimit(`user:${user.id}`, 'dodajZawodnika', 30, 3600);
@@ -37,7 +33,6 @@ export async function dodajZawodnika(
   }
 
   const result = dodajZawodnikaSchema.safeParse(raw);
-
   if (!result.success) {
     const fieldErrors: Record<string, string> = {};
     result.error.issues.forEach((issue) => {
@@ -60,22 +55,9 @@ export async function dodajZawodnika(
     druzyna_id: druzynaId,
   });
 
-  if (error) {
-    return { error: getErrorMessage(error) };
-  }
+  if (error) return { error: getErrorMessage(error) };
 
-  revalidateTag(ZAWODNICY_CACHE_TAG, 'default');
+  revalidatePath('/', 'layout');
   revalidatePath('/kadra');
-    // RODO-03: audit log dla dodania zawodnika
-  try {
-    await supabase.rpc('log_audit', {
-      p_action: 'create_zawodnik',
-      p_entity_type: 'zawodnik',
-      p_entity_id: 'auto',
-    });
-  } catch (auditErr) {
-    console.error('Audit log failed:', auditErr);
-  }
-
   redirect('/kadra?toast=zawodnik_dodany');
 }
