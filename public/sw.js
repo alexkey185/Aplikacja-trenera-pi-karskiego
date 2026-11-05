@@ -1,72 +1,51 @@
-const CACHE_NAME = 'talent-app-v1';
-const APP_SHELL = [
-  '/',
+const CACHE_NAME = 'talent-assets-v2';
+const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/talent-bg.webp'
 ];
 
-// Instalacja: zapisujemy podstawowe pliki (tzw. App Shell) do pamięci
+// Instalacja: zapisujemy tylko statyczne pliki
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Aktywacja: czyszczenie starych wersji cache
+// Aktywacja: czyszczenie starych wersji
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) => Promise.all(
+      keys.map(key => { if (key !== CACHE_NAME) return caches.delete(key); })
+    ))
   );
   self.clients.claim();
 });
 
-// Strategia Stale-While-Revalidate dla stron i statycznych plików
 self.addEventListener('fetch', (event) => {
-  // Ignorujemy zapytania do API/Supabase oraz żądania inne niż GET
-  if (event.request.method !== 'GET' || event.request.url.includes('supabase.co')) {
-    return;
-  }
+  const url = new URL(event.request.url);
 
+  // Ignorujemy wszystko co nie jest GET oraz zapytania do Supabase
+  if (event.request.method !== 'GET' || url.hostname.includes('supabase')) return;
+
+  // KLUCZOWA ZMIANA: NIE CACHE'UJEMY STRON HTML!
+  // Dzięki temu przeglądarka zawsze pyta serwer o aktualną sesję.
+  if (event.request.headers.get('accept')?.includes('text/html')) return;
+
+  // Tylko dla statycznych plików (obrazy, css, js) używamy Cache First
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Pobieramy nową wersję w tle
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          // Jeśli odpowiedź jest poprawna, zapisujemy ją w cache na przyszłość
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Jeśli sieć zawiedzie, a nie mamy cache, zwracamy błąd
-          return cachedResponse;
-        });
-
-      // Zwracamy natychmiast z pamięci (0 sekund), a w tle aktualizujemy
-      return cachedResponse || fetchPromise;
+      if (cachedResponse) return cachedResponse;
+      
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      });
     })
   );
-});
-
-// Obsługa komunikatu o wymuszeniu aktualizacji z poziomu aplikacji
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
