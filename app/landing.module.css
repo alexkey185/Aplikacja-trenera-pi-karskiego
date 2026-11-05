@@ -1,14 +1,14 @@
-/* app/land@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');
 
-/* ... reszta kodu bez zmian ... */ing.module.css */
+/* app/landing.module.css */
 
 /* ═══════════════════════════════════════════════════════════════
    LANDING PAGE — style dla talent-landing-wow-v2
    ═══════════════════════════════════════════════════════════════ */
 
 .root {
-  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
-  --font-body: var(--font-manrope), system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
 
   --bg: #0a0e1a;
   --bg-elev: #0f172a;
@@ -63,7 +63,7 @@
   box-sizing: border-box;
 }
 
-/* ─── Intro animation ─────────────────────────────────────── */
+/* ─── Intro animation ───────────────────────────────────────── */
 
 .intro {
   position: fixed;
@@ -111,7 +111,7 @@
   to { opacity: 0; visibility: hidden; }
 }
 
-/* ─── Nav bar (sticky top) ────────────────────────────────── */
+/* ─── Nav bar (sticky top) ──────────────────────────────────── */
 
 .bar {
   position: sticky;
@@ -159,7 +159,7 @@
   70%, 100% { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
 }
 
-/* ─── Buttons ────────────────────────────────────────────── */
+/* ─── Buttons ───────────────────────────────────────────────── */
 
 .btn {
   display: inline-flex;
@@ -227,7 +227,7 @@
   color: var(--green-light);
 }
 
-/* ─── Hero section ───────────────────────────────────────── */
+/* ─── Hero section ──────────────────────────────────────────── */
 
 .hw {
   position: relative;
@@ -326,7 +326,7 @@
   margin-top: 32px;
 }
 
-/* ─── Demo (interaktywne) ────────────────────────────────── */
+/* ─── Demo (interaktywne) ───────────────────────────────────── */
 
 .demoWrap {
   perspective: 1200px;
@@ -527,7 +527,7 @@
   color: #fff;
 }
 
-/* ─── Marquee ─────────────────────────────────────────────── */
+/* ─── Marquee ───────────────────────────────────────────────── */
 
 .mq {
   overflow: hidden;
@@ -562,7 +562,7 @@
   to { transform: translateX(-50%); }
 }
 
-/* ─── Sekcje ──────────────────────────────────────────────── */
+/* ─── Sekcje ────────────────────────────────────────────────── */
 
 .sec {
   padding: 80px 0;
@@ -579,7 +579,7 @@
   max-width: 38em;
 }
 
-/* ─── Trust bar ───────────────────────────────────────────── */
+/* ─── Trust bar ─────────────────────────────────────────────── */
 
 .tr {
   display: grid;
@@ -609,7 +609,7 @@
   font-style: normal;
 }
 
-/* ─── Before/After ────────────────────────────────────────── */
+/* ─── Before/After ──────────────────────────────────────────── */
 
 .ba {
   display: grid;
@@ -671,7 +671,7 @@
   font-weight: 700;
 }
 
-/* ─── Steps ───────────────────────────────────────────────── */
+/* ─── Steps ─────────────────────────────────────────────────── */
 
 .steps {
   display: grid;
@@ -702,7 +702,7 @@
   font-size: 16px;
 }
 
-/* ─── Cards grid ──────────────────────────────────────────── */
+/* ─── Cards grid ────────────────────────────────────────────── */
 
 .grid {
   display: grid;
@@ -761,7 +761,7 @@
   font-size: 16px;
 }
 
-/* ─── Split (obraz + treść) ───────────────────────────────── */
+/* ─── Split (obraz + treść) ─────────────────────────────────── */
 
 .split {
   display: grid;
@@ -816,7 +816,7 @@
   margin-top: 4px;
 }
 
-/* ─── FAQ ─────────────────────────────────────────────────── */
+/* ─── FAQ ───────────────────────────────────────────────────── */
 
 .faq {
   max-width: 760px;
@@ -862,7 +862,7 @@
   padding: 0 0 20px;
 }
 
-/* ─── CTA box ─────────────────────────────────────────────── */
+/* ─── CTA box ───────────────────────────────────────────────── */
 
 .ctaBox {
   background: var(--bg-card);
@@ -877,7 +877,7 @@
   margin-right: auto;
 }
 
-/* ─── Footer ──────────────────────────────────────────────── */
+/* ─── Footer ────────────────────────────────────────────────── */
 
 .foot {
   border-top: 1px solid var(--border);
@@ -900,7 +900,7 @@
   color: var(--green-light);
 }
 
-/* ─── Scroll progress ─────────────────────────────────────── */
+/* ─── Scroll progress ───────────────────────────────────────── */
 
 .sp {
   position: fixed;
@@ -915,13 +915,13 @@
   pointer-events: none;
 }
 
-/* ─── Mobile CTA ──────────────────────────────────────────── */
+/* ─── Mobile CTA ────────────────────────────────────────────── */
 
 .mcta {
   display: none;
 }
 
-/* ─── Reveal on scroll ────────────────────────────────────── */
+/* ─── Reveal on scroll ──────────────────────────────────────── */
 
 .rv {
   opacity: 0;
@@ -934,7 +934,7 @@
   transform: none;
 }
 
-/* ─── Mobile ──────────────────────────────────────────────── */
+/* ─── Mobile ────────────────────────────────────────────────── */
 
 @media (max-width: 860px) {
   .hero2 {
@@ -1021,7 +1021,7 @@
   }
 }
 
-/* ─── Reduced motion ──────────────────────────────────────── */
+/* ─── Reduced motion ────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .intro { display: none; }
