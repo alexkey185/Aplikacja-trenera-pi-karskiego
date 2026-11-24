@@ -36,7 +36,6 @@ export default async function Dashboard({
   const startMiesiaca = `${biezacyMiesiac}-01`;
   const koniecMiesiaca = toISO(new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0));
 
-  // UŻYWA RPC DLA TYGODNIA I MIESIĄCA
   const [tydzienRes, nadchodzaceRes, miesiacRes] = await Promise.all([
     supabase.rpc('get_treningi_z_frekwencja', {
       p_druzyna_id: druzynaId, p_od: odTygodnia, p_do: doTygodnia
@@ -61,7 +60,7 @@ export default async function Dashboard({
   const eventMap: Record<string, any[]> = {};
   [...tydzien, ...nadchodzace].forEach((t) => {
     if (!eventMap[t.data]) eventMap[t.data] = [];
-    eventMap[t.data].push({ ...t, obecnosc: [] }); // Pusta tablica dla kompatybilności z DashboardClient
+    eventMap[t.data].push({ ...t, obecnosc: [] });
   });
 
   const stats: Record<string, { obecni: number; nieobecni: number }> = {};

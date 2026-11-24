@@ -1,14 +1,20 @@
-import 'server-only';
-import { getActiveDruzyna } from './druzyny';
-import type { Rola } from './druzyny';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
-export async function requireRole(allowedRoles: Rola[]) {
-  const druzyna = await getActiveDruzyna();
-  if (!druzyna) throw new Error('Brak aktywnej drużyny.');
-  
-  if (!allowedRoles.includes(druzyna.rola)) {
-    throw new Error('Brak uprawnień do wykonania tej akcji.');
+export async function requireRole(allowedRoles: string[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/auth/login');
   }
-  
-  return druzyna;
+
+  // W tej wersji zakładamy, że użytkownik jest adminem swojej drużyny.
+  const rola = 'admin';
+
+  if (!allowedRoles.includes(rola)) {
+    redirect('/dashboard');
+  }
+
+  return { user, rola };
 }

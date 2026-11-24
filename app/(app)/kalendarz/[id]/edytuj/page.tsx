@@ -1,55 +1,57 @@
+import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaIdFast, getActiveDruzyna } from '@/lib/druzyny';
-import { addDays, toISO, getMonday } from '@/lib/dates';
-import { redirect } from 'next/navigation';
-import { KalendarzClient } from './KalendarzClient';
-import { TopBar } from '@/components/TopBar';
-import { PageHeaderLogo } from '@/components/PageHeaderLogo';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { getActiveDruzynaIdFast } from '@/lib/druzyny';
+import { EdytujForm } from './EdytujForm';
+import { ArrowLeft, Pencil } from 'lucide-react';
 
-export default async function KalendarzPage({
-  searchParams,
+export default async function EdytujTreningPage({
+  params,
 }: {
-  searchParams: Promise<{ w?: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const params = await searchParams;
-  const dzis = new Date();
-  let poniedzialek = getMonday(dzis);
-  if (params.w) {
-    const parsed = new Date(params.w + 'T00:00:00');
-    if (!isNaN(parsed.getTime())) poniedzialek = getMonday(parsed);
-  }
+  const { id } = await params;
+  const treningId = Number(id);
+  if (!Number.isInteger(treningId) || treningId <= 0) notFound();
 
   const supabase = await createClient();
   const druzynaId = await getActiveDruzynaIdFast();
   if (!druzynaId) redirect('/druzyny/nowa');
 
-  const activeDruzyna = await getActiveDruzyna();
+  const { data: trening, error } = await supabase
+    .from('treningi')
+    .select('id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, is_home, wynik_gospodarzy, wynik_gosci')
+    .eq('id', treningId)
+    .eq('druzyna_id', druzynaId)
+    .maybeSingle();
 
-  const od = toISO(addDays(poniedzialek, -60)); 
-  const do_ = toISO(addDays(poniedzialek, 90));
-
-  // UŻYWA RPC DLA CAŁEGO ZAKRESU
-  const { data } = await supabase.rpc('get_treningi_z_frekwencja', {
-    p_druzyna_id: druzynaId,
-    p_od: od,
-    p_do: do_,
-  });
-
-  const treningi = data ?? [];
+  if (error || !trening) notFound();
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <header className="mb-6 flex items-center gap-3 animate-fadeIn">
-        <PageHeaderLogo icon={CalendarIcon} logoUrl={activeDruzyna?.logo_url ?? null} />
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">Kalendarz</h1>
-          <p className="text-xs text-white/70 font-medium mt-0.5 drop-shadow">Twój harmonogram treningów i meczów</p>
+    <div className="max-w-2xl mx-auto">
+      <header className="mb-8 flex items-center gap-3 animate-fadeIn">
+        <Link href={`/kalendarz/${trening.id}/obecnosc`} className="w-10 h-10 rounded-xl bg-slate-900/70 hover:bg-slate-900 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="relative flex-shrink-0">
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-700 rounded-2xl blur-lg opacity-60" />
+            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
+              <Pencil className="w-5 h-5 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold leading-tight text-white drop-shadow-lg">
+              Edytuj wydarzenie
+            </h1>
+            <p className="text-xs text-white/70 font-medium mt-0.5 truncate drop-shadow">
+              {new Date(trening.data + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} · {trening.godzina} · {trening.typ}
+            </p>
+          </div>
         </div>
-        <TopBar />
       </header>
 
-      <KalendarzClient initialTreningi={treningi} />
+      <EdytujForm trening={trening} />
     </div>
   );
 }
