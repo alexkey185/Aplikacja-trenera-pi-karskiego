@@ -2,35 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ... (Twoje wcześniejsze animacje i klasy glass) ... */
-
-/* ============================================================
-   POPRAWKA DLA PÓL FORMULARZY (WYMUSZENIE Ciemnego tła)
-   ============================================================ */
-input, textarea, select {
-  background-color: #1e293b !important; /* slate-800 */
-  color: #ffffff !important;
-  border: 1px solid #334155 !important; /* slate-700 */
-  border-radius: 0.75rem !important; /* rounded-xl */
-  padding: 0.5rem 0.75rem !important;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: #22c55e !important; /* green-500 */
-  outline: none !important;
-}
-
-/* Poprawka dla przycisku */
-button[type="submit"] {
-  background-color: #22c55e !important;
-  color: #ffffff !important;
-  font-weight: bold !important;
-  border-radius: 0.75rem !important;
-  padding: 0.75rem 1rem !important;
-  width: 100% !important;
-  transition: background-color 0.2s !important;
-}
-
-button[type="submit"]:hover {
-  background-color: #16a34a !important;
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* (Twoje pozostałe style) */
 }

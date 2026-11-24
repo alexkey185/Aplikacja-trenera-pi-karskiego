@@ -1,51 +1,100 @@
 import Link from 'next/link';
-import { LogIn } from 'lucide-react';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton'; // <-- Upewnij się, że ścieżka jest poprawna!
 
 export default function LoginPage() {
   return (
-    <div className="glass border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/60">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-400/30 mb-4">
-          <LogIn className="w-6 h-6 text-blue-400" />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Zaloguj się</h1>
-        <p className="text-sm text-white/60">Wróć do zarządzania drużyną</p>
+    <div style={{
+      width: '100%',
+      maxWidth: '400px',
+      backgroundColor: '#0f172a',
+      border: '1px solid #334155',
+      borderRadius: '16px',
+      padding: '32px',
+      color: '#ffffff',
+      margin: '40px auto',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', color: '#ffffff' }}>
+          Zaloguj się
+        </h1>
+        <p style={{ fontSize: '14px', color: '#94a3b8' }}>
+          Wróć do zarządzania drużyną
+        </p>
       </div>
 
-      <form className="space-y-4">
+      {/* PRZYCISK GOOGLE */}
+      <div style={{ marginBottom: '24px' }}>
+        <GoogleSignInButton />
+      </div>
+
+      {/* SEPARATOR "LUB" */}
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+        <span style={{ padding: '0 12px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>lub</span>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+      </div>
+
+      <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>
             E-mail
           </label>
           <input 
             type="email" 
             placeholder="jan@example.com" 
-            className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-400/50 transition-colors" 
+            style={{
+              width: '100%',
+              backgroundColor: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              padding: '12px',
+              color: '#ffffff',
+              outline: 'none',
+            }} 
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-1.5">
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>
             Hasło
           </label>
           <input 
             type="password" 
             placeholder="••••••••" 
-            className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-400/50 transition-colors" 
+            style={{
+              width: '100%',
+              backgroundColor: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              padding: '12px',
+              color: '#ffffff',
+              outline: 'none',
+            }} 
           />
         </div>
 
         <button 
           type="submit" 
-          className="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-3 rounded-xl transition-all mt-4"
+          style={{
+            width: '100%',
+            backgroundColor: '#22c55e', // Możesz zmienić na niebieski (#3b82f6) dla logowania, jeśli wolisz
+            color: '#ffffff',
+            fontWeight: 'bold',
+            padding: '14px',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: '8px',
+          }}
         >
           Zaloguj się
         </button>
       </form>
 
-      <p className="text-center text-sm text-white/50 mt-6">
+      <p style={{ textAlign: 'center', fontSize: '14px', color: '#94a3b8', marginTop: '24px' }}>
         Nie masz konta?{' '}
-        <Link href="/auth/sign-up" className="text-blue-400 hover:text-blue-300 font-semibold">
+        <Link href="/auth/sign-up" style={{ color: '#22c55e', fontWeight: '600', textDecoration: 'none' }}>
           Zarejestruj się
         </Link>
       </p>

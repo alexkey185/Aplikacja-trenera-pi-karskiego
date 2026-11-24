@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton'; // <-- Upewnij się, że ścieżka jest poprawna!
 
 export default function SignUpPage() {
   return (
@@ -20,6 +21,18 @@ export default function SignUpPage() {
         <p style={{ fontSize: '14px', color: '#94a3b8' }}>
           Utwórz nowe konto trenera
         </p>
+      </div>
+
+      {/* PRZYCISK GOOGLE */}
+      <div style={{ marginBottom: '24px' }}>
+        <GoogleSignInButton />
+      </div>
+
+      {/* SEPARATOR "LUB" */}
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+        <span style={{ padding: '0 12px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>lub</span>
+        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
       </div>
 
       <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
