@@ -9,7 +9,7 @@ const MENU_ITEMS = [
   { href: '/dashboard', label: 'Pulpit', icon: LayoutDashboard },
   { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
   { href: '/kadra', label: 'Kadra', icon: Users },
-  { href: '/sezon', label: 'Sezon', icon: Trophy }, // Dodany Sezon
+  { href: '/sezon', label: 'Sezon', icon: Trophy },
   { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
   { href: '/ustawienia', label: 'Ustawienia', icon: Settings },
 ];
