@@ -17,39 +17,24 @@ export default function SignUpPage() {
           <label className="block text-xs font-semibold text-[#94a3b8] uppercase tracking-wider mb-1.5">
             Imię i nazwisko
           </label>
-          <input 
-            type="text" 
-            placeholder="Jan Kowalski" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
-          />
+          <input type="text" placeholder="Jan Kowalski" />
         </div>
         
         <div>
           <label className="block text-xs font-semibold text-[#94a3b8] uppercase tracking-wider mb-1.5">
             E-mail
           </label>
-          <input 
-            type="email" 
-            placeholder="jan@example.com" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
-          />
+          <input type="email" placeholder="jan@example.com" />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[#94a3b8] uppercase tracking-wider mb-1.5">
             Hasło
           </label>
-          <input 
-            type="password" 
-            placeholder="••••••••" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
-          />
+          <input type="password" placeholder="••••••••" />
         </div>
 
-        <button 
-          type="submit" 
-          className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold py-3.5 rounded-xl transition-all mt-4"
-        >
+        <button type="submit" className="mt-4">
           Utwórz konto
         </button>
       </form>
