@@ -1,4 +1,4 @@
-// app/(auth)/login/page.tsx (lub app/login/page.tsx)
+// app/auth/login/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -50,12 +50,8 @@ export default function LoginPage() {
   };
 
   return (
-    // Główne tło (ciemne, wyśrodkowane)
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 p-4">
-      
-      {/* Karta logowania */}
       <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl">
-        
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Zaloguj się</h1>
           <p className="text-sm text-white/50">Wróć do zarządzania drużyną</p>
@@ -123,6 +119,12 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="text-center text-sm text-white/50 mt-6">
+          Nie masz konta?{' '}
+          <Link href="/auth/sign-up" className="text-green-400 hover:text-green-300 font-semibold transition-colors">
+            Zarejestruj się
+          </Link>
+        </div>
       </div>
     </div>
   );
