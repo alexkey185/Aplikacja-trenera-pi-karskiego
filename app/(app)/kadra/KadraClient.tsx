@@ -32,7 +32,7 @@ export function KadraClient({
   obecnosci: any[]; 
   frekwencja: any[]; 
   logoUrl: string | null;
-  topBar: React.ReactNode; // <-- DODANO PROP
+  topBar: React.ReactNode;
 }) {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('alpha');
@@ -104,7 +104,7 @@ export function KadraClient({
               <p className="text-[10px] md:text-xs text-white/60 font-medium md:mt-0.5">{liczba} {liczba === 1 ? 'zawodnik' : 'zawodników'} na liście</p>
             </div>
           </div>
-          {topBar} {/* <-- UŻYCIE PROPA ZAMIAST <TopBar /> */}
+          {topBar}
         </div>
 
         <div className="flex gap-2">

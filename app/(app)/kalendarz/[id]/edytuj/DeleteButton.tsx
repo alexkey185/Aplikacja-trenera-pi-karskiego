@@ -34,9 +34,6 @@ export function DeleteButton({
         return;
       }
 
-      // ═══════════════════════════════════════════════════
-      // TOAST - zależnie od tego co usunięto
-      // ═══════════════════════════════════════════════════
       if (finalScope === 'all' && result.count > 1) {
         toast.success('Cała seria usunięta', {
           description: `Usunięto ${result.count} treningów z cyklu`,
@@ -122,12 +119,10 @@ export function DeleteButton({
               </div>
             </div>
           ) : (
-            <>
-              Usuną się też wszystkie wpisy obecności dla tego treningu.
-              <br />
-              <br />
-              <span style={{ color: '#f87171' }}>Tej operacji nie można cofnąć.</span>
-            </>
+             <p className="text-sm">
+              Czy na pewno chcesz usunąć to wydarzenie? Zostaną usunięte też wpisy obecności.{' '}
+              <strong className="text-red-400">Tej operacji nie można cofnąć.</strong>
+            </p>
           )
         }
       />
