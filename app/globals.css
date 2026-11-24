@@ -2,12 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html, body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
   }
   
-  /* (Twoje pozostałe style) */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  body {
+    background-color: #020617; /* Kolor slate-950 */
+    color: #ffffff;
+  }
 }
