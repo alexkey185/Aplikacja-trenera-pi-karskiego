@@ -14,9 +14,7 @@
   }
 }
 
-@layer base {
-  body {
-    background-color: #020617; /* Kolor slate-950 */
-    color: #ffffff;
-  }
+body {
+  background-color: #020617;
+  color: #ffffff;
 }
