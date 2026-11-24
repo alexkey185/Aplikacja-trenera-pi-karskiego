@@ -1,26 +1,11 @@
 ﻿import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getActiveDruzynaId, getActiveDruzyna } from '@/lib/druzyny';
+import { getActiveDruzynaIdFast, getActiveDruzyna } from '@/lib/druzyny';
 import { getDzisISO, getMonday, addDays, toISO } from '@/lib/dates';
 import { DashboardClient } from './dashboardClient';
 import { TopBar } from '@/components/TopBar';
 import { PageHeaderLogo } from '@/components/PageHeaderLogo';
 import { Zap } from 'lucide-react';
-
-type TreningZObecnoscia = {
-  id: number;
-  data: string;
-  godzina: string;
-  typ: string;
-  przeciwnik: string | null;
-  miejsce: string | null;
-  notatki: string | null;
-  cykl_id: string | null;
-  is_home?: boolean | null;
-  wynik_gospodarzy?: number | null;
-  wynik_gosci?: number | null;
-  obecnosc: { trening_id: number; status: string }[] | null;
-};
 
 export default async function Dashboard({
   searchParams,
@@ -42,7 +27,7 @@ export default async function Dashboard({
   const doTygodnia = toISO(niedziela);
 
   const supabase = await createClient();
-  const druzynaId = await getActiveDruzynaId();
+  const druzynaId = await getActiveDruzynaIdFast();
   if (!druzynaId) redirect('/druzyny/nowa');
 
   const activeDruzyna = await getActiveDruzyna();
@@ -51,19 +36,11 @@ export default async function Dashboard({
   const startMiesiaca = `${biezacyMiesiac}-01`;
   const koniecMiesiaca = toISO(new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0));
 
+  // UŻYWA RPC DLA TYGODNIA I MIESIĄCA
   const [tydzienRes, nadchodzaceRes, miesiacRes] = await Promise.all([
-    supabase
-      .from('treningi')
-      .select(`
-        id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, is_home, wynik_gospodarzy, wynik_gosci,
-        obecnosc (trening_id, status)
-      `)
-      .eq('druzyna_id', druzynaId)
-      .gte('data', odTygodnia)
-      .lte('data', doTygodnia)
-      .order('data', { ascending: true })
-      .order('godzina', { ascending: true }),
-
+    supabase.rpc('get_treningi_z_frekwencja', {
+      p_druzyna_id: druzynaId, p_od: odTygodnia, p_do: doTygodnia
+    }),
     supabase
       .from('treningi')
       .select('id, data, godzina, typ, przeciwnik, miejsce, notatki, cykl_id, is_home, wynik_gospodarzy, wynik_gosci')
@@ -72,43 +49,32 @@ export default async function Dashboard({
       .order('data', { ascending: true })
       .order('godzina', { ascending: true })
       .limit(5),
-
-    supabase
-      .from('treningi')
-      .select('id, data, obecnosc (status)')
-      .eq('druzyna_id', druzynaId)
-      .gte('data', startMiesiaca)
-      .lte('data', koniecMiesiaca),
+    supabase.rpc('get_treningi_z_frekwencja', {
+      p_druzyna_id: druzynaId, p_od: startMiesiaca, p_do: koniecMiesiaca
+    }),
   ]);
 
-  const tydzien = (tydzienRes.data ?? []) as unknown as TreningZObecnoscia[];
-  const nadchodzace = (nadchodzaceRes.data ?? []) as unknown as TreningZObecnoscia[];
+  const tydzien = (tydzienRes.data ?? []) as any[];
+  const nadchodzace = (nadchodzaceRes.data ?? []) as any[];
+  const miesiac = (miesiacRes.data ?? []) as any[];
 
-  const eventMap: Record<string, TreningZObecnoscia[]> = {};
+  const eventMap: Record<string, any[]> = {};
   [...tydzien, ...nadchodzace].forEach((t) => {
     if (!eventMap[t.data]) eventMap[t.data] = [];
-    eventMap[t.data].push(t);
+    eventMap[t.data].push({ ...t, obecnosc: [] }); // Pusta tablica dla kompatybilności z DashboardClient
   });
 
   const stats: Record<string, { obecni: number; nieobecni: number }> = {};
   tydzien.forEach((t) => {
-    let obecni = 0;
-    let nieobecni = 0;
-    for (const o of t.obecnosc ?? []) {
-      if (o.status === 'obecny' || o.status === 'spozniony') obecni++;
-      else nieobecni++;
-    }
-    stats[String(t.id)] = { obecni, nieobecni };
+    stats[String(t.id)] = { obecni: t.obecni, nieobecni: t.nieobecni };
   });
 
   let miesObecni = 0;
   let miesTotal = 0;
-  for (const t of (miesiacRes.data ?? []) as { obecnosc: { status: string }[] | null }[]) {
-    for (const o of t.obecnosc ?? []) {
-      miesTotal++;
-      if (o.status === 'obecny' || o.status === 'spozniony') miesObecni++;
-    }
-  }
+  miesiac.forEach((t) => {
+    miesObecni += t.obecni;
+    miesTotal += t.obecni + t.nieobecni;
+  });
 
   const dni = Array.from({ length: 7 }, (_, i) => toISO(addDays(poniedzialek, i)));
   const jestWTygodniu = dzisStr >= odTygodnia && dzisStr <= doTygodnia;
