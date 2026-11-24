@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css';
+import './globals.css'; // <-- To ładuje Tailwind v4
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,10 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl" className="dark">
-      <head>
-        {/* Wymuszenie załadowania Tailwinda bezpośrednio przez CDN (omija błędy buildu) */}
-        <script src="https://cdn.tailwindcss.com"></script>
-      </head>
       <body className={`${inter.className} bg-slate-950 text-white min-h-screen`}>
         {children}
       </body>
