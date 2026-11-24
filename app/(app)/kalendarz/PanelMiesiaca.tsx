@@ -1,134 +1,107 @@
-// app/(app)/kalendarz/PanelMiesiaca.tsx
 'use client';
 
-import { useMemo } from 'react';
-import Link from 'next/link';
-import { Plus, TrendingUp, Award } from 'lucide-react';
-import type { Trening, StatsMap } from './types';
+import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+// Ten import zadziała, bo dodaliśmy "export" w KalendarzClient.tsx
+import type { TreningZObecnoscia } from './KalendarzClient';
 
 export function PanelMiesiaca({
-  monthStats,
-  monthLabel,
-  treningi,
-  stats,
-  monthPrefix,
-  onAddClick,
+  eventMap,
+  selectedDate,
+  onSelectDate,
 }: {
-  monthStats: {
-    treningi: number;
-    mecze: number;
-    sparingi: number;
-    turnieje: number;
-    total: number;
-  };
-  monthLabel: string;
-  treningi: Trening[];
-  stats: StatsMap;
-  monthPrefix: string;
-  onAddClick: () => void;
+  eventMap: Record<string, TreningZObecnoscia[]>;
+  selectedDate: string;
+  onSelectDate: (date: string) => void;
 }) {
-  const frekwencja = useMemo(() => {
-    const inMonth = treningi.filter((t) => t.data.startsWith(monthPrefix));
-    let obecni = 0;
-    let total = 0;
-    inMonth.forEach((t) => {
-      const s = stats[t.id];
-      if (s) {
-        obecni += s.obecni;
-        total += s.total;
-      }
-    });
-    const procent = total > 0 ? Math.round((obecni / total) * 100) : 0;
-    return { obecni, total, procent };
-  }, [treningi, stats, monthPrefix]);
+  const dzisStr = new Date().toLocaleDateString('sv-SE');
+  
+  const [viewDate, setViewDate] = useState(() => {
+    const d = new Date(selectedDate + 'T00:00:00');
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
 
-  const kolorProcent = (p: number) => {
-    if (p >= 80) return { text: 'text-green-400', bg: 'from-green-500 to-green-400' };
-    if (p >= 60) return { text: 'text-yellow-400', bg: 'from-yellow-500 to-yellow-400' };
-    return { text: 'text-red-400', bg: 'from-red-500 to-red-400' };
-  };
+  const prevMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  const nextMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
 
-  const kol = kolorProcent(frekwencja.procent);
+  const dni = useMemo(() => {
+    const rok = viewDate.getFullYear();
+    const miesiac = viewDate.getMonth();
+    const pierwszyDzien = new Date(rok, miesiac, 1);
+    const ostatniDzien = new Date(rok, miesiac + 1, 0);
+    const dzienTygodnia = (pierwszyDzien.getDay() + 6) % 7; 
+    
+    const dniArray = [];
+    for (let i = 0; i < dzienTygodnia; i++) {
+      dniArray.push(null);
+    }
+    for (let i = 1; i <= ostatniDzien.getDate(); i++) {
+      dniArray.push(new Date(rok, miesiac, i));
+    }
+    return dniArray;
+  }, [viewDate]);
+
+  const dniTygodnia = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 lg:p-5 animate-fadeIn shadow-2xl shadow-black/60">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-3.5 h-3.5 text-green-400" />
-        <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
-          {monthLabel}
-        </h2>
+    <div className="glass border border-white/10 rounded-3xl p-4 animate-fadeIn shadow-xl">
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors">
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <div className="font-bold text-white text-sm capitalize">
+          {viewDate.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}
+        </div>
+        <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors">
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="mb-5">
-        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2">
-          Frekwencja
-        </div>
-        {frekwencja.total > 0 ? (
-          <>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className={`text-4xl font-black leading-none ${kol.text}`}>
-                {frekwencja.procent}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dniTygodnia.map((d) => (
+          <div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {dni.map((d, i) => {
+          if (!d) return <div key={`empty-${i}`} className="aspect-square" />;
+          
+          const dataStr = d.toLocaleDateString('sv-SE');
+          const eventy = eventMap[dataStr] ?? [];
+          const czyDzis = dataStr === dzisStr;
+          const czyWybrany = dataStr === selectedDate;
+          
+          return (
+            <button
+              key={dataStr}
+              onClick={() => onSelectDate(dataStr)}
+              className={`aspect-square rounded-xl flex flex-col items-center justify-center p-1 transition-all relative ${
+                czyDzis
+                  ? 'bg-green-500/20 border border-green-400/50 text-green-300'
+                  : czyWybrany
+                  ? 'bg-blue-500/20 border border-blue-400/50 text-blue-300'
+                  : 'bg-white/5 border border-transparent hover:bg-white/10 text-white'
+              }`}
+            >
+              <span className={`text-sm font-semibold ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : ''}`}>
+                {d.getDate()}
               </span>
-              <span className="text-lg text-white/40 font-bold">%</span>
-            </div>
-            <div className="w-full h-2 bg-slate-950/60 rounded-full overflow-hidden mb-2">
-              <div
-                className={`h-full rounded-full bg-gradient-to-r ${kol.bg}`}
-                style={{ width: `${frekwencja.procent}%` }}
-              />
-            </div>
-            <div className="text-[10px] text-white/50">
-              {frekwencja.obecni} obecnych z {frekwencja.total} wpisow
-            </div>
-          </>
-        ) : (
-          <div className="text-xs text-white/40 py-2">Brak wpisow obecnosci</div>
-        )}
+              {eventy.length > 0 && (
+                <div className="flex gap-0.5 mt-1">
+                  {eventy.slice(0, 3).map((e, idx) => (
+                    <div key={idx} className={`w-1 h-1 rounded-full ${
+                      e.typ === 'mecz' ? 'bg-red-400' : e.typ === 'sparing' ? 'bg-orange-400' : 'bg-blue-400'
+                    }`} />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
-
-      <div className="mb-5 pt-4 border-t border-white/10">
-        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2">
-          Rozklad
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-blue-500/10 border border-blue-400/20">
-            <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Treningi</span>
-            <span className="text-xs font-bold text-white">{monthStats.treningi}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-400/20">
-            <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Mecze</span>
-            <span className="text-xs font-bold text-white">{monthStats.mecze}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-orange-500/10 border border-orange-400/20">
-            <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Sparingi</span>
-            <span className="text-xs font-bold text-white">{monthStats.sparingi}</span>
-          </div>
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-purple-500/10 border border-purple-400/20">
-            <span className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
-            <span className="text-xs text-white/70 flex-1">Turnieje</span>
-            <span className="text-xs font-bold text-white">{monthStats.turnieje}</span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={onAddClick}
-        className="group w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-br from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white text-xs font-bold transition-all shadow-lg shadow-green-500/30"
-      >
-        <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" />
-        Dodaj wydarzenie
-      </button>
-
-      <Link
-        href="/statystyki"
-        className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-semibold transition-all"
-      >
-        <Award className="w-3.5 h-3.5" />
-        Pelne statystyki
-      </Link>
     </div>
   );
 }

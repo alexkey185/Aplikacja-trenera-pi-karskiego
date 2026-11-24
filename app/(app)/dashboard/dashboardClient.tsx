@@ -100,7 +100,8 @@ export function DashboardClient({
 
   return (
     <div>
-      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
+      {/* ZMIANA: użyto klasy glass */}
+      <div className="glass border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
           <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronLeft className="w-4 h-4" />
@@ -177,7 +178,8 @@ export function DashboardClient({
         </div>
       </div>
 
-      <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
+      {/* ZMIANA: użyto klasy glass */}
+      <div className="glass border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
         <div className="flex items-center gap-2 mb-4">
           <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
           <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
@@ -203,7 +205,8 @@ export function DashboardClient({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-        <div className="hidden md:block bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
+        {/* ZMIANA: użyto klasy glass */}
+        <div className="hidden md:block glass border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Nadchodzące</h2>
@@ -230,7 +233,8 @@ export function DashboardClient({
           })()}
         </div>
 
-        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
+        {/* ZMIANA: użyto klasy glass */}
+        <div className="glass border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
             <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}</h2>
