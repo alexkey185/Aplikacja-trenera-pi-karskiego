@@ -20,7 +20,7 @@ export default function SignUpPage() {
           <input 
             type="text" 
             placeholder="Jan Kowalski" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-3 py-2 text-white outline-none focus:border-green-400/50" 
+            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
           />
         </div>
         
@@ -31,7 +31,7 @@ export default function SignUpPage() {
           <input 
             type="email" 
             placeholder="jan@example.com" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-3 py-2 text-white outline-none focus:border-green-400/50" 
+            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
           />
         </div>
 
@@ -42,13 +42,13 @@ export default function SignUpPage() {
           <input 
             type="password" 
             placeholder="••••••••" 
-            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-3 py-2 text-white outline-none focus:border-green-400/50" 
+            className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-white outline-none focus:border-green-400/50" 
           />
         </div>
 
         <button 
           type="submit" 
-          className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold py-3 rounded-xl transition-all mt-4"
+          className="w-full bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold py-3.5 rounded-xl transition-all mt-4"
         >
           Utwórz konto
         </button>
