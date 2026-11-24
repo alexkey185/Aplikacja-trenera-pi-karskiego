@@ -50,8 +50,12 @@ export default function LoginPage() {
   };
 
   return (
+    // Tło i wyśrodkowanie
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 p-4">
+      
+      {/* Karta logowania */}
       <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl">
+        
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Zaloguj się</h1>
           <p className="text-sm text-white/50">Wróć do zarządzania drużyną</p>
