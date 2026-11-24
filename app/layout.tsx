@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Talent - Aplikacja Trenera',
-  description: 'Zarządzaj drużyną i obecnością',
+  description: 'Zarządzaj drużyną, obecnością i treningami.',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl">
+    <html lang="pl" className="dark">
       <body className={`${inter.className} bg-slate-950 text-white antialiased`}>
         {children}
       </body>
