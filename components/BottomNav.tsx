@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Calendar, Users, BarChart3, Settings, Trophy, User, Zap
+  LayoutDashboard, Calendar, Users, BarChart3, Settings, Trophy, User
 } from 'lucide-react';
 
 const NAV_GROUPS = [
   {
     title: 'GŁÓWNE',
     items: [
-      { href: '/dashboard', label: 'Dzisiaj', icon: Zap }, // Ikona pioruna dla "Dzisiaj"
+      { href: '/dashboard', label: 'Pulpit', icon: LayoutDashboard },
       { href: '/kadra', label: 'Kadra', icon: Users },
     ],
   },
@@ -18,13 +18,13 @@ const NAV_GROUPS = [
     title: 'TRENING',
     items: [
       { href: '/kalendarz', label: 'Kalendarz', icon: Calendar },
+      { href: '/sezon', label: 'Sezon', icon: Trophy },
       { href: '/statystyki', label: 'Statystyki', icon: BarChart3 },
     ],
   },
   {
     title: 'KONTO',
     items: [
-      { href: '/profil', label: 'Profil', icon: User },
       { href: '/ustawienia', label: 'Ustawienia', icon: Settings },
     ],
   },
@@ -39,8 +39,8 @@ export function BottomNav() {
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 z-30 flex-col bg-[#0f172a] border-r border-[#1e293b]">
         
-        {/* Nagłówek z logo (stały rozmiar, nie zwija się) */}
-        <div className="p-5 pb-6">
+        {/* NOWE LOGO - bez obrazka, sam elegancki napis */}
+        <div className="px-6 py-8">
           <Link href="/dashboard" className="flex items-center gap-2 group w-max">
             <span className="text-2xl font-black text-white tracking-tight">
               talent<span className="text-green-500">.</span>
@@ -49,10 +49,10 @@ export function BottomNav() {
         </div>
 
         {/* Przewijalna nawigacja */}
-        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6">
           {NAV_GROUPS.map((group) => (
             <div key={group.title}>
-              <h3 className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2 px-2">
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">
                 {group.title}
               </h3>
               <nav className="flex flex-col gap-1">
@@ -64,13 +64,13 @@ export function BottomNav() {
                       key={item.href}
                       href={item.href}
                       prefetch
-                      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                         active
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/50 hover:text-white hover:bg-white/5'
+                          ? 'bg-green-500/10 text-green-400 border-l-2 border-green-500'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-white/40'}`} />
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-green-400' : 'text-slate-500'}`} />
                       {item.label}
                     </Link>
                   );
@@ -88,11 +88,11 @@ export function BottomNav() {
       >
         <ul className="grid grid-cols-5 list-none m-0 p-0">
           {[
-            NAV_GROUPS[0].items[0], // Dzisiaj
+            NAV_GROUPS[0].items[0], // Pulpit
             NAV_GROUPS[0].items[1], // Kadra
             NAV_GROUPS[1].items[0], // Kalendarz
-            NAV_GROUPS[1].items[1], // Statystyki
-            NAV_GROUPS[2].items[0], // Profil
+            NAV_GROUPS[1].items[2], // Statystyki
+            NAV_GROUPS[2].items[0], // Ustawienia
           ].map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -102,7 +102,7 @@ export function BottomNav() {
                   href={item.href}
                   prefetch
                   className={`flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-semibold transition-colors ${
-                    active ? 'text-green-400' : 'text-white/40'
+                    active ? 'text-green-400' : 'text-slate-500'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
