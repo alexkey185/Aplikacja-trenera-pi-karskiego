@@ -7,12 +7,17 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen w-full bg-[#020617] overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#020617] flex flex-col">
       <AppBackground />
       <BottomNav />
-      {/* Używamy w-full i overflow-x-hidden, aby zapobiec rozjeżdżaniu na mobile */}
-      <main className="relative z-10 md:pl-64 pb-24 md:pb-0 w-full max-w-full min-h-screen overflow-x-hidden">
-        <div className="p-3 md:p-6 h-full w-full">
+
+      {/* 
+        md:pl-64 - tylko na desktopie robi miejsce na menu boczne.
+        pb-24 - na telefonie robi miejsce na dolny pasek, żeby nie zasłaniał treści.
+        w-full - wymusza pełną szerokość.
+      */}
+      <main className="relative z-10 w-full flex-1 md:pl-64 pb-24 md:pb-0">
+        <div className="w-full p-4 md:p-6">
           {children}
         </div>
       </main>

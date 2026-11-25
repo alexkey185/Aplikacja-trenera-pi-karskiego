@@ -75,7 +75,6 @@ export function DashboardClient({
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
-  // Wyświetlamy 3 dni obok siebie na mobile
   const dniMobile = (() => {
     const startIdx = dni.findIndex((d) => toISO(d) === dzisStr);
     if (startIdx === -1) return dni.slice(0, 3);
@@ -130,15 +129,22 @@ export function DashboardClient({
               <button 
                 key={i} 
                 onClick={() => setSelectedDate(dataStr)} 
-                className={`anim-transform relative rounded-xl p-2 transition-all min-h-[140px] flex flex-col text-left overflow-hidden ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/50 shadow-md' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border border-blue-400/60' : 'bg-slate-800/60 border border-white/10'}`}
+                className={`relative w-full min-w-0 rounded-xl p-2 transition-all min-h-[140px] flex flex-col text-left overflow-hidden border-2 ${
+                  czyDzis 
+                    ? 'bg-green-500/20 border-green-400/50' 
+                    : czyWybrany 
+                      ? 'bg-blue-500/20 border-blue-400/50' 
+                      : 'bg-slate-800/60 border-transparent'
+                }`}
               >
                 <div className="mb-2 pb-1.5 border-b border-white/10 w-full">
                   <div className={`text-[9px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
                   <div className={`text-xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
                 </div>
-                <div className="flex-1 space-y-1 w-full">
+                
+                <div className="flex-1 space-y-1 w-full overflow-hidden">
                   {eventy.length === 0 && <div className="text-[9px] text-white/30 py-1">brak</div>}
-                  {eventy.slice(0,2).map((t) => (
+                  {eventy.slice(0, 2).map((t) => (
                     <div key={t.id} className={`text-[9px] rounded-md border-l-2 px-1.5 py-1 text-white w-full ${typBorder(t.typ)} bg-white/5 overflow-hidden`}>
                       <div className="font-bold leading-tight truncate">{t.godzina}</div>
                       <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
