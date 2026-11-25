@@ -2,15 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-// Ten import zadziała, bo dodaliśmy "export" w KalendarzClient.tsx
-import type { TreningZObecnoscia } from './KalendarzClient';
+import type { TreningZFrekwencja } from './KalendarzClient';
 
 export function PanelMiesiaca({
   eventMap,
   selectedDate,
   onSelectDate,
 }: {
-  eventMap: Record<string, TreningZObecnoscia[]>;
+  eventMap: Record<string, TreningZFrekwencja[]>;
   selectedDate: string;
   onSelectDate: (date: string) => void;
 }) {
@@ -31,41 +30,32 @@ export function PanelMiesiaca({
     const ostatniDzien = new Date(rok, miesiac + 1, 0);
     const dzienTygodnia = (pierwszyDzien.getDay() + 6) % 7; 
     
-    const dniArray = [];
-    for (let i = 0; i < dzienTygodnia; i++) {
-      dniArray.push(null);
-    }
-    for (let i = 1; i <= ostatniDzien.getDate(); i++) {
-      dniArray.push(new Date(rok, miesiac, i));
-    }
+    const dniArray: (Date | null)[] = [];
+    for (let i = 0; i < dzienTygodnia; i++) dniArray.push(null);
+    for (let i = 1; i <= ostatniDzien.getDate(); i++) dniArray.push(new Date(rok, miesiac, i));
     return dniArray;
   }, [viewDate]);
 
-  const dniTygodnia = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
+  const dniTygodnia = ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'];
+
+  const typKolor = (typ: string) => {
+    if (typ === 'mecz') return 'bg-red-500';
+    if (typ === 'sparing') return 'bg-orange-500';
+    if (typ === 'turniej') return 'bg-purple-500';
+    return 'bg-blue-500';
+  };
 
   return (
-    <div className="glass border border-white/10 rounded-3xl p-4 animate-fadeIn shadow-xl">
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors">
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <div className="font-bold text-white text-sm capitalize">
-          {viewDate.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}
-        </div>
-        <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors">
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
+    <div className="w-full">
       <div className="grid grid-cols-7 gap-1 mb-2">
         {dniTygodnia.map((d) => (
-          <div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-wider">
+          <div key={d} className="text-center text-[10px] font-bold text-white/40 uppercase tracking-widest py-2">
             {d}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1 md:gap-2">
         {dni.map((d, i) => {
           if (!d) return <div key={`empty-${i}`} className="aspect-square" />;
           
@@ -78,23 +68,24 @@ export function PanelMiesiaca({
             <button
               key={dataStr}
               onClick={() => onSelectDate(dataStr)}
-              className={`aspect-square rounded-xl flex flex-col items-center justify-center p-1 transition-all relative ${
-                czyDzis
-                  ? 'bg-green-500/20 border border-green-400/50 text-green-300'
-                  : czyWybrany
-                  ? 'bg-blue-500/20 border border-blue-400/50 text-blue-300'
-                  : 'bg-white/5 border border-transparent hover:bg-white/10 text-white'
+              className={`aspect-square rounded-xl md:rounded-2xl flex flex-col items-center justify-center p-1 transition-all relative border ${
+                czyWybrany
+                  ? 'bg-transparent border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)] text-green-400'
+                  : czyDzis
+                  ? 'bg-white/5 border-green-500/30 text-green-300'
+                  : 'bg-transparent border-transparent hover:bg-white/5 text-white/80'
               }`}
             >
-              <span className={`text-sm font-semibold ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : ''}`}>
+              <span className={`text-sm md:text-base font-bold ${czyWybrany ? 'text-green-400' : ''}`}>
                 {d.getDate()}
               </span>
+              
+              {czyDzis && <div className="text-[8px] font-bold text-green-400 uppercase mt-0.5 leading-none">Dziś</div>}
+              
               {eventy.length > 0 && (
-                <div className="flex gap-0.5 mt-1">
+                <div className="absolute bottom-2 flex gap-1">
                   {eventy.slice(0, 3).map((e, idx) => (
-                    <div key={idx} className={`w-1 h-1 rounded-full ${
-                      e.typ === 'mecz' ? 'bg-red-400' : e.typ === 'sparing' ? 'bg-orange-400' : 'bg-blue-400'
-                    }`} />
+                    <div key={idx} className={`w-1.5 h-1.5 rounded-full ${typKolor(e.typ)}`} />
                   ))}
                 </div>
               )}
