@@ -1,25 +1,25 @@
-// app/layout.tsx
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css'; // <-- To ładuje Tailwind v4
+import { AppBackground } from '@/components/AppBackground';
+import { BottomNav } from '@/components/BottomNav';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Talent - Aplikacja Trenera',
-  description: 'Zarządzaj drużyną, treningami i statystykami.',
-};
-
-export default function RootLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl" className="dark">
-      <body className={`${inter.className} bg-slate-950 text-white min-h-screen`}>
-        {children}
-      </body>
-    </html>
+    <div className="relative min-h-screen w-full bg-[#020617]">
+      <AppBackground />
+      <BottomNav />
+      
+      {/* 
+        md:pl-64 - robi miejsce na boczne menu na komputerze
+        pb-20 - robi miejsce na dolne menu na telefonie (16 = 4rem, dajemy 20 = 5rem dla bezpieczeństwa)
+      */}
+      <main className="relative z-10 md:pl-64 pb-20 md:pb-0 w-full min-h-screen">
+        <div className="p-4 md:p-6 h-full">
+          {children}
+        </div>
+      </main>
+    </div>
   );
 }

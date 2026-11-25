@@ -36,8 +36,8 @@ export function BottomNav() {
 
   return (
     <>
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 z-30 flex-col glass border-r border-white/10">
+      {/* DESKTOP SIDEBAR - pokazuje się TYLKO na dużych ekranach */}
+      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 z-40 flex-col bg-[#0f172a] border-r border-[#1e293b]">
         <div className="px-6 py-8">
           <Link href="/dashboard" className="flex items-center gap-2 group w-max">
             <span className="text-2xl font-black text-white tracking-tight">
@@ -49,7 +49,7 @@ export function BottomNav() {
         <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6">
           {NAV_GROUPS.map((group) => (
             <div key={group.title}>
-              <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">
                 {group.title}
               </h3>
               <nav className="flex flex-col gap-1">
@@ -62,11 +62,11 @@ export function BottomNav() {
                       href={item.href}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                         active
-                          ? 'bg-green-500/15 text-green-400'
-                          : 'text-white/60 hover:text-white hover:bg-white/5'
+                          ? 'bg-green-500/10 text-green-400'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-green-400' : 'text-white/40'}`} />
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-green-400' : 'text-slate-500'}`} />
                       {item.label}
                     </Link>
                   );
@@ -77,13 +77,12 @@ export function BottomNav() {
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAV */}
-      {/* UŻYWAMY bg-[#0f172a] zamiast glass (pełne tło, zero blura na mobile) */}
+      {/* MOBILE BOTTOM NAV - pokazuje się TYLKO na małych ekranach */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a] border-t border-white/10 pb-[env(safe-area-inset-bottom)]"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0f172a] border-t border-[#1e293b] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]"
         aria-label="Nawigacja główna"
       >
-        <ul className="grid grid-cols-5 list-none m-0 p-0">
+        <ul className="grid grid-cols-5 list-none m-0 p-0 h-16">
           {[
             NAV_GROUPS[0].items[0], // Pulpit
             NAV_GROUPS[0].items[1], // Kadra
@@ -94,12 +93,11 @@ export function BottomNav() {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (
-              <li key={item.href}>
+              <li key={item.href} className="h-full">
                 <Link
                   href={item.href}
-                  prefetch // <--- WAŻNE: Ładuje zakładkę w tle
-                  className={`flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-semibold transition-colors ${
-                    active ? 'text-green-400' : 'text-white/50'
+                  className={`flex flex-col items-center justify-center h-full gap-1 text-[10px] font-semibold transition-colors ${
+                    active ? 'text-green-400' : 'text-slate-500'
                   }`}
                 >
                   <Icon className="w-5 h-5" />

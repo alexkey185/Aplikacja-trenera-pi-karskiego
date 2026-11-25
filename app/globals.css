@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================
-   KEYFRAMES I ANIMACJE
-   ============================================================ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(2px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -12,16 +9,7 @@
 
 .animate-fadeIn { animation: fadeIn 120ms ease-out both; }
 
-.stagger-1 { animation-delay: 0ms; }
-.stagger-2 { animation-delay: 20ms; }
-.stagger-3 { animation-delay: 40ms; }
-.stagger-4 { animation-delay: 60ms; }
-.stagger-5 { animation-delay: 80ms; }
-.stagger-6 { animation-delay: 100ms; }
-
-/* ============================================================
-   TŁO I LOGO (desktop only)
-   ============================================================ */
+/* TŁO I LOGO */
 .app-bg-desktop { display: none; }
 @media (min-width: 768px) {
   .app-bg-desktop {
@@ -34,9 +22,7 @@
   }
 }
 
-/* ============================================================
-   GLASS - Na telefonie pełne tło, na komputerze szkło
-   ============================================================ */
+/* KLASA GLASS */
 .glass {
   background-color: #0f172a;
 }
@@ -49,26 +35,11 @@
   }
 }
 
-/* ============================================================
-   RESET DLA MOBILE (naprawa układu)
-   ============================================================ */
+/* RESET TYLKO DLA MARGINESÓW */
 @layer base {
   html, body {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    width: 100%;
-    overflow-x: hidden; /* Blokuje poziome przewijanie na mobile */
     background-color: #020617;
-  }
-
-  /* Wymusza box-sizing we wszystkich elementach (ratuje layout na mobile) */
-  *, *::before, *::after {
-    box-sizing: inherit;
-  }
-
-  /* Eleganckie inputy na mobile */
-  input, textarea, select {
-    width: 100%;
   }
 }
