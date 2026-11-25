@@ -1,18 +1,90 @@
-/* app/globals.css */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --animate-fadeIn: fadeIn 0.3s ease-out forwards;
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ============================================================
+   KEYFRAMES I ANIMACJE
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Krótsza animacja dla mobile (120ms zamiast 400ms) */
+.animate-fadeIn { animation: fadeIn 120ms ease-out both; }
+
+/* Opóźnienia (zmniejszone, żeby lista pojawiała się natychmiast) */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 20ms; }
+.stagger-3 { animation-delay: 40ms; }
+.stagger-4 { animation-delay: 60ms; }
+.stagger-5 { animation-delay: 80ms; }
+.stagger-6 { animation-delay: 100ms; }
+
+/* ============================================================
+   TŁO I LOGO (desktop only - zero pobierania na mobile)
+   ============================================================ */
+.app-bg-desktop { display: none; }
+@media (min-width: 768px) {
+  .app-bg-desktop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: url('/talent-bg.webp') center / cover no-repeat;
   }
 }
 
+/* ============================================================
+   GLASS (Kluczowa optymalizacja mobile)
+   Na telefonie pełne, kryjące tło. Na desktopie efekt szkła.
+   ============================================================ */
+.glass {
+  background-color: #0f172a; /* Pełne, ciemne tło na mobile - BRAK BLURA */
+}
+
+@media (min-width: 768px) {
+  .glass {
+    background-color: rgba(15, 23, 42, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+.glass-strong {
+  background-color: #020617;
+}
+
+@media (min-width: 768px) {
+  .glass-strong {
+    background-color: rgba(2, 6, 23, 0.9);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* ============================================================
+   BAZOWE STYLE (Optymalizacja dotyku)
+   ============================================================ */
 @layer base {
-  body {
-    background-color: #020617; /* slate-950 */
-    color: #ffffff;
+  /* Wyłączamy opóźnienia na transformacjach przy klikaniu, 
+     aby aplikacja reagowała natychmiast po dotknięciu */
+  button, a, input, textarea, select, [role="button"] {
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ============================================================
+   PREFERS-REDUCED-MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn { animation: none !important; }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

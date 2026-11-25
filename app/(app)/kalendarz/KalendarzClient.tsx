@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, ChevronRight, Calendar as CalendarIcon, Trophy, Flame, Target, Download } from 'lucide-react';
+import { Plus, ChevronRight, Calendar as CalendarIcon, Trophy, Flame, Target } from 'lucide-react';
 import { PanelMiesiaca } from './PanelMiesiaca';
 import { getDzisISO } from '@/lib/dates';
 
@@ -26,7 +26,6 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
   const dzisStr = getDzisISO();
   const [selectedDate, setSelectedDate] = useState<string>(dzisStr);
 
-  // Grupowanie treningów
   const eventMap = initialTreningi.reduce((acc, t) => {
     if (!acc[t.data]) acc[t.data] = [];
     acc[t.data].push(t);
@@ -36,7 +35,6 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
-  // Statystyki dla górnych kart
   const stats = {
     treningi: initialTreningi.filter(t => t.typ === 'trening').length,
     mecze: initialTreningi.filter(t => t.typ === 'mecz').length,
@@ -44,20 +42,16 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
     turnieje: initialTreningi.filter(t => t.typ === 'turniej').length,
   };
 
-  // Najbliższe wydarzenia (od dzisiaj w górę)
   const nadchodzace = initialTreningi
     .filter(t => t.data >= dzisStr)
     .sort((a, b) => a.data.localeCompare(b.data) || a.godzina.localeCompare(b.godzina))
     .slice(0, 3);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 animate-fadeIn">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
       
-      {/* LEWA KOLUMNA (Główna) */}
       <div className="xl:col-span-2 space-y-4">
-        
-        {/* Pasek "Brak wydarzeń dzisiaj" / "Dzisiaj" */}
-        <div className={`rounded-3xl p-4 md:p-5 flex items-center justify-between border ${selectedEvents.length === 0 ? 'bg-gradient-to-r from-green-500/10 to-transparent border-green-500/20' : 'bg-slate-900/80 border-white/10 backdrop-blur-md'}`}>
+        <div className={`rounded-3xl p-4 md:p-5 flex items-center justify-between border ${selectedEvents.length === 0 ? 'bg-gradient-to-r from-green-500/10 to-transparent border-green-500/20' : 'glass border-white/10'}`}>
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400">
                  <CalendarIcon className="w-6 h-6" />
@@ -74,7 +68,6 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
            </div>
         </div>
 
-        {/* Górne statystyki (4 kafelki) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="TRENINGI" value={stats.treningi} color="blue" icon={CalendarIcon} />
           <StatCard label="MECZE" value={stats.mecze} color="red" icon={Trophy} />
@@ -82,15 +75,14 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
           <StatCard label="TURNIEJE" value={stats.turnieje} color="purple" icon={Target} />
         </div>
 
-        {/* Siatka Kalendarza */}
-        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-4 md:p-6 shadow-xl relative">
+        <div className="glass border border-white/10 rounded-3xl p-4 md:p-6 shadow-xl relative">
            <div className="flex items-center justify-between mb-6">
-              <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50"><ChevronRight className="w-4 h-4 rotate-180" /></button>
+              <button className="anim-transform w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50"><ChevronRight className="w-4 h-4 rotate-180" /></button>
               <div className="text-center">
                  <div className="text-lg font-bold text-white capitalize">{selectedDateObj.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}</div>
                  <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Bieżący miesiąc</div>
               </div>
-              <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50"><ChevronRight className="w-4 h-4" /></button>
+              <button className="anim-transform w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50"><ChevronRight className="w-4 h-4" /></button>
            </div>
            
            <PanelMiesiaca 
@@ -99,7 +91,6 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
               onSelectDate={setSelectedDate} 
            />
 
-           {/* Legenda */}
            <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-white/10 text-xs text-white/60">
               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> Trening</div>
               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /> Mecz</div>
@@ -109,10 +100,8 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
         </div>
       </div>
 
-      {/* PRAWA KOLUMNA (Panel Boczny) */}
       <div className="space-y-4">
-         {/* Panel "Wybrany Dzień" */}
-         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl">
+         <div className="glass border border-white/10 rounded-3xl p-5 shadow-xl">
             <div className="flex items-start justify-between mb-6">
                <div>
                   <div className="flex items-baseline gap-2 mb-1">
@@ -132,14 +121,13 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
                </div>
                <div className="font-semibold text-white/80 mb-1">Brak wydarzeń</div>
                <div className="text-xs text-white/50 mb-4">Nic nie zaplanowano na ten dzień.</div>
-               <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-400 text-white text-xs font-bold transition-colors">
+               <Link prefetch href={`/kalendarz/nowy?data=${selectedDate}`} className="anim-transform inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-400 text-white text-xs font-bold transition-colors">
                   <Plus className="w-3.5 h-3.5" /> Dodaj wydarzenie
                </Link>
             </div>
          </div>
 
-         {/* Panel "Najbliższe wydarzenia" */}
-         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-5 shadow-xl">
+         <div className="glass border border-white/10 rounded-3xl p-5 shadow-xl">
             <h3 className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2">
               <Flame className="w-3.5 h-3.5 text-red-400" /> Najbliższe wydarzenia
             </h3>
@@ -150,7 +138,7 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
                   nadchodzace.map(t => {
                      const d = new Date(t.data + 'T00:00:00');
                      return (
-                        <Link key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
+                        <Link prefetch key={t.id} href={`/kalendarz/${t.id}/obecnosc`} className="anim-transform flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-colors group">
                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex flex-col items-center justify-center text-blue-400">
                               <span className="text-[10px] font-bold leading-none">{d.getDate()}.{String(d.getMonth()+1).padStart(2,'0')}</span>
                            </div>
@@ -170,7 +158,6 @@ export function KalendarzClient({ initialTreningi }: { initialTreningi: TreningZ
   );
 }
 
-// Mały komponent pomocniczy do kafelków statystyk
 function StatCard({ label, value, color, icon: Icon }: { label: string, value: number, color: string, icon: any }) {
   const colorMap: any = {
     blue: 'from-blue-500/20 to-blue-500/5 border-blue-500/20 text-blue-400',
@@ -179,7 +166,7 @@ function StatCard({ label, value, color, icon: Icon }: { label: string, value: n
     purple: 'from-purple-500/20 to-purple-500/5 border-purple-500/20 text-purple-400',
   };
   return (
-    <div className={`bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-3 md:p-4 flex items-center gap-3`}>
+    <div className={`anim-transform bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-3 md:p-4 flex items-center gap-3`}>
        <div className="w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center shrink-0">
          <Icon className="w-4 h-4" />
        </div>

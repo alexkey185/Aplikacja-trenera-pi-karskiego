@@ -100,8 +100,7 @@ export function DashboardClient({
 
   return (
     <div>
-      {/* ZMIANA: użyto klasy glass */}
-      <div className="glass border border-white/10 rounded-3xl p-4 mb-5 animate-fadeIn shadow-2xl shadow-black/60">
+      <div className="glass border border-white/10 rounded-3xl p-4 mb-5 shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-4">
           <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronLeft className="w-4 h-4" />
@@ -124,7 +123,11 @@ export function DashboardClient({
             const czyDzis = dataStr === dzisStr;
             const czyWybrany = dataStr === selectedDate;
             return (
-              <button key={i} onClick={() => setSelectedDate(dataStr)} className={`relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 border border-white/10 hover:border-white/20'}`}>
+              <button 
+                key={i} 
+                onClick={() => setSelectedDate(dataStr)} 
+                className={`anim-transform relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 border border-white/10 hover:border-white/20'}`}
+              >
                 <div className="mb-3 pb-2 border-b border-white/10">
                   <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
                   <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
@@ -152,7 +155,11 @@ export function DashboardClient({
             const czyDzis = dataStr === dzisStr;
             const czyWybrany = dataStr === selectedDate;
             return (
-              <button key={i} onClick={() => setSelectedDate(dataStr)} className={`group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'}`}>
+              <button 
+                key={i} 
+                onClick={() => setSelectedDate(dataStr)} 
+                className={`anim-transform group relative rounded-2xl p-3 transition-all hover:-translate-y-0.5 min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/50 border border-white/5 hover:border-white/20 hover:bg-slate-800'}`}
+              >
                 <div className="mb-2 flex-shrink-0">
                   <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
                   <div className={`text-2xl font-black leading-none mt-0.5 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
@@ -178,8 +185,7 @@ export function DashboardClient({
         </div>
       </div>
 
-      {/* ZMIANA: użyto klasy glass */}
-      <div className="glass border border-white/10 rounded-3xl p-5 mb-5 animate-fadeIn shadow-xl shadow-black/40">
+      <div className="glass border border-white/10 rounded-3xl p-5 mb-5 shadow-xl shadow-black/40">
         <div className="flex items-center gap-2 mb-4">
           <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
           <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
@@ -190,22 +196,21 @@ export function DashboardClient({
         {selectedEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="text-white/40 text-sm mb-4">Brak wydarzeń tego dnia</div>
-            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20">
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all">
               <Plus className="w-3.5 h-3.5" /> Dodaj wydarzenie
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
             {selectedEvents.map((t) => <EventCard key={t.id} trening={t} variant="full" stats={stats[String(t.id)]} />)}
-            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all hover:shadow-lg hover:shadow-green-500/20">
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all">
               <Plus className="w-3.5 h-3.5" /> Dodaj kolejne wydarzenie
             </Link>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-        {/* ZMIANA: użyto klasy glass */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="hidden md:block glass border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-3.5 h-3.5 text-blue-400" />
@@ -233,7 +238,6 @@ export function DashboardClient({
           })()}
         </div>
 
-        {/* ZMIANA: użyto klasy glass */}
         <div className="glass border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
