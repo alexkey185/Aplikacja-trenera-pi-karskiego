@@ -75,6 +75,7 @@ export function DashboardClient({
   const selectedEvents = eventMap[selectedDate] ?? [];
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
+  // Wyświetlamy 3 dni obok siebie na mobile
   const dniMobile = (() => {
     const startIdx = dni.findIndex((d) => toISO(d) === dzisStr);
     if (startIdx === -1) return dni.slice(0, 3);
@@ -99,24 +100,27 @@ export function DashboardClient({
   };
 
   return (
-    <div>
-      <div className="glass border border-white/10 rounded-3xl p-4 mb-5 shadow-2xl shadow-black/60">
-        <div className="flex items-center justify-between mb-4">
-          <Link href={`/dashboard?w=${prevWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
+    <div className="w-full max-w-full overflow-hidden">
+      <div className="glass border border-white/10 rounded-2xl md:rounded-3xl p-3 md:p-4 mb-4 md:mb-5 shadow-2xl shadow-black/60">
+        
+        {/* Nawigacja tygodnia */}
+        <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+          <Link href={`/dashboard?w=${prevWeek}`} className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronLeft className="w-4 h-4" />
           </Link>
-          <div className="text-center px-2">
-            <div className="font-bold text-white text-sm capitalize">
-              {new Date(poniedzialekISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })} - {new Date(niedzielaISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
+          <div className="text-center flex-1 min-w-0">
+            <div className="font-bold text-white text-[11px] md:text-sm capitalize truncate">
+              {new Date(poniedzialekISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'short' })} - {new Date(niedzielaISO + 'T00:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: 'short' })}
             </div>
-            {jestWTygodniu && <div className="text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Bieżący tydzień</div>}
+            {jestWTygodniu && <div className="text-[9px] md:text-[10px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Bieżący tydzień</div>}
           </div>
-          <Link href={`/dashboard?w=${nextWeek}`} className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
+          <Link href={`/dashboard?w=${nextWeek}`} className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="md:hidden grid grid-cols-3 gap-2">
+        {/* Widok 3 dni na mobile */}
+        <div className="md:hidden grid grid-cols-3 gap-1.5 w-full">
           {dniMobile.map((d, i) => {
             const dataStr = toISO(d);
             const eventy = eventMap[dataStr] ?? [];
@@ -126,28 +130,27 @@ export function DashboardClient({
               <button 
                 key={i} 
                 onClick={() => setSelectedDate(dataStr)} 
-                className={`anim-transform relative rounded-2xl p-3 transition-all min-h-[180px] flex flex-col text-left ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border-2 border-green-400/50 shadow-lg shadow-green-500/20' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border-2 border-blue-400/60 ring-2 ring-blue-400/20 shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 border border-white/10 hover:border-white/20'}`}
+                className={`anim-transform relative rounded-xl p-2 transition-all min-h-[140px] flex flex-col text-left overflow-hidden ${czyDzis ? 'bg-gradient-to-b from-green-500/20 to-green-700/5 border border-green-400/50 shadow-md' : czyWybrany ? 'bg-gradient-to-b from-blue-500/25 to-blue-700/10 border border-blue-400/60' : 'bg-slate-800/60 border border-white/10'}`}
               >
-                <div className="mb-3 pb-2 border-b border-white/10">
-                  <div className={`text-[10px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
-                  <div className={`text-2xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
+                <div className="mb-2 pb-1.5 border-b border-white/10 w-full">
+                  <div className={`text-[9px] uppercase tracking-widest font-bold ${czyDzis ? 'text-green-300' : czyWybrany ? 'text-blue-300' : 'text-white/40'}`}>{formatDzienTyg(d)}</div>
+                  <div className={`text-xl font-black leading-none mt-1 ${czyDzis ? 'text-green-400' : czyWybrany ? 'text-blue-300' : 'text-white'}`}>{d.getDate()}</div>
                 </div>
-                <div className="flex-1 space-y-1.5">
-                  {eventy.length === 0 && <div className="text-[10px] text-white/30 py-2">brak</div>}
-                  {eventy.map((t) => (
-                    <div key={t.id} className={`text-[10px] rounded-md border-l-2 px-2 py-1.5 text-white ${typBorder(t.typ)} bg-white/5`}>
-                      <div className="font-bold leading-tight">{t.godzina}</div>
+                <div className="flex-1 space-y-1 w-full">
+                  {eventy.length === 0 && <div className="text-[9px] text-white/30 py-1">brak</div>}
+                  {eventy.slice(0,2).map((t) => (
+                    <div key={t.id} className={`text-[9px] rounded-md border-l-2 px-1.5 py-1 text-white w-full ${typBorder(t.typ)} bg-white/5 overflow-hidden`}>
+                      <div className="font-bold leading-tight truncate">{t.godzina}</div>
                       <div className="text-white/70 leading-tight capitalize truncate">{t.typ}</div>
                     </div>
                   ))}
                 </div>
-                {czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/60" />}
-                {czyWybrany && !czyDzis && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-400 rounded-full shadow-lg shadow-blue-400/60" />}
               </button>
             );
           })}
         </div>
 
+        {/* Widok 7 dni na desktop */}
         <div className="hidden md:grid grid-cols-7 gap-2">
           {dni.map((d, i) => {
             const dataStr = toISO(d);
@@ -185,25 +188,25 @@ export function DashboardClient({
         </div>
       </div>
 
-      <div className="glass border border-white/10 rounded-3xl p-5 mb-5 shadow-xl shadow-black/40">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="glass border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-5 mb-4 md:mb-5 shadow-xl shadow-black/40">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
           <div className={`w-1.5 h-1.5 rounded-full ${selectedDate === dzisStr ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`} />
-          <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">
+          <h2 className="text-[10px] md:text-xs font-bold text-white/70 uppercase tracking-widest truncate">
             {selectedDate === dzisStr ? 'Dzisiaj' : 'Wybrany dzień'} · {selectedDateObj.toLocaleDateString('pl-PL', { day: '2-digit', month: 'long' })}
           </h2>
         </div>
 
         {selectedEvents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="text-white/40 text-sm mb-4">Brak wydarzeń tego dnia</div>
-            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all">
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="text-white/40 text-xs md:text-sm mb-3">Brak wydarzeń tego dnia</div>
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 text-green-300 font-semibold text-xs transition-all">
               <Plus className="w-3.5 h-3.5" /> Dodaj wydarzenie
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
             {selectedEvents.map((t) => <EventCard key={t.id} trening={t} variant="full" stats={stats[String(t.id)]} />)}
-            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-300 hover:text-green-200 font-semibold text-xs transition-all">
+            <Link href={`/kalendarz/nowy?data=${selectedDate}`} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 text-green-300 font-semibold text-xs transition-all w-full">
               <Plus className="w-3.5 h-3.5" /> Dodaj kolejne wydarzenie
             </Link>
           </div>
@@ -238,27 +241,27 @@ export function DashboardClient({
           })()}
         </div>
 
-        <div className="glass border border-white/10 rounded-3xl p-5 shadow-xl shadow-black/40">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="glass border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-5 shadow-xl shadow-black/40">
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
             <BarChart3Icon className="w-3.5 h-3.5 text-green-400" />
-            <h2 className="text-xs font-bold text-white/70 uppercase tracking-widest">Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}</h2>
+            <h2 className="text-[10px] md:text-xs font-bold text-white/70 uppercase tracking-widest truncate">Frekwencja - {new Date().toLocaleDateString('pl-PL', { month: 'long' })}</h2>
           </div>
           {(() => {
             const procent = frekwencjaMiesiaca.total > 0 ? Math.round((frekwencjaMiesiaca.obecni / frekwencjaMiesiaca.total) * 100) : 0;
             return (
               <>
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-black text-white leading-none">{procent}</span>
-                  <span className="text-2xl text-white/40 font-bold">%</span>
+                  <span className="text-4xl md:text-5xl font-black text-white leading-none">{procent}</span>
+                  <span className="text-xl md:text-2xl text-white/40 font-bold">%</span>
                 </div>
-                <div className="w-full h-3 bg-slate-950/60 rounded-full overflow-hidden mb-3 shadow-inner">
+                <div className="w-full h-2 md:h-3 bg-slate-950/60 rounded-full overflow-hidden mb-2 md:mb-3 shadow-inner">
                   <div className={`h-full rounded-full transition-all ${procent >= 80 ? 'bg-gradient-to-r from-green-500 to-green-400' : procent >= 60 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`} style={{ width: `${procent}%` }} />
                 </div>
-                <div className="flex items-center justify-between text-xs text-white/50 mb-4">
+                <div className="flex items-center justify-between text-[10px] md:text-xs text-white/50 mb-3 md:mb-4">
                   <span><span className="text-green-400 font-semibold">{frekwencjaMiesiaca.obecni}</span> obecnych</span>
                   <span>{frekwencjaMiesiaca.total} wpisów</span>
                 </div>
-                <Link href="/statystyki" className="w-full flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
+                <Link href="/statystyki" className="w-full flex items-center justify-center gap-2 text-[10px] md:text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2 transition-all">
                   <BarChart3Icon className="w-3.5 h-3.5" /> Pełne statystyki
                 </Link>
               </>

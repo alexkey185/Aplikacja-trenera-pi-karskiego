@@ -10,10 +10,8 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Krótsza animacja dla mobile (120ms zamiast 400ms) */
 .animate-fadeIn { animation: fadeIn 120ms ease-out both; }
 
-/* Opóźnienia (zmniejszone, żeby lista pojawiała się natychmiast) */
 .stagger-1 { animation-delay: 0ms; }
 .stagger-2 { animation-delay: 20ms; }
 .stagger-3 { animation-delay: 40ms; }
@@ -22,7 +20,7 @@
 .stagger-6 { animation-delay: 100ms; }
 
 /* ============================================================
-   TŁO I LOGO (desktop only - zero pobierania na mobile)
+   TŁO I LOGO (desktop only)
    ============================================================ */
 .app-bg-desktop { display: none; }
 @media (min-width: 768px) {
@@ -37,11 +35,10 @@
 }
 
 /* ============================================================
-   GLASS (Kluczowa optymalizacja mobile)
-   Na telefonie pełne, kryjące tło. Na desktopie efekt szkła.
+   GLASS - Na telefonie pełne tło, na komputerze szkło
    ============================================================ */
 .glass {
-  background-color: #0f172a; /* Pełne, ciemne tło na mobile - BRAK BLURA */
+  background-color: #0f172a;
 }
 
 @media (min-width: 768px) {
@@ -52,39 +49,26 @@
   }
 }
 
-.glass-strong {
-  background-color: #020617;
-}
-
-@media (min-width: 768px) {
-  .glass-strong {
-    background-color: rgba(2, 6, 23, 0.9);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-  }
-}
-
 /* ============================================================
-   BAZOWE STYLE (Optymalizacja dotyku)
+   RESET DLA MOBILE (naprawa układu)
    ============================================================ */
 @layer base {
-  /* Wyłączamy opóźnienia na transformacjach przy klikaniu, 
-     aby aplikacja reagowała natychmiast po dotknięciu */
-  button, a, input, textarea, select, [role="button"] {
-    transition-property: background-color, border-color, color, box-shadow;
-    transition-duration: 150ms;
-    transition-timing-function: ease;
-    -webkit-tap-highlight-color: transparent;
+  html, body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden; /* Blokuje poziome przewijanie na mobile */
+    background-color: #020617;
   }
-}
 
-/* ============================================================
-   PREFERS-REDUCED-MOTION
-   ============================================================ */
-@media (prefers-reduced-motion: reduce) {
-  .animate-fadeIn { animation: none !important; }
-  * {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+  /* Wymusza box-sizing we wszystkich elementach (ratuje layout na mobile) */
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+
+  /* Eleganckie inputy na mobile */
+  input, textarea, select {
+    width: 100%;
   }
 }
