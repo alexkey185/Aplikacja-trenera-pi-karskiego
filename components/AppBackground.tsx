@@ -1,24 +1,16 @@
-export function AppBackground({ priority = false }: { priority?: boolean }) {
+'use client';
+
+export function AppBackground() {
   return (
     <>
-      {/* Mobile: czysty kolor zamiast obrazka (błyskawiczne ładowanie, zero obciążenia GPU) */}
-      <div className="fixed inset-0 z-0 bg-[#0a0e1a] md:hidden" />
-
-      {/* Desktop: obrazek tła (zostaje dla efektu) */}
-      <div className="fixed inset-0 z-0 hidden md:block">
-        <img
-          src="/talent-bg.webp"
-          alt=""
-          aria-hidden
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
-          fetchPriority={priority ? 'high' : 'auto'}
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-      </div>
-
-      {/* Nakładka: na mobile bez blura (oszczędność FPS), na desktopie z blurem */}
-      <div className="fixed inset-0 z-10 bg-slate-950/80 md:bg-slate-950/70 md:backdrop-blur-sm" />
+      {/* Tło desktopowe (pobiera się tylko na md+) */}
+      <div className="app-bg-desktop" aria-hidden="true" />
+      
+      {/* Warstwa przyciemniająca (zawsze na dole) */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none bg-[#020617]"
+        aria-hidden="true"
+      />
     </>
   );
 }

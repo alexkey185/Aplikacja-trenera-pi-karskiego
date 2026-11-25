@@ -36,7 +36,7 @@ export function BottomNav() {
 
   return (
     <>
-      {/* DESKTOP SIDEBAR - pokazuje się TYLKO na dużych ekranach */}
+      {/* DESKTOP SIDEBAR - z-index 40 */}
       <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 z-40 flex-col bg-[#0f172a] border-r border-[#1e293b]">
         <div className="px-6 py-8">
           <Link href="/dashboard" className="flex items-center gap-2 group w-max">
@@ -77,7 +77,7 @@ export function BottomNav() {
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAV - pokazuje się TYLKO na małych ekranach */}
+      {/* MOBILE BOTTOM NAV - z-index 50 (najwyższy, żeby zawsze był widoczny) */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0f172a] border-t border-[#1e293b] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]"
         aria-label="Nawigacja główna"

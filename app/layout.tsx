@@ -7,15 +7,19 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen w-full bg-[#020617]">
+    <div className="relative isolate min-h-[100dvh] w-full bg-[#020617] overflow-x-hidden">
+      {/* Tło (z-index: 0) - jest pod wszystkim */}
       <AppBackground />
-      <BottomNav />
       
+      {/* Menu (ma własny z-index) */}
+      <BottomNav />
+
       {/* 
-        md:pl-64 - robi miejsce na boczne menu na komputerze
-        pb-20 - robi miejsce na dolne menu na telefonie (16 = 4rem, dajemy 20 = 5rem dla bezpieczeństwa)
+        Treść (z-index: 10) - jest nad tłem.
+        md:pl-64 - zostawia miejsce na boczne menu (desktop)
+        pb-20 - zostawia miejsce na dolne menu (mobile)
       */}
-      <main className="relative z-10 md:pl-64 pb-20 md:pb-0 w-full min-h-screen">
+      <main className="relative z-10 md:pl-64 pb-20 md:pb-0 w-full min-h-[100dvh]">
         <div className="p-4 md:p-6 h-full">
           {children}
         </div>
